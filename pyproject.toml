@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "django>=5.2.7",
+    "pytest-django>=4.11.1",
 ]
 
 [tool.coverage.run]
@@ -24,6 +25,10 @@ show_missing = true
 show_contexts = true
 
 [tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "openprescribing.settings"
+testpaths = [
+   "tests"
+]
 
 [tool.ruff]
 line-length = 88
