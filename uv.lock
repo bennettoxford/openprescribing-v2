@@ -287,7 +287,6 @@ source = { virtual = "." }
 dependencies = [
     { name = "django" },
     { name = "gunicorn" },
-    { name = "pytest-django" },
 ]
 
 [package.dev-dependencies]
@@ -295,6 +294,7 @@ dev = [
     { name = "coverage" },
     { name = "pre-commit" },
     { name = "pytest" },
+    { name = "pytest-django" },
     { name = "pyyaml" },
     { name = "ruff" },
 ]
@@ -303,7 +303,6 @@ dev = [
 requires-dist = [
     { name = "django", specifier = ">=5.2.7" },
     { name = "gunicorn", specifier = ">=23.0.0" },
-    { name = "pytest-django", specifier = ">=4.11.1" },
 ]
 
 [package.metadata.requires-dev]
@@ -311,6 +310,7 @@ dev = [
     { name = "coverage", specifier = ">=7.10.6" },
     { name = "pre-commit", specifier = ">=4.3.0" },
     { name = "pytest", specifier = ">=8.4.1" },
+    { name = "pytest-django", specifier = ">=4.11.1" },
     { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "ruff", specifier = ">=0.12.11" },
 ]

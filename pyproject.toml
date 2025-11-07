@@ -7,7 +7,6 @@ requires-python = ">=3.13"
 dependencies = [
     "django>=5.2.7",
     "gunicorn>=23.0.0",
-    "pytest-django>=4.11.1",
 ]
 
 [tool.coverage.run]
@@ -75,6 +74,7 @@ dev = [
     "coverage>=7.10.6",
     "pre-commit>=4.3.0",
     "pytest>=8.4.1",
+    "pytest-django>=4.11.1",
     "pyyaml>=6.0.2",
     "ruff>=0.12.11",
 ]
