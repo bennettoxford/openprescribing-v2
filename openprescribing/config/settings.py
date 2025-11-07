@@ -43,6 +43,12 @@ def get_env_var(name):
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parents[2]
 
+# Working directory for application state. Note that this is not necessarily relative to
+# BASE_DIR: if OPENPRESCRIBING_WORK_DIR is an absolute path it can point anywhere.
+WORK_DIR = BASE_DIR / get_env_var("OPENPRESCRIBING_WORK_DIR")
+
+DOWNLOAD_DIR = WORK_DIR / "downloads"
+DATA_DIR = WORK_DIR / "data"
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
