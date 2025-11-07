@@ -20,6 +20,13 @@ omit = [
 fail_under = 100
 skip_covered = true
 show_missing = true
+exclude_also = [
+    # Indicates that the line should never be hit
+    "assert False",
+    # Custom multiline pragma to allow excluding whole files. See:
+    # https://coverage.readthedocs.io/en/7.11.0/excluding.html#multi-line-exclusion-regexes
+    '\A(?s:.*# pragma: no cover file.*)\Z',
+]
 
 [tool.coverage.html]
 show_contexts = true
