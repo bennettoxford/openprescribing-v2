@@ -10,7 +10,34 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+
+_missing_env_var_hint = """\
+If you are running commands locally outside of `just` then you should
+make sure that your `.env` file is being loaded into the environment,
+which you can do in Bash using:
+
+    set -a; source .env; set +a
+
+If you are seeing this error when running via `just` (which should
+automatically load variables from `.env`) then you should check that
+`.env` contains all the variables listed in `dotenv-sample` (which may
+have been updated since `.env` was first created).
+
+If you are seeing this error in production then you haven't configured
+things properly.
+"""
+
+
+def get_env_var(name):
+    try:
+        return os.environ[name]
+    except KeyError:
+        raise RuntimeError(
+            f"Missing environment variable: {name}\n\n{_missing_env_var_hint}"
+        )
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
