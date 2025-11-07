@@ -25,7 +25,7 @@ show_missing = true
 show_contexts = true
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "openprescribing.settings"
+DJANGO_SETTINGS_MODULE = "openprescribing.config.settings"
 testpaths = [
    "tests"
 ]
