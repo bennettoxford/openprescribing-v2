@@ -1,0 +1,73 @@
+[project]
+name = "repo-template"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+]
+
+[tool.coverage.run]
+branch = true
+dynamic_context = "test_function"
+omit = [
+  ".venv/*",
+]
+
+[tool.coverage.report]
+fail_under = 100
+skip_covered = true
+show_missing = true
+
+[tool.coverage.html]
+show_contexts = true
+
+[tool.pytest.ini_options]
+
+[tool.ruff]
+line-length = 88
+exclude = [
+  ".direnv",
+  ".git",
+  ".github",
+  ".ipynb_checkpoints",
+  ".pytest_cache",
+  ".venv",
+  "__pycache__",
+  "docker",
+  "htmlcov",
+  "venv",
+]
+
+[tool.ruff.lint]
+extend-select = [
+  "A",  # flake8-builtins
+  "I",  # isort
+  "INP",  # flake8-no-pep420
+  "ISC",  # flake8-implicit-str-concat
+  "UP",  # pyupgrade
+  "W",  # pycodestyle warning
+]
+extend-ignore = [
+  "E501",
+  "E731",
+]
+
+[tool.ruff.lint.isort]
+lines-after-imports = 2
+
+# Note: any `exclude-newer-package` timestamps should be removed if > 7 days old
+# See https://github.com/opensafely-core/repo-template/blob/main/DEVELOPERS.md for details
+[tool.uv]
+required-version = ">=0.9"
+exclude-newer = "2025-10-28T00:00:00Z"
+exclude-newer-package = {}
+
+[dependency-groups]
+dev = [
+    "coverage>=7.10.6",
+    "pre-commit>=4.3.0",
+    "pytest>=8.4.1",
+    "pyyaml>=6.0.2",
+    "ruff>=0.12.11",
+]

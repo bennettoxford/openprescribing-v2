@@ -1,0 +1,21 @@
+.git/
+
+**/*~
+**/.#*
+**/*#
+**/__pycache__
+**/*.pyc
+**/.env
+**/.venv
+**/venv
+**/*.egg-info/
+
+# Python files
+/tests
+
+# Tooling effluent
+**/htmlcov
+**/.coverage
+
+# Local application state
+**/node_modules
