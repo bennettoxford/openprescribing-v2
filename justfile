@@ -162,8 +162,6 @@ fix:
     uv run ruff format .
     just --fmt --unstable
 
-# Run the dev project
-run: devenv
-    echo "Not implemented yet"
-    # E.g. uv run python manage.py runserver
-    # Note: devenv prerequisite can be removed if using uv run
+# Run development server
+run:
+    uv run python manage.py runserver
