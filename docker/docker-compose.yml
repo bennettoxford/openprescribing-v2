@@ -27,7 +27,7 @@ services:
   # prod service. Used to build prod image and run/test it locally
   prod:
     # image name, both locally and public
-    image: openprescribing
+    image: openprescribing-v2
     extends:
       service: base
     # this compose file is only used for production-like testing - so we

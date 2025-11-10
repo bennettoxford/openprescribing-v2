@@ -150,9 +150,9 @@ FROM openprescribing-base AS openprescribing-prod
 
 # Adjust this metadata to fit project. Note that the base-docker image does set
 # some basic metadata.
-LABEL org.opencontainers.image.title="openprescribing" \
-    org.opencontainers.image.description="openprescribing-description" \
-    org.opencontainers.image.source="openprescribing-source"
+LABEL org.opencontainers.image.title="openprescribing-v2" \
+    org.opencontainers.image.description="OpenPrescribing v2 production build image" \
+    org.opencontainers.image.source="https://github.com/bennettoxford/openprescribing-v2"
 
 # copy application code except for things in .dockerignore
 COPY . /app
@@ -160,7 +160,7 @@ COPY . /app
 # set the entrypoint to ensure some basic tasks are performed before the cli command
 ENTRYPOINT ["/app/docker/entrypoints/prod.sh"]
 # set a default command (if needed; replace this comment if you do so)
-CMD ["echo", "default command not set"]
+CMD ["gunicorn", "openprescribing.config.wsgi"]
 
 # finally, tag with build information. These will change regularly, therefore
 # we do them as the last action.
