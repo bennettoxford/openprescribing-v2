@@ -1,0 +1,42 @@
+name: Deploy
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: openprescribing-v2
+  IMAGE_ID: ghcr.io/bennettoxford/openprescribing-v2
+  HOST: dokku3.ebmdatalab.net
+  SSH_AUTH_SOCK: /tmp/agent.sock
+
+permissions:
+  packages: write
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    name: Deploy
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v5
+    - name: Set up Just
+      uses: extractions/setup-just@dd310ad5a97d8e7b41793f8ef055398d51ad4de6
+    - name: Build image
+      run: just docker/build prod
+    - name: Test image
+      run: just docker/test
+    - name: Log into GitHub Container Registry
+      run: docker login https://ghcr.io -u ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }}
+    - name: Push image to GitHub Container Registry
+      run: |
+        docker tag "$IMAGE_NAME" "$IMAGE_ID:latest"
+        docker push "$IMAGE_ID:latest"
+    - name: Deploy image
+      run: |
+        ssh-agent -a "$SSH_AUTH_SOCK" > /dev/null
+        ssh-add - <<< "${{ secrets.DOKKU3_DEPLOY_SSH_KEY }}"
+        SHA=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE_ID:latest")
+        ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" dokku@"$HOST" git:from-image "$IMAGE_NAME" "$SHA"
