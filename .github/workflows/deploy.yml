@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 
 env:
+  APP_NAME: openprescribing
   IMAGE_NAME: openprescribing-v2
   IMAGE_ID: ghcr.io/bennettoxford/openprescribing-v2
   HOST: dokku3.ebmdatalab.net
@@ -39,4 +40,4 @@ jobs:
         ssh-agent -a "$SSH_AUTH_SOCK" > /dev/null
         ssh-add - <<< "${{ secrets.DOKKU3_DEPLOY_SSH_KEY }}"
         SHA=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE_ID:latest")
-        ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" dokku@"$HOST" git:from-image "$IMAGE_NAME" "$SHA"
+        ssh -o "UserKnownHostsFile=/dev/null" -o "StrictHostKeyChecking=no" dokku@"$HOST" git:from-image "$APP_NAME" "$SHA"
