@@ -1,5 +1,8 @@
+import platform
+
 from django.http import HttpResponse
 
 
 def index(request):
-    return HttpResponse("Welcome to OPv2")
+    hostname = platform.node()
+    return HttpResponse(f"Welcome to OPv2 on {hostname}")
