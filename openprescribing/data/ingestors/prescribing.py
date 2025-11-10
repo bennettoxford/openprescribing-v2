@@ -1,0 +1,2 @@
+def ingest():
+    assert False
