@@ -6,8 +6,9 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "django>=5.2.7",
+    "duckdb>=1.4.1",
     "gunicorn>=23.0.0",
-    "pytest-django>=4.11.1",
+    "requests>=2.32.5",
 ]
 
 [tool.coverage.run]
@@ -21,6 +22,13 @@ omit = [
 fail_under = 100
 skip_covered = true
 show_missing = true
+exclude_also = [
+    # Indicates that the line should never be hit
+    "assert False",
+    # Custom multiline pragma to allow excluding whole files. See:
+    # https://coverage.readthedocs.io/en/7.11.0/excluding.html#multi-line-exclusion-regexes
+    '\A(?s:.*# pragma: no cover file.*)\Z',
+]
 
 [tool.coverage.html]
 show_contexts = true
@@ -75,6 +83,9 @@ dev = [
     "coverage>=7.10.6",
     "pre-commit>=4.3.0",
     "pytest>=8.4.1",
+    "pytest-django>=4.11.1",
+    "pytest-freezer>=0.4.9",
     "pyyaml>=6.0.2",
+    "responses>=0.25.8",
     "ruff>=0.12.11",
 ]

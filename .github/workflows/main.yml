@@ -34,7 +34,8 @@ jobs:
           install-just: true
           cache: uv
       - name: Run tests
-        #env:  # Add environment variables required for tests
+        env:
+          OPENPRESCRIBING_WORK_DIR: "work_dir"
         run: |
           just test
 
