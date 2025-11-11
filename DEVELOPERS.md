@@ -1,5 +1,7 @@
 # Notes for developers
 
+See also [the wiki on GitHub](https://github.com/bennettoxford/openprescribing-v2/wiki) for notes on architecture and deployment.
+
 ## System requirements
 
 ### just
