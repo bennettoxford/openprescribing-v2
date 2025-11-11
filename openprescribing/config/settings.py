@@ -146,6 +146,29 @@ DATABASES = {
 }
 
 
+class DatabaseRouter:
+    # Read and write queries both use the same logic
+    def db_for_read(self, model, **hints):
+        return self.db_for_model(model)
+
+    def db_for_write(self, model, **hints):
+        return self.db_for_model(model)
+
+    # And that logic is: models belonging to the `data` app go to the `data` db
+    def db_for_model(self, model):
+        if model._meta.app_label == "data":
+            return "data"
+        else:  # pragma: no cover
+            return "default"
+
+    def allow_migrate(self, db, app_label, model_name=None, **hints):
+        if app_label == "data":  # pragma: no branch
+            return db == "data"
+
+
+DATABASE_ROUTERS = [f"{__name__}.DatabaseRouter"]
+
+
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
