@@ -7,14 +7,14 @@ from openprescribing.data.ingestors import prescribing
 
 def test_prescribing_ingest(tmp_path, settings):
     settings.DOWNLOAD_DIR = tmp_path / "downloads"
-    settings.DATA_DIR = tmp_path / "data"
+    settings.PRESCRIBING_DATABASE = tmp_path / "data" / "prescribing.duckdb"
 
     test_data = generate_prescribing_data()
     write_as_parquet_files(test_data, settings.DOWNLOAD_DIR / "prescribing")
 
     prescribing.ingest()
 
-    tables = get_all_tables(settings.DATA_DIR / "prescribing.duckdb")
+    tables = get_all_tables(settings.PRESCRIBING_DATABASE)
 
     # TODO: `calculate_expected_tables` should re-implement the ingestion logic in
     # extremely boring and easy to understand Python. Once we do that we can check that
@@ -37,12 +37,9 @@ def test_prescribing_ingest(tmp_path, settings):
 
     # Assert that running the ingest again with the same data doesn't rebuild the
     # database file
-    duckdb_file = settings.DATA_DIR / "prescribing.duckdb"
-    last_modified = duckdb_file.stat().st_mtime
-
+    last_modified = settings.PRESCRIBING_DATABASE.stat().st_mtime
     prescribing.ingest()
-
-    assert duckdb_file.stat().st_mtime == last_modified
+    assert settings.PRESCRIBING_DATABASE.stat().st_mtime == last_modified
 
 
 def generate_prescribing_data():

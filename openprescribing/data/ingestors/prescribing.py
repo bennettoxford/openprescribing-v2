@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 
 
 def ingest():
-    target_file = settings.DATA_DIR / "prescribing.duckdb"
+    target_file = settings.PRESCRIBING_DATABASE
     prescribing_files = get_latest_files_by_date(
         settings.DOWNLOAD_DIR.glob("prescribing/*")
     )
