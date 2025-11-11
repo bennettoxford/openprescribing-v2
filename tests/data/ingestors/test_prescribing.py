@@ -30,9 +30,19 @@ def test_prescribing_ingest(tmp_path, settings):
         "presentation",
         "prescribing_norm",
         "prescribing",
+        "ingested_file",
     }
     for name, table in tables.items():
         assert len(table) > 0, f"table '{name}' is empty"
+
+    # Assert that running the ingest again with the same data doesn't rebuild the
+    # database file
+    duckdb_file = settings.DATA_DIR / "prescribing.duckdb"
+    last_modified = duckdb_file.stat().st_mtime
+
+    prescribing.ingest()
+
+    assert duckdb_file.stat().st_mtime == last_modified
 
 
 def generate_prescribing_data():

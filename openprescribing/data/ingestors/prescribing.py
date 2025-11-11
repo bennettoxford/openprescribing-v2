@@ -21,9 +21,16 @@ def ingest():
 
     conn = duckdb.connect()
 
-    # TODO: This doesn't actually check whether there is any _new_ data. We'll implement
-    # that later.
-    if not prescribing_files:
+    if target_file.exists():
+        conn.sql(f"ATTACH {escape(target_file)} AS old (READONLY)")
+        ingested_files = {
+            f["filename"]
+            for f in fetch_as_dicts(conn, "SELECT * FROM old.ingested_file")
+        }
+    else:
+        ingested_files = set()
+
+    if {f.name for f in prescribing_files.values()} == ingested_files:
         log.debug("No new data to ingest")
         return
 
@@ -37,6 +44,13 @@ def ingest():
     target_file.parent.mkdir(parents=True, exist_ok=True)
     tmp_file = get_temp_filename_for(target_file)
     conn.sql(f"ATTACH {escape(tmp_file)} AS new (STORAGE_VERSION 'v1.2.0')")
+
+    # Record the names of the files we're ingesting
+    conn.sql("CREATE TABLE new.ingested_file (filename TEXT)")
+    conn.executemany(
+        "INSERT INTO new.ingested_file VALUES (?)",
+        sorted((f.name,) for f in prescribing_files.values()),
+    )
 
     # Create a view over all our prescribing files as if they were a single table. We
     # then query this view to build the rest of the tables we need.
@@ -314,3 +328,9 @@ def get_bnf_code_ranges(conn, batch_size):
         # We need some end value which is guaranteed larger than any valid BNF code
         max_code = bnf_codes[next_i] if next_i < len(bnf_codes) else "ZZZZZZZZZZZZZZZ"
         yield min_code, max_code
+
+
+def fetch_as_dicts(conn, query):
+    cursor = conn.execute(query)
+    columns = [d[0] for d in cursor.description]
+    return [dict(zip(columns, row)) for row in cursor.fetchall()]
