@@ -78,9 +78,9 @@ def test_prescribing_fetch(tmp_path):
         tmp_path / "prescribing" / "prescribing_2025-08-01_v3_2025-10-16T1339.parquet"
     )
 
-    rel = duckdb.read_parquet(str(output_file))
-    assert rel.columns == ["practice_code", "practice_name", "value"]
-    assert rel.fetchall() == [
+    results = duckdb.read_parquet(str(output_file))
+    assert results.columns == ["practice_code", "practice_name", "value"]
+    assert results.fetchall() == [
         ("ABC123", "North Street", "14"),
         # Use an accented character so we can check Latin-1 encoding is handled
         # correctly
