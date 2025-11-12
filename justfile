@@ -98,7 +98,7 @@ update-dependencies: bump-uv-cutoff upgrade-all
 
 # Run the tests
 test *args:
-    uv run coverage run --source openprescribing --source tests --module pytest {{ args }}
+    uv run coverage run --source openprescribing,tests --module pytest {{ args }}
     uv run coverage report || uv run coverage html
 
 format *args:
