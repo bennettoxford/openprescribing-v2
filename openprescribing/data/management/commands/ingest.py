@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 
+import openprescribing.data.ingestors.bnf_codes
 import openprescribing.data.ingestors.prescribing
 from openprescribing.data.utils.log_utils import LogHandler
 
@@ -9,6 +10,7 @@ class Command(BaseCommand):
 
     # We can populate this dynamically in future but let's keep it simple for now
     available_ingestors = {
+        "bnf_codes": openprescribing.data.ingestors.bnf_codes.ingest,
         "prescribing": openprescribing.data.ingestors.prescribing.ingest,
     }
 

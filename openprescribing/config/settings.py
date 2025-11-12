@@ -68,11 +68,6 @@ ALLOWED_HOSTS = ["*"]
 INSTALLED_APPS = [
     "openprescribing.web",
     "openprescribing.data",
-    "django.contrib.admin",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.messages",
     "django.contrib.staticfiles",
 ]
 
@@ -81,8 +76,6 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
@@ -96,8 +89,6 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
-                "django.contrib.auth.context_processors.auth",
-                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
@@ -106,17 +97,76 @@ TEMPLATES = [
 WSGI_APPLICATION = "openprescribing.config.wsgi.application"
 
 
+PRESCRIBING_DATABASE = DATA_DIR / "prescribing.duckdb"
+
+SQLITE_DATABASE = DATA_DIR / "data.sqlite"
+
+
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
+    # This is the database used by the `web` app. We don't expect this to stay on SQLite
+    # long term so we don't do any special configuration here.
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+        "NAME": DATA_DIR / "web.sqlite",
+    },
+    # This is the database used by the `data` app
+    "data": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": SQLITE_DATABASE,
+        "OPTIONS": {
+            # For details on these pragmas see: https://www.sqlite.org/pragma.html
+            "init_command": """
+                /* These settings give much better write performance than the default
+                   without sacrificing consistency guarantees */
+                PRAGMA journal_mode = WAL;
+                PRAGMA synchronous = NORMAL;
+
+                /* Enforce foreign keys which SQLite doesn't do by default only for
+                   backwards compatibility reasons */
+                PRAGMA foreign_keys = ON;
+
+                /* How long (in ms) to let one write transaction wait for another */
+                PRAGMA busy_timeout = 5000;
+
+                /* The default cache size is 2MB but we can afford more! Note negative
+                   values set cache size in KB, positive numbers set it by number of
+                   database pages */
+                PRAGMA cache_size = -256000;
+            """,
+            # Note we're deliberately not using transaction mode IMMEDIATE here because
+            # we're expecting only a single writer and many readers
+        },
+        # Tell Django's test framework that this database doesn't depend on the default
+        # database (which it otherwise assumes that it does)
+        "TEST": {"DEPENDENCIES": []},
+    },
 }
 
-PRESCRIBING_DATABASE = DATA_DIR / "prescribing.duckdb"
+
+class DatabaseRouter:
+    # Read and write queries both use the same logic
+    def db_for_read(self, model, **hints):
+        return self.db_for_model(model)
+
+    def db_for_write(self, model, **hints):
+        return self.db_for_model(model)
+
+    # And that logic is: models belonging to the `data` app go to the `data` db
+    def db_for_model(self, model):
+        if model._meta.app_label == "data":
+            return "data"
+        else:  # pragma: no cover
+            return "default"
+
+    def allow_migrate(self, db, app_label, model_name=None, **hints):
+        if app_label == "data":  # pragma: no branch
+            return db == "data"
+
+
+DATABASE_ROUTERS = [f"{__name__}.DatabaseRouter"]
 
 
 # Password validation

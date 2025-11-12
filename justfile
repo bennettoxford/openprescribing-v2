@@ -1,4 +1,5 @@
 set dotenv-load := true
+set positional-arguments := true
 
 # List available commands
 default:
@@ -98,14 +99,14 @@ update-dependencies: bump-uv-cutoff upgrade-all
 
 # Run the tests
 test *args:
-    uv run coverage run --source openprescribing,tests --module pytest {{ args }}
+    uv run coverage run --source openprescribing,tests --module pytest "$@"
     uv run coverage report || uv run coverage html
 
 format *args:
-    uv run ruff format --diff --quiet {{ args }} .
+    uv run ruff format --diff --quiet "$@" .
 
 lint *args:
-    uv run ruff check {{ args }} .
+    uv run ruff check "$@" .
 
 lint-actions:
     docker run --rm -v $(pwd):/repo:ro --workdir /repo rhysd/actionlint:1.7.8 -color
@@ -162,6 +163,15 @@ fix:
     -uv run ruff format .
     -just --fmt --unstable
 
+# Run manage.py commands
+manage *args:
+    uv run python manage.py "$@"
+
+# Run database migrations over all databases
+migrate-all-dbs *args:
+    uv run python manage.py migrate --database default "$@"
+    uv run python manage.py migrate --database data "$@"
+
 # Run development server
-run:
-    uv run python manage.py runserver
+run *args:
+    uv run python manage.py runserver "$@"
