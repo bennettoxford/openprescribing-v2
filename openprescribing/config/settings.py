@@ -139,6 +139,9 @@ DATABASES = {
             # Note we're deliberately not using transaction mode IMMEDIATE here because
             # we're expecting only a single writer and many readers
         },
+        # Tell Django's test framework that this database doesn't depend on the default
+        # database (which it otherwise assumes that it does)
+        "TEST": {"DEPENDENCIES": []},
     },
 }
 
