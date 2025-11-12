@@ -52,11 +52,11 @@ def ingest():
         sorted((f.name,) for f in prescribing_files.values()),
     )
 
-    # Create a view over all our prescribing files as if they were a single table. We
-    # then query this view to build the rest of the tables we need.
+    # Create a view over all our prescribing source files as if they were a single
+    # table. We then query this view to build the rest of the tables we need.
     conn.sql(
-        "CREATE TEMPORARY VIEW all_prescribing AS "
-        + sql_for_all_prescribing_view(
+        "CREATE TEMPORARY VIEW prescribing_source AS "
+        + sql_for_prescribing_source_view(
             prescribing_files,
         )
     )
@@ -122,7 +122,7 @@ def ingest():
         conn.sql(
             "INSERT INTO new.prescribing_norm "
             + sql_for_prescribing_normalised()
-            + " WHERE all_prescribing.bnf_code >= ? AND all_prescribing.bnf_code < ?"
+            + " WHERE prescribing_source.bnf_code >= ? AND prescribing_source.bnf_code < ?"
             + " ORDER BY presentation_id, date_id, practice_id",
             params=[bnf_start, bnf_end],
         )
@@ -137,9 +137,12 @@ def ingest():
     tmp_file.replace(target_file)
 
 
-def sql_for_all_prescribing_view(prescribing_files_by_date):
-    # Create a query which reads all the supplied Parquet files and UNIONs them together
-    # into one big table
+def sql_for_prescribing_source_view(prescribing_files_by_date):
+    # Return a query which reads from the supplied files and converts them into a
+    # consistent structure ready for us to build from.
+
+    # First we create a query which reads all the supplied Parquet files and UNIONs them
+    # together into a single view
     read_query = " UNION ALL ".join(
         # The BNF code column name changed at one point so we use column regex
         # expression to match either column and map it to a consistent name
@@ -197,7 +200,7 @@ def sql_for_date_table():
         AS id,
         date
     FROM (
-        SELECT DISTINCT date FROM all_prescribing
+        SELECT DISTINCT date FROM prescribing_source
     )
     """
 
@@ -231,7 +234,7 @@ def sql_for_practice_table():
         max_date AS latest_prescribing_date
     FROM (
         SELECT MAX(date) AS max_date, practice_code
-        FROM all_prescribing
+        FROM prescribing_source
         WHERE practice_code != '-'
         GROUP BY practice_code
     )
@@ -257,7 +260,7 @@ def sql_for_presentation_table():
         bnf_code,
         snomed_code
     FROM (
-        SELECT DISTINCT bnf_code, snomed_code FROM all_prescribing
+        SELECT DISTINCT bnf_code, snomed_code FROM prescribing_source
     )
     """
 
@@ -268,22 +271,22 @@ def sql_for_prescribing_normalised():
         presentation.id AS presentation_id,
         date.id AS date_id,
         practice.id AS practice_id,
-        all_prescribing.quantity_value,
-        all_prescribing.items,
-        all_prescribing.quantity,
-        all_prescribing.net_cost,
-        all_prescribing.actual_cost
+        prescribing_source.quantity_value,
+        prescribing_source.items,
+        prescribing_source.quantity,
+        prescribing_source.net_cost,
+        prescribing_source.actual_cost
     FROM
-        all_prescribing
+        prescribing_source
     JOIN
         new.presentation
     ON
-        all_prescribing.bnf_code = new.presentation.bnf_code
-        AND all_prescribing.snomed_code = new.presentation.snomed_code
+        prescribing_source.bnf_code = new.presentation.bnf_code
+        AND prescribing_source.snomed_code = new.presentation.snomed_code
     JOIN
-        new.date ON all_prescribing.date = new.date.date
+        new.date ON prescribing_source.date = new.date.date
     JOIN
-        new.practice ON all_prescribing.practice_code = new.practice.code
+        new.practice ON prescribing_source.practice_code = new.practice.code
     """
 
 
