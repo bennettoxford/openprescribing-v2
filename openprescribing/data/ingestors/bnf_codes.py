@@ -4,7 +4,7 @@ import duckdb
 from django.conf import settings
 from django.db import transaction
 
-from openprescribing.data.models import BNFCode
+from openprescribing.data.models import BNFCode, IngestedFile
 from openprescribing.data.utils.duckdb_utils import escape
 
 
@@ -15,8 +15,7 @@ def ingest():
     bnf_codes_files = settings.DOWNLOAD_DIR.glob("bnf_codes/*.parquet")
     latest_file = max(bnf_codes_files, default=None)
 
-    # TODO: Actually check whether we have new data
-    if not latest_file:
+    if not latest_file or latest_file.name <= IngestedFile.get_by_name("bnf_codes"):
         log.debug("Found no new data to ingest")
         return
 
@@ -30,6 +29,7 @@ def ingest():
     with transaction.atomic(using="data"):
         BNFCode.objects.all().delete()
         ingest_bnf_codes(conn)
+        IngestedFile.set_by_name("bnf_codes", latest_file.name)
 
     conn.close()
 

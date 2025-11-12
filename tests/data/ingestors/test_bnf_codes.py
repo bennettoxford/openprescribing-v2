@@ -43,7 +43,8 @@ def test_bnf_codes_ingest(tmp_path, settings):
         },
     ]
 
-    parquet_from_dicts(settings.DOWNLOAD_DIR / "bnf_codes" / "bnf_codes.parquet", data)
+    bnf_codes_file = settings.DOWNLOAD_DIR / "bnf_codes" / "bnf_codes.parquet"
+    parquet_from_dicts(bnf_codes_file, data)
 
     bnf_codes.ingest()
 
@@ -118,3 +119,9 @@ def test_bnf_codes_ingest(tmp_path, settings):
             "name": "Terazosin 2mg tablets and Terazosin 1mg tablets",
         },
     ]
+
+    # Attempting to re-ingest the same named file should do nothing. As a simple check for
+    # this we empty the file contents and re-ingest. If the code does attempt to load it
+    # then this will fail loudly.
+    bnf_codes_file.write_text("")
+    bnf_codes.ingest()
