@@ -174,4 +174,4 @@ migrate-all-dbs *args:
 
 # Run development server
 run *args:
-    uv run python manage.py runserver "$@"
+    just manage runserver "$@"
