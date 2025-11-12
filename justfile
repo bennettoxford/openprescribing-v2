@@ -163,6 +163,15 @@ fix:
     -uv run ruff format .
     -just --fmt --unstable
 
+# Run manage.py commands
+manage *args:
+    uv run python manage.py "$@"
+
+# Run database migrations over all databases
+migrate-all-dbs *args:
+    uv run python manage.py migrate --database default "$@"
+    uv run python manage.py migrate --database data "$@"
+
 # Run development server
-run:
-    uv run python manage.py runserver
+run *args:
+    uv run python manage.py runserver "$@"
