@@ -1,8 +1,5 @@
-import platform
-
-from django.http import HttpResponse
+from django.shortcuts import render
 
 
 def index(request):
-    hostname = platform.node()
-    return HttpResponse(f"Welcome to OPv2 on {hostname}")
+    return render(request, "index.html", {})
