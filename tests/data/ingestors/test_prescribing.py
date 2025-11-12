@@ -1,8 +1,7 @@
 import duckdb
-import pyarrow
-import pyarrow.parquet
 
 from openprescribing.data.ingestors import prescribing
+from tests.utils import parquet_from_dicts
 
 
 def test_prescribing_ingest(tmp_path, settings):
@@ -61,11 +60,11 @@ def generate_prescribing_data():
 
 
 def write_as_parquet_files(data, directory):
-    directory.mkdir(parents=True, exist_ok=True)
     for (date, version), rows in data.items():
-        filename = directory / f"prescribing_{date}_{version}_foobar.parquet"
-        table = pyarrow.Table.from_pylist(rows)
-        pyarrow.parquet.write_table(table, filename)
+        parquet_from_dicts(
+            directory / f"prescribing_{date}_{version}_foobar.parquet",
+            rows,
+        )
 
 
 def get_all_tables(duckdb_path):
