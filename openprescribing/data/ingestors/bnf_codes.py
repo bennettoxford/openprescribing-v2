@@ -1,0 +1,49 @@
+import logging
+
+import duckdb
+from django.conf import settings
+from django.db import transaction
+
+from openprescribing.data.models import BNFCode
+from openprescribing.data.utils.duckdb_utils import escape
+
+
+log = logging.getLogger(__name__)
+
+
+def ingest():
+    bnf_codes_files = settings.DOWNLOAD_DIR.glob("bnf_codes/*.parquet")
+    latest_file = max(bnf_codes_files, default=None)
+
+    # TODO: Actually check whether we have new data
+    if not latest_file:
+        log.debug("Found no new data to ingest")
+        return
+
+    log.info(f"Preparing to ingest file: {latest_file.name}")
+
+    conn = duckdb.connect()
+    conn.sql(
+        f"CREATE VIEW bnf_codes AS SELECT * FROM read_parquet({escape(latest_file)})"
+    )
+
+    with transaction.atomic(using="data"):
+        BNFCode.objects.all().delete()
+        ingest_bnf_codes(conn)
+
+    conn.close()
+
+    count = BNFCode.objects.count()
+    log.info(f"Ingested {count} BNF codes")
+
+
+def ingest_bnf_codes(conn):
+    # CHAPTER, SECTION, PARAGRAPH etc.
+    for level in BNFCode.Level:
+        name_column = f"BNF_{level.name}"
+        code_column = f"BNF_{level.name}_CODE"
+        results = conn.sql(
+            f"SELECT DISTINCT {code_column}, {name_column} FROM bnf_codes"
+        )
+        for code, name in results.fetchall():
+            BNFCode(code=code, name=name, level=level).save()
