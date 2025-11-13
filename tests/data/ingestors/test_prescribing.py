@@ -55,7 +55,18 @@ def generate_prescribing_data():
                 "NIC": "12.34",
                 "ACTUAL_COST": "15.34",
             },
-        ]
+        ],
+        ("2020-01-01", "v2"): [
+            {
+                "BNF_CODE": "01234ABC",
+                "PRACTICE_CODE": "ABC123",
+                "QUANTITY": "10.0",
+                "ITEMS": "100",
+                "TOTAL_QUANTITY": "150.0",
+                "NIC": "12.34",
+                "ACTUAL_COST": "15.34",
+            },
+        ],
     }
 
 

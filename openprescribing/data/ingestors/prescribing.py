@@ -139,22 +139,20 @@ def ingest():
 
 def sql_for_prescribing_source_view(prescribing_files_by_date):
     # Return a query which reads from the supplied files and converts them into a
-    # consistent structure ready for us to build from.
+    # single, unified consistent structure ready for us to build from.
+    subqueries = []
 
-    # First we create a query which reads all the supplied Parquet files and UNIONs them
-    # together into a single view
-    read_query = " UNION ALL ".join(
-        # The BNF code column name changed at one point so we use column regex
-        # expression to match either column and map it to a consistent name
-        f"""
-        SELECT
-            *,
-            COLUMNS('(BNF_CODE|BNF_PRESENTATION_CODE)') AS BNF_CODE,
-            {escape(date)}::DATE AS date
-        FROM read_parquet({escape(filename)})
-        """
-        for date, filename in prescribing_files_by_date.items()
-    )
+    for date, filename in prescribing_files_by_date.items():
+        # Different versions of the prescribing data have different structures and so
+        # require different queries to produce a consistent view
+        if "_v3_" in filename.name:
+            subqueries.append(sql_read_from_prescribing_file_v3(date, filename))
+        elif "_v2_" in filename.name:
+            subqueries.append(sql_read_from_prescribing_file_v2(date, filename))
+        else:
+            assert False, f"Unhandled: {filename.name}"
+
+    combined = " UNION ALL ".join(subqueries)
 
     # Read from the above union and convert each column we're interested in from its
     # original VARCHAR into the type we want. The types need to match those used in the
@@ -170,7 +168,45 @@ def sql_for_prescribing_source_view(prescribing_files_by_date):
         CAST(TOTAL_QUANTITY AS FLOAT4) AS quantity,
         CAST(CAST(NIC AS DOUBLE) * 100 AS UINTEGER) AS net_cost,
         CAST(CAST(ACTUAL_COST AS DOUBLE) * 100 AS UINTEGER) AS actual_cost
-    FROM ({read_query})
+    FROM
+        ({combined})
+    """
+
+
+def sql_read_from_prescribing_file_v3(date, filename):
+    # The BNF code column name changed at one point so we use column regex expression to
+    # match either variant and map it to a consistent name
+    return f"""\
+    SELECT
+        COLUMNS('(BNF_CODE|BNF_PRESENTATION_CODE)') AS BNF_CODE,
+        SNOMED_CODE,
+        PRACTICE_CODE,
+        QUANTITY,
+        ITEMS,
+        TOTAL_QUANTITY,
+        NIC,
+        ACTUAL_COST,
+        {escape(date)}::DATE AS date
+    FROM
+        read_parquet({escape(filename)})
+    """
+
+
+def sql_read_from_prescribing_file_v2(date, filename):
+    # These files don't have a SNOMED_CODE column so we fill this with NULLs
+    return f"""\
+    SELECT
+        BNF_CODE,
+        NULL AS SNOMED_CODE,
+        PRACTICE_CODE,
+        QUANTITY,
+        ITEMS,
+        TOTAL_QUANTITY,
+        NIC,
+        ACTUAL_COST,
+        {escape(date)}::DATE AS date
+    FROM
+        read_parquet({escape(filename)})
     """
 
 
