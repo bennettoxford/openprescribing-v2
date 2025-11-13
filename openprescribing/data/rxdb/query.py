@@ -1,11 +1,15 @@
 import numpy
 from scipy.sparse._sparsetools import coo_todense
 
+from openprescribing.data.rxdb.labelled_matrix import LabelledMatrix
 from openprescribing.data.utils.duckdb_utils import (
     FLOAT_TYPES,
     NUMERIC_TYPES,
     UNSIGNED_INTEGER_TYPES,
 )
+
+
+__all__ = ["get_practice_date_matrix"]
 
 
 # Sets the number of rows we fetch in each batch from DuckDB. There's no perfect answer
@@ -24,6 +28,82 @@ from openprescribing.data.utils.duckdb_utils import (
 # The current value was determined by some crude profiling and a simple binary search to
 # land on what looked like the optimal value. It may well be possible to improve it.
 RECORD_BATCH_SIZE = 2048 * 64
+
+
+def get_practice_date_matrix(cursor, sql, parameters=None, date_count=None):
+    """
+    Given a SQL query of the form:
+
+        SELECT practice_id, date_id, value FROM ...
+
+    Sum all the values for each practice and date and return a `LabelledMatrix` of these
+    values, where the rows are labelled with practice codes and the columns are labelled
+    with dates.
+
+    The `date_count` argument allows restricting to just the N most recent months of
+    prescribing data.
+
+    Note that the column ordering doesn't matter here, and neither does the presence of
+    additional columns: it's just the column names which are significant.
+    """
+    practice_codes, dates = get_practice_codes_and_dates(cursor, date_count)
+
+    values = get_grouped_sum_ndarray(
+        cursor,
+        row_count=len(practice_codes),
+        col_count=len(dates),
+        sql=f"SELECT practice_id, date_id, value FROM ({sql})",
+        parameters=parameters,
+    )
+
+    return LabelledMatrix(
+        values,
+        row_labels=practice_codes,
+        col_labels=dates,
+    )
+
+
+def get_practice_codes_and_dates(cursor, date_count):
+    """
+    Find the N most recent dates for which we have prescribing data and all the practice
+    codes which have prescribed during this date range and return them as "index tuples"
+    i.e. a tuple where `dates[date_id]` gives you the date with that ID, and similarly
+    for practice codes.
+    """
+    dates = get_dates(cursor, date_count)
+    oldest_date = min(d for d in dates if d is not None)
+    practice_codes = get_practice_codes(cursor, oldest_date)
+    return practice_codes, dates
+
+
+def get_dates(cursor, date_count):
+    results = cursor.execute(
+        "SELECT id, date FROM date ORDER BY date DESC LIMIT ?",
+        [date_count if date_count is not None else 9999999],
+    )
+    return get_index_tuple(results.fetchall())
+
+
+def get_practice_codes(cursor, oldest_date):
+    results = cursor.execute(
+        "SELECT id, code FROM practice WHERE latest_prescribing_date >= ?",
+        [oldest_date],
+    )
+    return get_index_tuple(results.fetchall())
+
+
+def get_index_tuple(index_value_pairs):
+    """
+    Given a list of (<index>, <value>) pairs return a tuple:
+
+        (<value_0>, <value_1>, <value_2> ...)
+
+    Place each value at its specified index. Where there is no value for a given index
+    use `None`.
+    """
+    index_to_value = {index: value for index, value in index_value_pairs}
+    all_indexes = range(0, max(index_to_value.keys()) + 1)
+    return tuple(index_to_value.get(index) for index in all_indexes)
 
 
 def get_grouped_sum_ndarray(cursor, row_count, col_count, sql, parameters=None):
