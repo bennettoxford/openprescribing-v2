@@ -1,4 +1,6 @@
 import contextlib
+import sys
+import tempfile
 
 import duckdb
 from django.conf import settings
@@ -27,6 +29,7 @@ class ConnectionManager:
         self.duckdb_file = duckdb_file
         self.sqlite_file = sqlite_file
         self.duckdb_last_modified = None
+        self.tmp_dir = tempfile.mkdtemp()
         self.reconnect_if_duckdb_modified()
 
     def reconnect_if_duckdb_modified(self):
@@ -48,7 +51,13 @@ class ConnectionManager:
 
         # We make an in-memory connection and then attach our database files into it as
         # read-only
-        connection = duckdb.connect()
+        connection = duckdb.connect(
+            config={
+                # Force DuckDB to look for extension modules in the virtualenv rather
+                # than the user's home directory (!)
+                "extension_directory": f"{sys.prefix}/duckdb"
+            }
+        )
         connection.execute(
             f"""
             ATTACH {escape(self.duckdb_file)} AS duckdb_db (TYPE DUCKDB, READ_ONLY);
