@@ -174,4 +174,35 @@ migrate-all-dbs *args:
 
 # Run development server
 run *args:
-    uv run python manage.py runserver "$@"
+    just manage runserver "$@"
+
+# Run Django shell
+shell *args:
+    just manage shell "$@"
+
+# Download production data
+get-prod-data *args:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    HOST=dokku5
+
+    get_setting() {
+        just shell -v0 -c"from django.conf import settings; print(settings.$1)" 2>/dev/null
+    }
+
+    local_work_dir=$(get_setting WORK_DIR)
+    remote_work_dir=$(ssh $HOST "dokku storage:list openprescribing" | cut -d: -f1)
+
+    if [ "$#" -gt 0 ]; then
+        databases=("$@")
+    else
+        databases=(PRESCRIBING_DATABASE SQLITE_DATABASE)
+    fi
+
+    for db in "${databases[@]}"; do
+        local_db=$(get_setting "$db")
+        mkdir -p "$(dirname "$local_db")"
+        remote_db="$remote_work_dir${local_db#"$local_work_dir"}"
+        scp -C "$HOST:$remote_db" "$local_db"
+    done
