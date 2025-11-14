@@ -6,7 +6,8 @@ from openprescribing.data.models import BNFCode
 
 
 def index(request):
-    bnf_code = BNFCode.objects.get(code="0601023AW")  # Semaglutide
+    code = request.GET.get("code")
+    bnf_code = BNFCode.objects.get(code=code)
 
     sql = f"""
     SELECT practice_id, date_id, items AS value
