@@ -17,6 +17,19 @@ log = logging.getLogger(__name__)
 
 
 def fetch(directory):
+    fetch_dataset(
+        directory,
+        dataset_id="english-prescribing-dataset-epd-with-snomed-code",
+        version_number=3,
+    )
+    fetch_dataset(
+        directory,
+        dataset_id="english-prescribing-data-epd",
+        version_number=2,
+    )
+
+
+def fetch_dataset(directory, dataset_id, version_number):
     dataset_dir = directory / "prescribing"
     existing_files = dataset_dir.glob("*")
 
@@ -28,11 +41,11 @@ def fetch(directory):
     )
     response = http.get(
         "action/package_show",
-        params={"id": "english-prescribing-dataset-epd-with-snomed-code"},
+        params={"id": dataset_id},
     )
     response_data = response.json()
 
-    items_to_fetch = get_items_to_fetch(existing_files, response_data)
+    items_to_fetch = get_items_to_fetch(existing_files, response_data, version_number)
 
     # Any requests we now make will be to fetch new files so we log at INFO level
     http.log = log.info
@@ -46,7 +59,7 @@ def fetch(directory):
         log.info(f"Saved as: {output_filename}")
 
 
-def get_items_to_fetch(existing_files, response_data):
+def get_items_to_fetch(existing_files, response_data, version_number):
     files_by_date = get_latest_files_by_date(existing_files)
     resources = response_data["result"]["resources"]
 
@@ -62,10 +75,11 @@ def get_items_to_fetch(existing_files, response_data):
             item["last_modified"] or item["created"]
         )
 
-        # Use a "v3" prefix because this is the third variant of prescribing data
-        # published. If we decide to import more historical data we'll need to
-        # distinguish the different formats.
-        filename = f"prescribing_{date}_v3_{published_at:%Y-%m-%dT%H%M}.parquet"
+        # We use version numbers to distinguish the different structures in which
+        # prescribing data has historically been published.
+        filename = (
+            f"prescribing_{date}_v{version_number}_{published_at:%Y-%m-%dT%H%M}.parquet"
+        )
 
         if date in files_by_date and files_by_date[date].name >= filename:
             already_fetched += 1

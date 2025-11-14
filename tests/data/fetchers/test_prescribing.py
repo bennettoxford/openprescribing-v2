@@ -11,7 +11,7 @@ from openprescribing.data.fetchers import prescribing
 
 @responses.activate
 def test_prescribing_fetch(tmp_path):
-    # Dataset index
+    # Dataset indexes
     responses.get(
         "https://opendata.nhsbsa.net/api/3/action/package_show",
         match=[
@@ -32,6 +32,22 @@ def test_prescribing_fetch(tmp_path):
                         "id": "file-2",
                         "name": "EPD_SNOMED_202508",
                         "created": "2025-10-16T13:39:48.205150",
+                        "last_modified": None,
+                    },
+                ]
+            },
+        },
+    )
+    responses.get(
+        "https://opendata.nhsbsa.net/api/3/action/package_show",
+        match=[query_param_matcher({"id": "english-prescribing-data-epd"})],
+        json={
+            "result": {
+                "resources": [
+                    {
+                        "id": "file-3",
+                        "name": "EPD_202001",
+                        "created": "2020-03-04T12:13:14.000000",
                         "last_modified": None,
                     },
                 ]
@@ -65,12 +81,11 @@ def test_prescribing_fetch(tmp_path):
         ),
     )
 
-    # Assume we've already downloaded this file
-    prescribing_file = (
-        tmp_path / "prescribing" / "prescribing_2025-07-01_v3_2025-09-19T1459.parquet"
-    )
-    prescribing_file.parent.mkdir()
-    prescribing_file.touch()
+    # Assume we've already downloaded these files
+    prescribing_dir = tmp_path / "prescribing"
+    prescribing_dir.mkdir()
+    (prescribing_dir / "prescribing_2025-07-01_v3_2025-09-19T1459.parquet").touch()
+    (prescribing_dir / "prescribing_2020-01-01_v2_2020-03-04T1213.parquet").touch()
 
     prescribing.fetch(tmp_path)
 
