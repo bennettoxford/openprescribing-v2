@@ -19,3 +19,4 @@
 
 # Local application state
 **/node_modules
+/work_dir
