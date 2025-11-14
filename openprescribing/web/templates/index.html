@@ -1,33 +1,20 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 <h1>Prescribing for {{ bnf_code.name }}</h1>
 
-<div id="prescribing-chart" class="py-3">Loading chart...</div>
+<div
+  id="prescribing-chart"
+  class="py-3"
+  data-prescribing-api-url="{{ prescribing_api_url }}"
+>
+  Loading chart...
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/vega@6.2.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-lite@6.4.1"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-embed@7.0.2"></script>
-
-<script>
-    const prescribingApiUrl = "{{ prescribing_api_url|escapejs }}";
-    const chartContainer = document.querySelector('#prescribing-chart');
-
-    fetch(prescribingApiUrl)
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error(`Failed to fetch chart data: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then((chartSpec) => {
-            chartContainer.textContent = '';
-            return vegaEmbed('#prescribing-chart', chartSpec);
-        })
-        .catch((error) => {
-            console.error('Unable to render prescribing chart', error);
-            chartContainer.textContent = 'Unable to load chart data. Please try again later.';
-        });
-</script>
+<script src="{% static 'js/prescribing-chart.js' %}"></script>
 
 {% endblock %}
