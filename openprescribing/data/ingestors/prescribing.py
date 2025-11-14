@@ -154,20 +154,19 @@ def sql_for_prescribing_source_view(prescribing_files_by_date):
 
     combined = " UNION ALL ".join(subqueries)
 
-    # Read from the above union and convert each column we're interested in from its
-    # original VARCHAR into the type we want. The types need to match those used in the
-    # `CREATE TABLE new.prescribing_norm` definition above.
+    # Read from the above union, map the column names to the ones we want to use and
+    # where necessary apply transformations
     return f"""\
     SELECT
         BNF_CODE AS bnf_code,
         COALESCE(CAST(SNOMED_CODE AS INT8), 0) AS snomed_code,
         date AS date,
         PRACTICE_CODE AS practice_code,
-        CAST(QUANTITY AS FLOAT4) AS quantity_value,
-        CAST(ITEMS AS USMALLINT) AS items,
-        CAST(TOTAL_QUANTITY AS FLOAT4) AS quantity,
-        CAST(CAST(NIC AS DOUBLE) * 100 AS UINTEGER) AS net_cost,
-        CAST(CAST(ACTUAL_COST AS DOUBLE) * 100 AS UINTEGER) AS actual_cost
+        QUANTITY AS quantity_value,
+        ITEMS AS items,
+        TOTAL_QUANTITY AS quantity,
+        CAST(NIC AS DOUBLE) * 100 AS net_cost,
+        CAST(ACTUAL_COST AS DOUBLE) * 100 AS actual_cost
     FROM
         ({combined})
     """
@@ -254,7 +253,7 @@ def sql_for_practice_table():
     #     means that if we're only interested in prescribing after, say, January 2025
     #     then we can ignore all practices that haven't prescribed since December 2024
     #     and this will translate into ignoring all practices with IDs greater than,
-    #     say, 1234. These means we don't have to allocate rows for these practices when
+    #     say, 1234. This means we don't have to allocate rows for these practices when
     #     building a results matrix. And this means we don't pay a cost for having
     #     historical data in the database unless we're actually querying it.
     #
