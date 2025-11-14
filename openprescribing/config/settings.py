@@ -62,6 +62,9 @@ DEBUG = True
 # This is acceptable because nginx is configured to pass requests based on hostname.
 ALLOWED_HOSTS = ["*"]
 
+# Very light touch protection of demo site
+BASIC_AUTH_USERNAME = os.environ.get("BASIC_AUTH_USERNAME")
+BASIC_AUTH_PASSWORD = os.environ.get("BASIC_AUTH_PASSWORD")
 
 # Application definition
 
@@ -73,6 +76,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "openprescribing.web.middleware.BasicAuthMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
