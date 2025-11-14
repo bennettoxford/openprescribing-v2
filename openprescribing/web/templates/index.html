@@ -2,4 +2,16 @@
 
 {% block content %}
 <h1>Explore England's prescribing data</h1>
+
+<table class="table">
+    <thead>
+        <tr><th>Month</th><th>Items</th></tr>
+    </thead>
+    <tbody>
+        {% for row in table %}
+        <tr><td>{{ row.0 }}</td><td>{{ row.1 }}</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
 {% endblock %}
