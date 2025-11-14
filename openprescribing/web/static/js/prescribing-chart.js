@@ -39,7 +39,8 @@ const updateChart = () => {
     if (!chartContainer) {
         return;
     }
-    const { prescribingApiUrl } = chartContainer.dataset;
+
+    const prescribingApiUrl = JSON.parse(document.getElementById('prescribing-api-url').textContent);
 
     fetch(prescribingApiUrl)
         .then((response) => {

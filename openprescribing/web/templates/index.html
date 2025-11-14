@@ -28,7 +28,7 @@
                     <h1 class="h4 mb-0">{{ bnf_code.name }}</h1>
                     <p><code>{{ bnf_code.code }}</code></p>
                 </div>
-                <div id="prescribing-chart" class="py-3" data-prescribing-api-url="{{ prescribing_api_url }}">Loading chart...</div>
+                <div id="prescribing-chart" class="py-3">Loading chart...</div>
                 {% else %}
                 <div class="text-center text-muted py-5">
                     <h1 class="h5">No BNF code selected</h1>
@@ -44,6 +44,7 @@
 {% block extra_js %}
 {{ bnf_codes|json_script:"bnf-codes" }}
 {{ bnf_levels|json_script:"bnf-levels" }}
+{{ prescribing_api_url|json_script:"prescribing-api-url" }}
 <script src="https://cdn.jsdelivr.net/npm/vega@6.2.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-lite@6.4.1"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-embed@7.0.2"></script>
