@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Explore England's prescribing data</h1>
+<h1>Prescribing for {{ bnf_code.name }}</h1>
 
-<table class="table">
-    <thead>
-        <tr><th>Month</th><th>Items</th></tr>
-    </thead>
-    <tbody>
-        {% for row in table %}
-        <tr><td>{{ row.0 }}</td><td>{{ row.1 }}</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div id="prescribing-chart" class="py-3"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/vega@6.2.0"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega-lite@6.4.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega-embed@7.0.2"></script>
+
+<script>
+    const chartSpec = {{ chart_spec|safe }};
+    vegaEmbed('#prescribing-chart', chartSpec);
+</script>
 
 {% endblock %}
