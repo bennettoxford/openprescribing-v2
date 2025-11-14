@@ -11,10 +11,11 @@
 >
   Loading chart...
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/vega@6.2.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-lite@6.4.1"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-embed@7.0.2"></script>
 <script src="{% static 'js/prescribing-chart.js' %}"></script>
-
 {% endblock %}
