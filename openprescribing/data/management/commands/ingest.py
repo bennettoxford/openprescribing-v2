@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from django.db.utils import OperationalError
 
 import openprescribing.data.ingestors.bnf_codes
 import openprescribing.data.ingestors.prescribing
@@ -24,7 +25,19 @@ class Command(BaseCommand):
             help=f"Available options: {', '.join(ingestor_choices)}",
         )
 
-    def handle(self, ingestor_names, **options):
+    def handle(self, *args, **options):
+        try:
+            return self.handle_inner(*args, **options)
+        except OperationalError as e:  # pragma: no cover
+            if str(e).startswith("no such table:"):
+                e.add_note(
+                    "\nYou may have unapplied migrations, which you can fix by "
+                    "running:\n\n"
+                    "    just manage migrate --database data\n"
+                )
+            raise
+
+    def handle_inner(self, ingestor_names, **options):
         if "all" in ingestor_names:
             ingestor_names = self.available_ingestors.keys()
 
