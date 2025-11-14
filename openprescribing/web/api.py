@@ -39,7 +39,7 @@ def prescribing(request):
                 alt.Tooltip("items:Q", title="Items", format=","),
             ],
         )
-        .properties(width=1200, height=360)
+        .properties(width=660, height=360)
     )
 
     return JsonResponse(chart.to_dict())
