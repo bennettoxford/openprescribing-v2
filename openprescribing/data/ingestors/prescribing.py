@@ -61,14 +61,17 @@ def ingest():
         )
     )
 
+    # Set the new database we're building as the default schema
+    conn.sql("USE new")
+
     log.info("Building `date` table")
-    conn.sql("CREATE TABLE new.date AS " + sql_for_date_table())
+    conn.sql("CREATE TABLE date AS " + sql_for_date_table())
 
     log.info("Building `practice` table")
-    conn.sql("CREATE TABLE new.practice AS " + sql_for_practice_table())
+    conn.sql("CREATE TABLE practice AS " + sql_for_practice_table())
 
     log.info("Building `presentation` table")
-    conn.sql("CREATE TABLE new.presentation AS " + sql_for_presentation_table())
+    conn.sql("CREATE TABLE presentation AS " + sql_for_presentation_table())
 
     # We store the prescribing data in a fully normalised table ("prescribing_norm") so
     # that date and practice and presentation (bnf and snomed code) are stored as
@@ -83,7 +86,7 @@ def ingest():
     # types though, so it shouldn't be a disruptive change.
     conn.sql(
         """
-        CREATE TABLE new.prescribing_norm (
+        CREATE TABLE prescribing_norm (
             presentation_id INT4,
             date_id UTINYINT,
             practice_id USMALLINT,
@@ -120,7 +123,7 @@ def ingest():
     for bnf_start, bnf_end in get_bnf_code_ranges(conn, batch_size=750):
         log.info(f"Building `prescribing_norm` table: {bnf_start} -> {bnf_end}")
         conn.sql(
-            "INSERT INTO new.prescribing_norm "
+            "INSERT INTO prescribing_norm "
             + sql_for_prescribing_normalised()
             + " WHERE prescribing_source.bnf_code >= ? AND prescribing_source.bnf_code < ?"
             + " ORDER BY presentation_id, date_id, practice_id",
@@ -130,7 +133,6 @@ def ingest():
     # To make ad-hoc queries of the data easier we create a denormalised view which
     # includes the practice codes, dates etc rather than just foreign keys
     log.info("Building `prescribing` view")
-    conn.sql("USE new")
     conn.sql("CREATE VIEW prescribing AS " + sql_for_prescribing_denormalised())
 
     conn.close()
@@ -283,14 +285,14 @@ def sql_for_prescribing_normalised():
     FROM
         prescribing_source
     JOIN
-        new.presentation
+        presentation
     ON
-        prescribing_source.bnf_code = new.presentation.bnf_code
-        AND prescribing_source.snomed_code = new.presentation.snomed_code
+        prescribing_source.bnf_code = presentation.bnf_code
+        AND prescribing_source.snomed_code = presentation.snomed_code
     JOIN
-        new.date ON prescribing_source.date = new.date.date
+        date ON prescribing_source.date = date.date
     JOIN
-        new.practice ON prescribing_source.practice_code = new.practice.code
+        practice ON prescribing_source.practice_code = practice.code
     """
 
 
@@ -327,7 +329,7 @@ def sql_for_prescribing_denormalised():
 
 
 def get_bnf_code_ranges(conn, batch_size):
-    query = conn.sql("SELECT DISTINCT bnf_code FROM new.presentation ORDER BY bnf_code")
+    query = conn.sql("SELECT DISTINCT bnf_code FROM presentation ORDER BY bnf_code")
     bnf_codes = [row[0] for row in query.fetchall()]
     for i in range(0, len(bnf_codes), batch_size):
         next_i = i + batch_size
