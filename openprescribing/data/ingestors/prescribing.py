@@ -64,6 +64,56 @@ def ingest():
     # Set the new database we're building as the default schema
     conn.sql("USE new")
 
+    # Ingest all the data by querying the `prescribing_source` view and writing the
+    # results to tables
+    ingest_prescribing_source(conn)
+
+    conn.close()
+    tmp_file.replace(target_file)
+
+
+def sql_for_prescribing_source_view(prescribing_files_by_date):
+    # Return a query which reads from the supplied files and converts them into a
+    # single, unified consistent structure ready for us to build from
+
+    # We start by creating a query to read from each individual file
+    subqueries = [
+        f"""
+        SELECT
+            -- We know the relevant date for each file so we add it as fixed column
+            {escape(date)}::DATE AS date,
+            -- Map an inconsistently named column to something consistent
+            COLUMNS('(BNF_CODE|BNF_PRESENTATION_CODE)') AS our_bnf_code,
+            *
+        FROM read_parquet({escape(filename)})
+        """
+        for date, filename in prescribing_files_by_date.items()
+    ]
+    # We combine these all into a single table (columns which are not present in a given
+    # file will just have NULL values)
+    combined = " UNION ALL BY NAME ".join(subqueries)
+
+    # Read from the above union, map the column names to the ones we want to use and
+    # where necessary apply transformations
+    return f"""\
+    SELECT
+        our_bnf_code AS bnf_code,
+        -- Not every file has SNOMED codes so we use zero as a placeholder
+        COALESCE(CAST(SNOMED_CODE AS INT8), 0) AS snomed_code,
+        date AS date,
+        PRACTICE_CODE AS practice_code,
+        QUANTITY AS quantity_value,
+        ITEMS AS items,
+        TOTAL_QUANTITY AS quantity,
+        -- We want prices in pence not pounds so we can use integers later
+        CAST(NIC AS DOUBLE) * 100 AS net_cost,
+        CAST(ACTUAL_COST AS DOUBLE) * 100 AS actual_cost
+    FROM
+        ({combined})
+    """
+
+
+def ingest_prescribing_source(conn):
     log.info("Building `date` table")
     conn.sql("CREATE TABLE date AS " + sql_for_date_table())
 
@@ -134,50 +184,6 @@ def ingest():
     # includes the practice codes, dates etc rather than just foreign keys
     log.info("Building `prescribing` view")
     conn.sql("CREATE VIEW prescribing AS " + sql_for_prescribing_denormalised())
-
-    conn.close()
-    tmp_file.replace(target_file)
-
-
-def sql_for_prescribing_source_view(prescribing_files_by_date):
-    # Return a query which reads from the supplied files and converts them into a
-    # single, unified consistent structure ready for us to build from
-
-    # We start by creating a query to read from each individual file
-    subqueries = [
-        f"""
-        SELECT
-            -- We know the relevant date for each file so we add it as fixed column
-            {escape(date)}::DATE AS date,
-            -- Map an inconsistently named column to something consistent
-            COLUMNS('(BNF_CODE|BNF_PRESENTATION_CODE)') AS our_bnf_code,
-            *
-        FROM read_parquet({escape(filename)})
-        """
-        for date, filename in prescribing_files_by_date.items()
-    ]
-    # We combine these all into a single table (columns which are not present in a given
-    # file will just have NULL values)
-    combined = " UNION ALL BY NAME ".join(subqueries)
-
-    # Read from the above union, map the column names to the ones we want to use and
-    # where necessary apply transformations
-    return f"""\
-    SELECT
-        our_bnf_code AS bnf_code,
-        -- Not every file has SNOMED codes so we use zero as a placeholder
-        COALESCE(CAST(SNOMED_CODE AS INT8), 0) AS snomed_code,
-        date AS date,
-        PRACTICE_CODE AS practice_code,
-        QUANTITY AS quantity_value,
-        ITEMS AS items,
-        TOTAL_QUANTITY AS quantity,
-        -- We want prices in pence not pounds so we can use integers later
-        CAST(NIC AS DOUBLE) * 100 AS net_cost,
-        CAST(ACTUAL_COST AS DOUBLE) * 100 AS actual_cost
-    FROM
-        ({combined})
-    """
 
 
 def sql_for_date_table():
