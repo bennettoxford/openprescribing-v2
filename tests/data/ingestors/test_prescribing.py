@@ -1,7 +1,7 @@
 import duckdb
 
 from openprescribing.data.ingestors import prescribing
-from tests.utils import parquet_from_dicts
+from tests.utils.parquet_utils import parquet_from_dicts
 
 
 def test_prescribing_ingest(tmp_path, settings):

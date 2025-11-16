@@ -2,7 +2,7 @@ import pytest
 
 from openprescribing.data.ingestors import bnf_codes
 from openprescribing.data.models import BNFCode
-from tests.utils import parquet_from_dicts
+from tests.utils.parquet_utils import parquet_from_dicts
 
 
 @pytest.mark.django_db(databases=["data"])
