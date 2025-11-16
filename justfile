@@ -185,7 +185,7 @@ get-prod-data *args:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    HOST=dokku5
+    HOST=dokku5.ebmdatalab.net
 
     get_setting() {
         just shell -v0 -c"from django.conf import settings; print(settings.$1)" 2>/dev/null
