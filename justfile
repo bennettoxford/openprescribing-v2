@@ -197,7 +197,7 @@ get-prod-data *args:
     if [ "$#" -gt 0 ]; then
         databases=("$@")
     else
-        databases=(PRESCRIBING_DATABASE SQLITE_DATABASE)
+        databases=(SQLITE_DATABASE PRESCRIBING_DATABASE)
     fi
 
     for db in "${databases[@]}"; do
