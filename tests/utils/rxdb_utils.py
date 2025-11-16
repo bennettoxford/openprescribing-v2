@@ -1,4 +1,5 @@
 import datetime
+import textwrap
 
 import duckdb
 import pyarrow
@@ -54,12 +55,32 @@ class RXDBFixture:
 
     def __init__(self):
         self.conn = duckdb.connect()
+        self.has_data = False
 
     def get_cursor(self):
+        if not self.has_data:  # pragma: no cover
+            msg = """\
+            No prescribing data loaded into `rxdb` fixture, use:
+
+                rxdb.ingest(
+                    [
+                        {...},
+                        ...
+                    ]
+                )
+
+            Missing keys take default values so at a minimum you can load a single row
+            of default data with:
+
+                rxdb.ingest([{}])
+
+            """
+            raise RuntimeError(textwrap.dedent(msg))
         return self.conn.cursor()
 
     def ingest(self, prescribing_data):
         rxdb_ingest(self.conn, prescribing_data=prescribing_data)
+        self.has_data = True
 
 
 def rxdb_ingest(conn, prescribing_data=()):

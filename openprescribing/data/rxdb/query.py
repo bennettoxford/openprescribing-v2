@@ -108,6 +108,7 @@ def get_index_tuple(index_value_pairs):
     use `None`.
     """
     index_to_value = {index: value for index, value in index_value_pairs}
+    assert index_to_value, "No prescribing data in database"
     all_indexes = range(0, max(index_to_value.keys()) + 1)
     return tuple(index_to_value.get(index) for index in all_indexes)
 
