@@ -202,7 +202,9 @@ get-prod-data *args:
 
     for db in "${databases[@]}"; do
         local_db=$(get_setting "$db")
+        tmp_local_db="$local_db.prod.tmp"
         mkdir -p "$(dirname "$local_db")"
         remote_db="$remote_work_dir${local_db#"$local_work_dir"}"
-        scp -C "$HOST:$remote_db" "$local_db"
+        scp -C "$HOST:$remote_db" "$tmp_local_db"
+        mv "$tmp_local_db" "$local_db"
     done
