@@ -1,5 +1,6 @@
 import datetime
 
+import duckdb
 import pyarrow
 
 from openprescribing.data.ingestors.prescribing import ingest_prescribing_source
@@ -30,6 +31,35 @@ PRESCRIBING_SOURCE_DEFAULTS = {
     "net_cost": 0,
     "actual_cost": 0,
 }
+
+
+class RXDBFixture:
+    """
+    Provides a test fixture which can used in place of the default `rxdb` instance
+
+    Note that unlike the real thing this doesn't currently have the SQLite database
+    attached. It is possible to get this working, but it requires a couple of changes:
+
+     * The test SQLite database needs to be on disk, not in memory, as DuckDB can't
+       currently attach to in-memory databases. (I think this might be an easy fix, but
+       I don't know how long it will take to get the patch landed in DuckDB.)
+
+     * Tests need to run in "transaction mode" using:
+       @pytest.mark.django_db(databases=["data"], transaction=True)
+       This is because in order for DuckDB to see changes in the SQLite database they
+       need to be commited, rather than held in temporary transactions.
+
+    Given that we don't currently need this feature I'm holding off supporting it.
+    """
+
+    def __init__(self):
+        self.conn = duckdb.connect()
+
+    def get_cursor(self):
+        return self.conn.cursor()
+
+    def ingest(self, prescribing_data):
+        rxdb_ingest(self.conn, prescribing_data=prescribing_data)
 
 
 def rxdb_ingest(conn, prescribing_data=()):
