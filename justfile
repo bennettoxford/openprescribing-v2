@@ -185,7 +185,7 @@ get-prod-data *args:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    HOST=dokku5
+    HOST=dokku5.ebmdatalab.net
 
     get_setting() {
         just shell -v0 -c"from django.conf import settings; print(settings.$1)" 2>/dev/null
@@ -197,12 +197,14 @@ get-prod-data *args:
     if [ "$#" -gt 0 ]; then
         databases=("$@")
     else
-        databases=(PRESCRIBING_DATABASE SQLITE_DATABASE)
+        databases=(SQLITE_DATABASE PRESCRIBING_DATABASE)
     fi
 
     for db in "${databases[@]}"; do
         local_db=$(get_setting "$db")
+        tmp_local_db="$local_db.prod.tmp"
         mkdir -p "$(dirname "$local_db")"
         remote_db="$remote_work_dir${local_db#"$local_work_dir"}"
-        scp -C "$HOST:$remote_db" "$local_db"
+        scp -C "$HOST:$remote_db" "$tmp_local_db"
+        mv "$tmp_local_db" "$local_db"
     done
