@@ -53,11 +53,9 @@ DATA_DIR = WORK_DIR / "data"
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-_)wr$24j5r(iqyloz8i1@uo$h+bqxw_2(@6#r!f@8dsu^9*+py"
+SECRET_KEY = get_env_var("DJANGO_SECRET_KEY")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = get_env_var("DJANGO_DEBUG") == "True"
 
 # This is acceptable because nginx is configured to pass requests based on hostname.
 ALLOWED_HOSTS = ["*"]
