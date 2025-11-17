@@ -25,6 +25,10 @@ class IngestedFile(models.Model):
 
     @classmethod
     def set_by_name(cls, dataset_name, filename):
+        assert isinstance(filename, str), (
+            "`filename` must be a string (use the `.name` property of "
+            "`pathlib.Path` objects)"
+        )
         # Recording the timestamp lets us easily check when each dataset was last
         # ingested
         now = datetime.datetime.now(datetime.UTC)
