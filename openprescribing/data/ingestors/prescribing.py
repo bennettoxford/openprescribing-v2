@@ -61,14 +61,67 @@ def ingest():
         )
     )
 
+    # Set the new database we're building as the default schema
+    conn.sql("USE new")
+
+    # Ingest all the data by querying the `prescribing_source` view and writing the
+    # results to tables
+    ingest_prescribing_source(conn)
+
+    conn.close()
+    tmp_file.replace(target_file)
+
+
+def sql_for_prescribing_source_view(prescribing_files_by_date):
+    # Return a query which reads from the supplied files and converts them into a
+    # single, unified consistent structure ready for us to build from
+
+    # We start by creating a query to read from each individual file
+    subqueries = [
+        f"""
+        SELECT
+            -- We know the relevant date for each file so we add it as fixed column
+            {escape(date)}::DATE AS date,
+            -- Map an inconsistently named column to something consistent
+            COLUMNS('(BNF_CODE|BNF_PRESENTATION_CODE)') AS our_bnf_code,
+            *
+        FROM read_parquet({escape(filename)})
+        """
+        for date, filename in prescribing_files_by_date.items()
+    ]
+    # We combine these all into a single table (columns which are not present in a given
+    # file will just have NULL values)
+    combined = " UNION ALL BY NAME ".join(subqueries)
+
+    # Read from the above union, map the column names to the ones we want to use and
+    # where necessary apply transformations
+    return f"""\
+    SELECT
+        our_bnf_code AS bnf_code,
+        -- Not every file has SNOMED codes so we use zero as a placeholder
+        COALESCE(CAST(SNOMED_CODE AS INT8), 0) AS snomed_code,
+        date AS date,
+        PRACTICE_CODE AS practice_code,
+        QUANTITY AS quantity_value,
+        ITEMS AS items,
+        TOTAL_QUANTITY AS quantity,
+        -- We want prices in pence not pounds so we can use integers later
+        CAST(NIC AS DOUBLE) * 100 AS net_cost,
+        CAST(ACTUAL_COST AS DOUBLE) * 100 AS actual_cost
+    FROM
+        ({combined})
+    """
+
+
+def ingest_prescribing_source(conn):
     log.info("Building `date` table")
-    conn.sql("CREATE TABLE new.date AS " + sql_for_date_table())
+    conn.sql("CREATE TABLE date AS " + sql_for_date_table())
 
     log.info("Building `practice` table")
-    conn.sql("CREATE TABLE new.practice AS " + sql_for_practice_table())
+    conn.sql("CREATE TABLE practice AS " + sql_for_practice_table())
 
     log.info("Building `presentation` table")
-    conn.sql("CREATE TABLE new.presentation AS " + sql_for_presentation_table())
+    conn.sql("CREATE TABLE presentation AS " + sql_for_presentation_table())
 
     # We store the prescribing data in a fully normalised table ("prescribing_norm") so
     # that date and practice and presentation (bnf and snomed code) are stored as
@@ -83,7 +136,7 @@ def ingest():
     # types though, so it shouldn't be a disruptive change.
     conn.sql(
         """
-        CREATE TABLE new.prescribing_norm (
+        CREATE TABLE prescribing_norm (
             presentation_id INT4,
             date_id UTINYINT,
             practice_id USMALLINT,
@@ -120,7 +173,7 @@ def ingest():
     for bnf_start, bnf_end in get_bnf_code_ranges(conn, batch_size=750):
         log.info(f"Building `prescribing_norm` table: {bnf_start} -> {bnf_end}")
         conn.sql(
-            "INSERT INTO new.prescribing_norm "
+            "INSERT INTO prescribing_norm "
             + sql_for_prescribing_normalised()
             + " WHERE prescribing_source.bnf_code >= ? AND prescribing_source.bnf_code < ?"
             + " ORDER BY presentation_id, date_id, practice_id",
@@ -130,84 +183,7 @@ def ingest():
     # To make ad-hoc queries of the data easier we create a denormalised view which
     # includes the practice codes, dates etc rather than just foreign keys
     log.info("Building `prescribing` view")
-    conn.sql("USE new")
     conn.sql("CREATE VIEW prescribing AS " + sql_for_prescribing_denormalised())
-
-    conn.close()
-    tmp_file.replace(target_file)
-
-
-def sql_for_prescribing_source_view(prescribing_files_by_date):
-    # Return a query which reads from the supplied files and converts them into a
-    # single, unified consistent structure ready for us to build from.
-    subqueries = []
-
-    for date, filename in prescribing_files_by_date.items():
-        # Different versions of the prescribing data have different structures and so
-        # require different queries to produce a consistent view
-        if "_v3_" in filename.name:
-            subqueries.append(sql_read_from_prescribing_file_v3(date, filename))
-        elif "_v2_" in filename.name:
-            subqueries.append(sql_read_from_prescribing_file_v2(date, filename))
-        else:
-            assert False, f"Unhandled: {filename.name}"
-
-    combined = " UNION ALL ".join(subqueries)
-
-    # Read from the above union and convert each column we're interested in from its
-    # original VARCHAR into the type we want. The types need to match those used in the
-    # `CREATE TABLE new.prescribing_norm` definition above.
-    return f"""\
-    SELECT
-        BNF_CODE AS bnf_code,
-        COALESCE(CAST(SNOMED_CODE AS INT8), 0) AS snomed_code,
-        date AS date,
-        PRACTICE_CODE AS practice_code,
-        CAST(QUANTITY AS FLOAT4) AS quantity_value,
-        CAST(ITEMS AS USMALLINT) AS items,
-        CAST(TOTAL_QUANTITY AS FLOAT4) AS quantity,
-        CAST(CAST(NIC AS DOUBLE) * 100 AS UINTEGER) AS net_cost,
-        CAST(CAST(ACTUAL_COST AS DOUBLE) * 100 AS UINTEGER) AS actual_cost
-    FROM
-        ({combined})
-    """
-
-
-def sql_read_from_prescribing_file_v3(date, filename):
-    # The BNF code column name changed at one point so we use column regex expression to
-    # match either variant and map it to a consistent name
-    return f"""\
-    SELECT
-        COLUMNS('(BNF_CODE|BNF_PRESENTATION_CODE)') AS BNF_CODE,
-        SNOMED_CODE,
-        PRACTICE_CODE,
-        QUANTITY,
-        ITEMS,
-        TOTAL_QUANTITY,
-        NIC,
-        ACTUAL_COST,
-        {escape(date)}::DATE AS date
-    FROM
-        read_parquet({escape(filename)})
-    """
-
-
-def sql_read_from_prescribing_file_v2(date, filename):
-    # These files don't have a SNOMED_CODE column so we fill this with NULLs
-    return f"""\
-    SELECT
-        BNF_CODE,
-        NULL AS SNOMED_CODE,
-        PRACTICE_CODE,
-        QUANTITY,
-        ITEMS,
-        TOTAL_QUANTITY,
-        NIC,
-        ACTUAL_COST,
-        {escape(date)}::DATE AS date
-    FROM
-        read_parquet({escape(filename)})
-    """
 
 
 def sql_for_date_table():
@@ -254,7 +230,7 @@ def sql_for_practice_table():
     #     means that if we're only interested in prescribing after, say, January 2025
     #     then we can ignore all practices that haven't prescribed since December 2024
     #     and this will translate into ignoring all practices with IDs greater than,
-    #     say, 1234. These means we don't have to allocate rows for these practices when
+    #     say, 1234. This means we don't have to allocate rows for these practices when
     #     building a results matrix. And this means we don't pay a cost for having
     #     historical data in the database unless we're actually querying it.
     #
@@ -315,14 +291,14 @@ def sql_for_prescribing_normalised():
     FROM
         prescribing_source
     JOIN
-        new.presentation
+        presentation
     ON
-        prescribing_source.bnf_code = new.presentation.bnf_code
-        AND prescribing_source.snomed_code = new.presentation.snomed_code
+        prescribing_source.bnf_code = presentation.bnf_code
+        AND prescribing_source.snomed_code = presentation.snomed_code
     JOIN
-        new.date ON prescribing_source.date = new.date.date
+        date ON prescribing_source.date = date.date
     JOIN
-        new.practice ON prescribing_source.practice_code = new.practice.code
+        practice ON prescribing_source.practice_code = practice.code
     """
 
 
@@ -359,7 +335,7 @@ def sql_for_prescribing_denormalised():
 
 
 def get_bnf_code_ranges(conn, batch_size):
-    query = conn.sql("SELECT DISTINCT bnf_code FROM new.presentation ORDER BY bnf_code")
+    query = conn.sql("SELECT DISTINCT bnf_code FROM presentation ORDER BY bnf_code")
     bnf_codes = [row[0] for row in query.fetchall()]
     for i in range(0, len(bnf_codes), batch_size):
         next_i = i + batch_size

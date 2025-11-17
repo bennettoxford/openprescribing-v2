@@ -44,7 +44,7 @@ def get_practice_date_matrix(cursor, sql, parameters=None, date_count=None):
     prescribing data.
 
     Note that the column ordering doesn't matter here, and neither does the presence of
-    additional columns: it's just the column names which are significant.
+    additional columns so as long as columns with those three names exist in the query.
     """
     practice_codes, dates = get_practice_codes_and_dates(cursor, date_count)
 
@@ -52,7 +52,13 @@ def get_practice_date_matrix(cursor, sql, parameters=None, date_count=None):
         cursor,
         row_count=len(practice_codes),
         col_count=len(dates),
-        sql=f"SELECT practice_id, date_id, value FROM ({sql})",
+        sql=f"""
+        SELECT
+            practice_id AS row_index,
+            date_id AS column_index,
+            value
+        FROM ({sql})
+        """,
         parameters=parameters,
     )
 
@@ -102,6 +108,7 @@ def get_index_tuple(index_value_pairs):
     use `None`.
     """
     index_to_value = {index: value for index, value in index_value_pairs}
+    assert index_to_value, "No prescribing data in database"
     all_indexes = range(0, max(index_to_value.keys()) + 1)
     return tuple(index_to_value.get(index) for index in all_indexes)
 
@@ -110,7 +117,7 @@ def get_grouped_sum_ndarray(cursor, row_count, col_count, sql, parameters=None):
     """
     Given a SQL query of the form:
 
-        SELECT <row_index>, <column_index>, <numeric_value> ...
+        SELECT row_index, column_index, value FROM ...
 
     Build a two-dimensional `numpy.ndarray` from the results.
 
@@ -128,6 +135,7 @@ def get_grouped_sum_ndarray(cursor, row_count, col_count, sql, parameters=None):
     # but doesn't yet execute it
     results = cursor.sql(sql, params=parameters)
 
+    assert results.columns == ["row_index", "column_index", "value"]
     row_type, col_type, value_type = results.types
     assert row_type.id in UNSIGNED_INTEGER_TYPES
     assert col_type.id in UNSIGNED_INTEGER_TYPES
@@ -135,8 +143,7 @@ def get_grouped_sum_ndarray(cursor, row_count, col_count, sql, parameters=None):
     value_is_float = value_type.id in FLOAT_TYPES
 
     # Add a filter so that we can guarantee the row and column indexes will be in range
-    # (we don't know the actual column names here so we refer to them by position)
-    results = results.filter(f"#1 < {row_count} AND #2 < {col_count}")
+    results = results.filter(f"row_index < {row_count} AND column_index < {col_count}")
 
     # Make a zero-valued accumulator matrix of the right type
     accumulator = numpy.zeros(

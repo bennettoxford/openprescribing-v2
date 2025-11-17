@@ -1,63 +1,28 @@
 from datetime import date
 
-import duckdb
-
-from openprescribing.data import rxdb
+from openprescribing.data.rxdb import get_practice_date_matrix
 
 
-def test_get_practice_date_matrix():
+def test_get_practice_date_matrix(rxdb):
     # TODO: This is really not a great test, but it does exercise the full logic and
     # demonstrate the basic process.
-    practices = ["ABC123", "DEF123", "GHI123", "JKL123"]
-    dates = [date(2025, 3, 1), date(2025, 2, 1), date(2025, 1, 1)]
-    last_prescribing_dates = {"JKL123": date(2025, 1, 1)}
+    rxdb.ingest(
+        [
+            {"date": "2025-01-01", "practice_code": "JKL123", "items": 90},
+            {"date": "2025-02-01", "practice_code": "ABC123", "items": 25},
+            {"date": "2025-02-01", "practice_code": "GHI123", "items": 40},
+            {"date": "2025-03-01", "practice_code": "ABC123", "items": 10},
+            {"date": "2025-03-01", "practice_code": "DEF123", "items": 30},
+            {"date": "2025-03-01", "practice_code": "GHI123", "items": 15},
+        ],
+    )
 
-    conn = duckdb.connect()
-    conn.sql(
-        """
-        CREATE TABLE date (
-            id UINTEGER, date DATE
-        );
-        CREATE TABLE practice (
-            id UINTEGER, code VARCHAR, latest_prescribing_date DATE
-        );
-        CREATE TABLE prescribing (
-            practice_id UINTEGER, date_id UINTEGER, items INTEGER
+    with rxdb.get_cursor() as cursor:
+        matrix = get_practice_date_matrix(
+            cursor,
+            "SELECT practice_id, date_id, items AS value FROM prescribing",
+            date_count=2,
         )
-        """
-    )
-
-    conn.executemany(
-        "INSERT INTO date VALUES(?, ?)",
-        enumerate(dates),
-    )
-    conn.executemany(
-        "INSERT INTO practice VALUES(?, ?, ?)",
-        [
-            (
-                i,
-                code,
-                last_prescribing_dates.get(code, dates[0]),
-            )
-            for i, code in enumerate(practices)
-        ],
-    )
-    conn.executemany(
-        "INSERT INTO prescribing VALUES(?, ?, ?)",
-        [
-            (0, 0, 10),
-            (1, 0, 30),
-            (2, 0, 15),
-            (0, 1, 25),
-            (2, 1, 40),
-        ],
-    )
-
-    matrix = rxdb.get_practice_date_matrix(
-        conn,
-        "SELECT practice_id, date_id, items AS value FROM prescribing",
-        date_count=2,
-    )
 
     assert matrix.row_labels == ("ABC123", "DEF123", "GHI123")
     assert matrix.col_labels == (date(2025, 3, 1), date(2025, 2, 1))

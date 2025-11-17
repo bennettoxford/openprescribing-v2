@@ -1,5 +1,3 @@
-# We expect this will get covered when we add a prescribing_db fixture
-# pragma: no cover file
 import altair as alt
 from django.http import JsonResponse
 

@@ -2,7 +2,6 @@ import sqlite3
 
 import duckdb
 
-from openprescribing.data import rxdb
 from openprescribing.data.rxdb import connection
 from openprescribing.data.utils.filename_utils import get_temp_filename_for
 
@@ -32,14 +31,14 @@ def test_connection_get_cursor(tmp_path, monkeypatch, settings):
     duckdb_conn.close()
 
     # Confirm that we can read from both
-    with rxdb.get_cursor() as cursor:
+    with connection.get_cursor() as cursor:
         results = cursor.execute("SELECT * FROM foo UNION ALL SELECT * FROM bar")
         results.fetchall() == [(1,), (2,), (3,), (4,), (5,), (6,)]
 
     # Update the SQLite table and confirm we can read the changes
     sqlite_conn.execute("UPDATE foo SET v = v * 2")
 
-    with rxdb.get_cursor() as cursor:
+    with connection.get_cursor() as cursor:
         results = cursor.execute("SELECT * FROM foo UNION ALL SELECT * FROM bar")
         results.fetchall() == [(2,), (4,), (6,), (4,), (5,), (6,)]
 
@@ -56,6 +55,6 @@ def test_connection_get_cursor(tmp_path, monkeypatch, settings):
     duckdb_conn.close()
     tmp_file.replace(settings.PRESCRIBING_DATABASE)
 
-    with rxdb.get_cursor() as cursor:
+    with connection.get_cursor() as cursor:
         results = cursor.execute("SELECT * FROM foo UNION ALL SELECT * FROM bar")
         results.fetchall() == [(2,), (4,), (6,), (10,), (11,), (12,)]
