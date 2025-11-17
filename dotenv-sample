@@ -1,1 +1,3 @@
+DEBUG="yes"
+SECRET_KEY="secret"
 OPENPRESCRIBING_WORK_DIR="work_dir"

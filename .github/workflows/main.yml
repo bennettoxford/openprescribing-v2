@@ -35,6 +35,7 @@ jobs:
           cache: uv
       - name: Run tests
         env:
+          SECRET_KEY: "secret"
           OPENPRESCRIBING_WORK_DIR: "work_dir"
         run: |
           just test
