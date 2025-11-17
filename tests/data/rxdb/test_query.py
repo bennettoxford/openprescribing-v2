@@ -1,17 +1,12 @@
 from datetime import date
 
-import duckdb
-
-from openprescribing.data import rxdb
-from tests.utils.rxdb_utils import rxdb_ingest
+from openprescribing.data.rxdb import get_practice_date_matrix
 
 
-def test_get_practice_date_matrix():
+def test_get_practice_date_matrix(rxdb):
     # TODO: This is really not a great test, but it does exercise the full logic and
     # demonstrate the basic process.
-    conn = duckdb.connect()
-    rxdb_ingest(
-        conn,
+    rxdb.ingest(
         [
             {"date": "2025-01-01", "practice_code": "JKL123", "items": 90},
             {"date": "2025-02-01", "practice_code": "ABC123", "items": 25},
@@ -22,11 +17,12 @@ def test_get_practice_date_matrix():
         ],
     )
 
-    matrix = rxdb.get_practice_date_matrix(
-        conn,
-        "SELECT practice_id, date_id, items AS value FROM prescribing",
-        date_count=2,
-    )
+    with rxdb.get_cursor() as cursor:
+        matrix = get_practice_date_matrix(
+            cursor,
+            "SELECT practice_id, date_id, items AS value FROM prescribing",
+            date_count=2,
+        )
 
     assert matrix.row_labels == ("ABC123", "DEF123", "GHI123")
     assert matrix.col_labels == (date(2025, 3, 1), date(2025, 2, 1))
