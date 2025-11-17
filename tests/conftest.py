@@ -4,6 +4,16 @@ import openprescribing.data.rxdb
 from tests.utils.rxdb_utils import RXDBFixture
 
 
+def pytest_terminal_summary(terminalreporter, exitstatus, config):
+    if terminalreporter.stats.get("warnings"):  # pragma: no cover
+        print(
+            "\nFailing test suite due to presence of warnings.\n"
+            "Uninteresting warnings should be explicitly ignored (usually in pyproject.toml)"
+        )
+        if terminalreporter._session.exitstatus == 0:
+            terminalreporter._session.exitstatus = 13
+
+
 @pytest.fixture
 def rxdb(monkeypatch):
     rxdb_fixture = RXDBFixture()
