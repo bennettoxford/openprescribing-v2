@@ -33,9 +33,9 @@ jobs:
           install-uv: true
           install-just: true
           cache: uv
+      - name: Configure test environment variables
+        run: cp dotenv-sample .env
       - name: Run tests
-        env:
-          OPENPRESCRIBING_WORK_DIR: "work_dir"
         run: |
           just test
 
