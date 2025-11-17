@@ -1,4 +1,5 @@
 import dataclasses
+import functools
 from collections import defaultdict
 from collections.abc import Hashable
 
@@ -56,6 +57,10 @@ class LabelledMatrix:
         return self.__class__(grouped_values, new_row_labels, self.col_labels)
 
 
+# These "row groupers" are pure functions of their inputs, are not entirely trivial to
+# construct, and are expected to be used repeatedly, so it makes sense to cache them
+# rather than constantly rebuild them.
+@functools.cache
 def create_row_grouper(input_labels, label_map):
     """
     Construct a function which can efficiently sum together arbitrary groups of rows in a matrix
