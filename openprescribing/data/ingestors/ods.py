@@ -50,6 +50,9 @@ def ingest_ods(conn):
     known_ids = set()
 
     for org_type in OrgType:
+        if org_type == OrgType.NATION:
+            continue
+
         log.info(f"Ingesting {org_type!r}")
         where_clause = ORG_TYPE_QUERIES[org_type]
         results = conn.execute(
@@ -79,3 +82,12 @@ def ingest_ods(conn):
             parent_ids = known_ids.intersection(related_ids)
             org.parents.add(*parent_ids)
             known_ids.add(id_)
+
+    # Create a "dummy" organisation to represent all of NHS England and set it as the
+    # parent of each of the regions. This avoids needing special logic elsewhere to
+    # handle national totals.
+    nation = Org.objects.create(
+        id="ENGLAND", org_type=OrgType.NATION, name="NHS England", inactive=False
+    )
+    for region in Org.objects.filter(org_type=OrgType.REGION):
+        region.parents.add(nation)

@@ -114,7 +114,7 @@ def test_ods_ingest(tmp_path, settings):
             "Y61",
             "REGION",
             "EAST OF ENGLAND COMMISSIONING REGION",
-            set(),
+            {"ENGLAND"},
         ),
         (
             "QHG",
@@ -145,6 +145,12 @@ def test_ods_ingest(tmp_path, settings):
             "OTHER",
             "ACHE PUTNOE BEDS",
             {"QHG", "Y61", "M1J4Y"},
+        ),
+        (
+            "ENGLAND",
+            "NATION",
+            "NHS England",
+            set(),
         ),
     ]
 

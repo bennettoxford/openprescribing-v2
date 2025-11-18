@@ -6,6 +6,7 @@ class Org(models.Model):
         db_table = "org"
 
     class OrgType(models.TextChoices):
+        NATION = ("nat", "Nation")
         REGION = ("reg", "Region")
         ICB = ("icb", "ICB")
         SICBL = ("sic", "SICBL")
