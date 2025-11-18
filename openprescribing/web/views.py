@@ -6,10 +6,13 @@ from openprescribing.data.models import BNFCode
 
 def index(request):
     code = request.GET.get("code")
+    practice_id = request.GET.get("practice_id")
 
     if code:
         bnf_code = get_object_or_404(BNFCode, code=code)
-        api_url = f"{reverse('api_prescribing')}?code={bnf_code.code}"
+        api_url = f"{reverse('api_prescribing')}?code={code}"
+        if practice_id:
+            api_url += f"&practice_id={practice_id}"
     else:
         bnf_code = None
         api_url = None

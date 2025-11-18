@@ -4,9 +4,12 @@ from django.http import JsonResponse
 from openprescribing.data import rxdb
 from openprescribing.data.models import BNFCode
 
+from .deciles import build_deciles_chart_df
+
 
 def prescribing(request):
     code = request.GET.get("code")
+    practice_id = request.GET.get("practice_id")
     bnf_code = BNFCode.objects.get(code=code)
 
     sql = f"""
@@ -18,26 +21,17 @@ def prescribing(request):
     with rxdb.get_cursor() as cursor:
         pdm = rxdb.get_practice_date_matrix(cursor, sql)
 
-    dates = pdm.col_labels
-    values = pdm.values.sum(axis=0)
-
-    chart_data = [
-        {"month": date.isoformat(), "items": value}
-        for date, value in zip(dates, values)
-    ]
-
-    chart_data.sort(key=lambda row: row["month"])
+    chart_df = build_deciles_chart_df(pdm, practice_id)
 
     chart = (
-        alt.Chart(data=alt.Data(values=chart_data))
-        .mark_line(point=True)
+        alt.Chart(chart_df)
+        .mark_line()
         .encode(
             x=alt.X("month:T", title="Month"),
-            y=alt.Y("items:Q", title="Items"),
-            tooltip=[
-                alt.Tooltip("month:T", title="Month", format="%b %Y"),
-                alt.Tooltip("items:Q", title="Items", format=","),
-            ],
+            y=alt.Y("value:Q", title="Items"),
+            detail="line",
+            strokeDash=alt.StrokeDash("dash:N", legend=None, scale=None),
+            color=alt.Color("colour:N", legend=None, scale=None),
         )
         .properties(width=660, height=360)
     )
