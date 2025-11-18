@@ -1,0 +1,66 @@
+import numpy as np
+import pandas as pd
+
+
+def build_deciles_chart_df(pdm, practice_id):
+    """Return a DataFrame that can be passed to Altair to display a deciles chart.
+
+    The chart will show blue dotted lines indicating the value at each decile for each
+    month in the given PDM.  The median value will be shown in a heavier dashed line.
+
+    Additionally, if practice_id is not None, the chart will show a solid red line for
+    that practice's values.
+
+    The DataFrame will have one row per point on the chart, with the following columns:
+
+        * month
+        * line
+        * value
+        * colour
+        * dash
+
+    Points are grouped by line, which will be "decile-{n}" or "practice".
+
+    Dashes are specified as (on, off) pairs:
+
+        * (2, 6) gives a dotted line
+        * (6, 2) gives a dashed line
+        * (1, 0) gives a continuous line
+    """
+    deciles_df = _build_deciles_df(pdm)
+
+    if practice_id is None:
+        return deciles_df
+    else:
+        practice_df = _build_practice_df(pdm, practice_id)
+        return pd.concat([deciles_df, practice_df], ignore_index=True)
+
+
+def _build_deciles_df(pdm):
+    percentiles = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    deciles_arr = np.nanpercentile(pdm.values, percentiles, axis=0)
+    deciles_df = pd.DataFrame(deciles_arr, columns=pdm.col_labels)
+    series = deciles_df.unstack()
+    series.index.names = ["month", "line"]
+    deciles_df = series.reset_index(name="value")
+    deciles_df["line"] = deciles_df["line"].apply(lambda n: f"decile-{n}")
+    deciles_df["colour"] = "blue"
+    deciles_df["dash"] = deciles_df["line"].apply(
+        lambda line: (6, 2) if line == "decile-5" else (2, 6)
+    )
+    return deciles_df
+
+
+def _build_practice_df(pdm, practice_id):
+    practice_ix = pdm.row_labels.index(practice_id)
+    practice_values = pdm.values[practice_ix]
+    practice_df = pd.DataFrame(
+        {
+            "month": pdm.col_labels,
+            "line": "practice",
+            "value": practice_values,
+            "colour": "red",
+            "dash": [(1, 0)] * len(practice_values),
+        }
+    )
+    return practice_df
