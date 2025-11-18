@@ -2,6 +2,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 import openprescribing.data.fetchers.bnf_codes
+import openprescribing.data.fetchers.ods
 import openprescribing.data.fetchers.prescribing
 from openprescribing.data.utils.log_utils import LogHandler
 
@@ -12,6 +13,7 @@ class Command(BaseCommand):
     # We can populate this dynamically in future but let's keep it simple for now
     available_fetchers = {
         "bnf_codes": openprescribing.data.fetchers.bnf_codes.fetch,
+        "ods": openprescribing.data.fetchers.ods.fetch,
         "prescribing": openprescribing.data.fetchers.prescribing.fetch,
     }
 
