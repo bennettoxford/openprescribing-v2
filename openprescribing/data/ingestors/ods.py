@@ -64,7 +64,11 @@ def ingest_ods(conn):
                 country = 'ENGLAND' AND ({where_clause})
             """
         )
-        for id_, name, inactive, related_ids in results.fetchall():
+
+        rows = results.fetchall()
+        assert rows, f"No orgs of type {org_type!r} found – aborting"
+
+        for id_, name, inactive, related_ids in rows:
             org = Org.objects.create(
                 id=id_, org_type=org_type, name=name, inactive=inactive
             )
