@@ -33,6 +33,20 @@ PRESCRIBING_SOURCE_DEFAULTS = {
     "actual_cost": 0,
 }
 
+LIST_SIZE_SOURCE_SCHEMA = pyarrow.schema(
+    [
+        ("date", pyarrow.date32()),
+        ("practice_code", pyarrow.string()),
+        ("total", pyarrow.uint32()),
+    ]
+)
+
+LIST_SIZE_SOURCE_DEFAULTS = {
+    "date": datetime.date(2000, 1, 1),
+    "practice_code": "",
+    "total": 0,
+}
+
 
 class RXDBFixture:
     """
@@ -78,30 +92,41 @@ class RXDBFixture:
             raise RuntimeError(textwrap.dedent(msg))
         return self.conn.cursor()
 
-    def ingest(self, prescribing_data):
-        rxdb_ingest(self.conn, prescribing_data=prescribing_data)
+    def ingest(self, prescribing_data, list_size_data=()):
+        rxdb_ingest(
+            self.conn,
+            prescribing_data=prescribing_data,
+            list_size_data=list_size_data,
+        )
         self.has_data = True
 
 
-def rxdb_ingest(conn, prescribing_data=()):
+def rxdb_ingest(conn, prescribing_data=(), list_size_data=()):
     """
-    Given a DuckDB connection and some prescribing data as a list of dictionaries ingest
-    that data into the database using the same function used in production.
+    Given a DuckDB connection and some prescribing and list size data as lists of
+    dictionaries, ingest that data into the database using the same function used in
+    production.
     """
-    prescribing_data = prepare_prescribing_data(prescribing_data)
+    prescribing_data = prepare_data(prescribing_data, PRESCRIBING_SOURCE_DEFAULTS)
+    list_size_data = prepare_data(list_size_data, LIST_SIZE_SOURCE_DEFAULTS)
     prescribing_source = pyarrow.Table.from_pylist(
         prescribing_data, schema=PRESCRIBING_SOURCE_SCHEMA
     )
-    # Register the PyArrow Table so it can be queried like any other table in DuckDB
+    list_size_source = pyarrow.Table.from_pylist(
+        list_size_data, schema=LIST_SIZE_SOURCE_SCHEMA
+    )
+    # Register the PyArrow Tables so they can be queried like any other table in DuckDB
     conn.register("prescribing_source", prescribing_source)
+    conn.register("list_size_source", list_size_source)
     ingest_prescribing_source(conn)
     conn.unregister("prescribing_source")
+    conn.unregister("list_size_source")
 
 
-def prepare_prescribing_data(data):
+def prepare_data(data, defaults):
     prepared = []
     for input_row in data:
-        row = PRESCRIBING_SOURCE_DEFAULTS | input_row
+        row = defaults | input_row
         if isinstance(row["date"], str):
             row["date"] = datetime.date.fromisoformat(row["date"])
         prepared.append(row)

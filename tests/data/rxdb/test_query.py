@@ -32,3 +32,33 @@ def test_get_practice_date_matrix(rxdb):
         [30, 0],
         [15, 40],
     ]
+
+
+def test_get_practice_date_matrix_for_list_sizes(rxdb):
+    rxdb.ingest(
+        [
+            {"date": "2025-03-01", "practice_code": "ABC123"},
+            {"date": "2025-02-01", "practice_code": "DEF123"},
+            {"date": "2025-01-01", "practice_code": "GHI123"},
+        ],
+        list_size_data=[
+            {"date": "2025-01-01", "practice_code": "ABC123", "total": 10},
+            {"date": "2025-02-01", "practice_code": "DEF123", "total": 20},
+            {"date": "2025-03-01", "practice_code": "GHI123", "total": 30},
+        ],
+    )
+
+    with rxdb.get_cursor() as cursor:
+        matrix = get_practice_date_matrix(
+            cursor,
+            "SELECT practice_id, date_id, total AS value FROM list_size",
+        )
+
+    assert matrix.row_labels == ("ABC123", "DEF123", "GHI123")
+    assert matrix.col_labels == (date(2025, 3, 1), date(2025, 2, 1), date(2025, 1, 1))
+
+    assert matrix.values.tolist() == [
+        [0, 0, 10],
+        [0, 20, 0],
+        [30, 0, 0],
+    ]

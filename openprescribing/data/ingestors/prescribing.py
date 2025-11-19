@@ -18,6 +18,18 @@ def ingest():
     prescribing_files = get_latest_files_by_date(
         settings.DOWNLOAD_DIR.glob("prescribing/*")
     )
+    list_size_files = get_latest_files_by_date(
+        # We only ingest version 2 files at present
+        settings.DOWNLOAD_DIR.glob("list_size/*_v2_*")
+    )
+
+    list_size_files = {
+        date: filename
+        for date, filename in list_size_files.items()
+        if date in prescribing_files
+    }
+
+    all_files = sorted([*prescribing_files.values(), *list_size_files.values()])
 
     conn = duckdb.connect()
 
@@ -30,11 +42,11 @@ def ingest():
     else:
         ingested_files = set()
 
-    if {f.name for f in prescribing_files.values()} == ingested_files:
+    if {f.name for f in all_files} == ingested_files:
         log.debug("No new data to ingest")
         return
 
-    for filename in prescribing_files.values():
+    for filename in all_files:
         log.info(f"Preparing to ingest file: {filename.name}")
 
     # Attach the file we're in the process of building under the schema name "new". The
@@ -49,7 +61,7 @@ def ingest():
     conn.sql("CREATE TABLE new.ingested_file (filename TEXT)")
     conn.executemany(
         "INSERT INTO new.ingested_file VALUES (?)",
-        sorted((f.name,) for f in prescribing_files.values()),
+        [(f.name,) for f in all_files],
     )
 
     # Create a view over all our prescribing source files as if they were a single
@@ -58,6 +70,13 @@ def ingest():
         "CREATE TEMPORARY VIEW prescribing_source AS "
         + sql_for_prescribing_source_view(
             prescribing_files,
+        )
+    )
+
+    conn.sql(
+        "CREATE TEMPORARY VIEW list_size_source AS "
+        + sql_for_list_size_source_view(
+            list_size_files,
         )
     )
 
@@ -113,6 +132,38 @@ def sql_for_prescribing_source_view(prescribing_files_by_date):
     """
 
 
+def sql_for_list_size_source_view(list_size_files_by_date):
+    # Return a query which reads from the supplied files and converts them into a
+    # single, unified consistent structure ready for us to build from
+
+    # We start by creating a query to read from each individual file
+    subqueries = [
+        f"""
+        SELECT
+            -- We know the relevant date for each file so we add it as fixed column
+            {escape(date)}::DATE AS date,
+            *
+        FROM read_parquet({escape(filename)})
+        """
+        for date, filename in list_size_files_by_date.items()
+    ]
+    # We combine these all into a single table (columns which are not present in a given
+    # file will just have NULL values)
+    combined = " UNION ALL BY NAME ".join(subqueries)
+
+    # Read from the above union, extracting just the value we're currently interested in
+    return f"""\
+    SELECT
+        date AS date,
+        ORG_CODE AS practice_code,
+        NUMBER_OF_PATIENTS AS total
+    FROM
+        ({combined})
+    WHERE
+        ORG_TYPE = 'GP' AND SEX = 'ALL' AND AGE_GROUP_5 = 'ALL'
+    """
+
+
 def ingest_prescribing_source(conn):
     log.info("Building `date` table")
     conn.sql("CREATE TABLE date AS " + sql_for_date_table())
@@ -122,6 +173,9 @@ def ingest_prescribing_source(conn):
 
     log.info("Building `presentation` table")
     conn.sql("CREATE TABLE presentation AS " + sql_for_presentation_table())
+
+    log.info("Building `list_size_norm` table")
+    conn.sql("CREATE TABLE list_size_norm AS " + sql_for_list_size_normalised())
 
     # We store the prescribing data in a fully normalised table ("prescribing_norm") so
     # that date and practice and presentation (bnf and snomed code) are stored as
@@ -180,10 +234,13 @@ def ingest_prescribing_source(conn):
             params=[bnf_start, bnf_end],
         )
 
-    # To make ad-hoc queries of the data easier we create a denormalised view which
-    # includes the practice codes, dates etc rather than just foreign keys
+    # To make ad-hoc queries of the data easier we create denormalised views which
+    # include the practice codes, dates etc rather than just foreign keys
     log.info("Building `prescribing` view")
     conn.sql("CREATE VIEW prescribing AS " + sql_for_prescribing_denormalised())
+
+    log.info("Building `list_size` view")
+    conn.sql("CREATE VIEW list_size AS " + sql_for_list_size_denormalised())
 
 
 def sql_for_date_table():
@@ -331,6 +388,44 @@ def sql_for_prescribing_denormalised():
         practice
     ON
         rx.practice_id = practice.id
+    """
+
+
+def sql_for_list_size_normalised():
+    return """\
+    SELECT
+        date.id AS date_id,
+        practice.id AS practice_id,
+        CAST(list_size_source.total AS UINTEGER) AS total
+    FROM
+        list_size_source
+    JOIN
+        date ON list_size_source.date = date.date
+    JOIN
+        practice ON list_size_source.practice_code = practice.code
+    ORDER BY
+        date_id, practice_id
+    """
+
+
+def sql_for_list_size_denormalised():
+    return """\
+    SELECT
+        lst.date_id AS date_id,
+        date.date AS date,
+        lst.practice_id AS practice_id,
+        practice.code AS practice_code,
+        lst.total AS total
+    FROM
+        list_size_norm AS lst
+    JOIN
+        date
+    ON
+        lst.date_id = date.id
+    JOIN
+        practice
+    ON
+        lst.practice_id = practice.id
     """
 
 

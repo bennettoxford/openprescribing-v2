@@ -9,7 +9,7 @@ def test_prescribing_ingest(tmp_path, settings):
     settings.PRESCRIBING_DATABASE = tmp_path / "data" / "prescribing.duckdb"
 
     test_data = generate_prescribing_data()
-    write_as_parquet_files(test_data, settings.DOWNLOAD_DIR / "prescribing")
+    write_as_parquet_files(test_data, settings.DOWNLOAD_DIR)
 
     prescribing.ingest()
 
@@ -29,6 +29,8 @@ def test_prescribing_ingest(tmp_path, settings):
         "presentation",
         "prescribing_norm",
         "prescribing",
+        "list_size_norm",
+        "list_size",
         "ingested_file",
     }
     for name, table in tables.items():
@@ -44,7 +46,7 @@ def test_prescribing_ingest(tmp_path, settings):
 def generate_prescribing_data():
     # TODO: Randomly generate a whole load of prescribing data
     return {
-        ("2025-01-01", "v3"): [
+        ("prescribing", "2025-01-01", "v3"): [
             {
                 "BNF_CODE": "01234ABC",
                 "SNOMED_CODE": "12345678",
@@ -56,7 +58,7 @@ def generate_prescribing_data():
                 "ACTUAL_COST": "15.34",
             },
         ],
-        ("2020-01-01", "v2"): [
+        ("prescribing", "2020-01-01", "v2"): [
             {
                 "BNF_CODE": "01234ABC",
                 "PRACTICE_CODE": "ABC123",
@@ -67,13 +69,22 @@ def generate_prescribing_data():
                 "ACTUAL_COST": "15.34",
             },
         ],
+        ("list_size", "2020-01-01", "v2"): [
+            {
+                "ORG_CODE": "ABC123",
+                "NUMBER_OF_PATIENTS": "12345",
+                "ORG_TYPE": "GP",
+                "SEX": "ALL",
+                "AGE_GROUP_5": "ALL",
+            },
+        ],
     }
 
 
 def write_as_parquet_files(data, directory):
-    for (date, version), rows in data.items():
+    for (source, date, version), rows in data.items():
         parquet_from_dicts(
-            directory / f"prescribing_{date}_{version}_foobar.parquet",
+            directory / source / f"{source}_{date}_{version}_foobar.parquet",
             rows,
         )
 
