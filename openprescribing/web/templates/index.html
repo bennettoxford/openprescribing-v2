@@ -7,17 +7,25 @@
         <div class="card h-100">
             <div class="card-body">
                 <h1 class="h4">Search for a BNF code</h1>
-                <label class="form-label" for="bnf-search">Search by medicine or product name</label>
-                <input
-                    id="bnf-search"
-                    type="search"
-                    class="form-control form-control-lg"
-                    placeholder="e.g. Atorvastatin"
-                    {% if bnf_code %}value="{{ bnf_code.name }}"{% endif %}
-                    autocomplete="off"
-                />
+                <div class="mb-3 position-relative">
+                    <label class="form-label" for="bnf-search">Search by medicine or product name</label>
+                    <input
+                        id="bnf-search"
+                        type="search"
+                        class="form-control form-control-lg"
+                        placeholder="e.g. Atorvastatin"
+                        {% if bnf_code %}value="{{ bnf_code.name }}"{% endif %}
+                        autocomplete="off"
+                    />
+                    <ul
+                        class="list-group position-absolute top-100 start-0 end-0 mt-2 shadow d-none z-3"
+                        id="bnf-results"
+                        role="listbox"
+                        aria-label="BNF search results"
+                        style="max-height: 18rem; overflow-y: auto;"
+                    ></ul>
+                </div>
                 <div class="form-text">Enter at least 3 letters to see matching BNF codes.</div>
-                <ul class="list-group d-none" id="bnf-results" role="listbox" aria-label="BNF search results"></ul>
             </div>
         </div>
     </div>
