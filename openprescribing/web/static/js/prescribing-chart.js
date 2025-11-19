@@ -1,8 +1,12 @@
 const setupSearch = () => {
-    const codes = JSON.parse(document.getElementById('bnf-codes').textContent);
+    const bnfCodes = JSON.parse(document.getElementById('bnf-codes').textContent);
     const levels = Object.fromEntries(JSON.parse(document.getElementById('bnf-levels').textContent));
-    const search = document.getElementById('bnf-search');
-    const results = document.getElementById('bnf-results');
+    const practices = JSON.parse(document.getElementById('practices').textContent);
+
+    const bnfSearch = document.getElementById('bnf-search');
+    const bnfResults = document.getElementById('bnf-results');
+    const practiceSearch = document.getElementById('practice-search');
+    const practiceResults = document.getElementById('practice-results');
 
     const navigateWithParams = (updateFn) => {
         const url = new URL(window.location.href);
@@ -11,10 +15,10 @@ const setupSearch = () => {
     };
 
     createTypeahead({
-        input: search,
-        results: results,
+        input: bnfSearch,
+        results: bnfResults,
         minChars: 3,
-        getMatches: (query) => codes.filter((c) => c.name.toLowerCase().includes(query)),
+        getMatches: (query) => bnfCodes.filter((c) => c.name.toLowerCase().includes(query)),
         renderItem: (item) => `
             <div class="fw-semibold">${item.name}</div>
             <div class="text-muted small">${item.code} - ${levels[item.level]}</div>
@@ -22,6 +26,27 @@ const setupSearch = () => {
         onSelect: (item) => {
             navigateWithParams((params) => {
                 params.set('code', item.code);
+            });
+        },
+    });
+
+    createTypeahead({
+        input: practiceSearch,
+        results: practiceResults,
+        minChars: 2,
+        getMatches: (query) => practices.filter((practice) => {
+            return (
+                practice.name.toLowerCase().includes(query) ||
+                practice.id.toLowerCase().includes(query)
+            );
+        }),
+        renderItem: (practice) => `
+            <div class="fw-semibold">${practice.name}</div>
+            <div class="text-muted small">${practice.id}</div>
+        `,
+        onSelect: (practice) => {
+            navigateWithParams((params) => {
+                params.set('practice_id', practice.id);
             });
         },
     });

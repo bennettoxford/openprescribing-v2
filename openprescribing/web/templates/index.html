@@ -26,6 +26,24 @@
                     ></ul>
                 </div>
                 <div class="form-text">Enter at least 3 letters to see matching BNF codes.</div>
+                <div class="mt-4 mb-3 position-relative">
+                    <label class="form-label" for="practice-search">Filter by practice (optional)</label>
+                    <input
+                        id="practice-search"
+                        type="search"
+                        class="form-control form-control-lg"
+                        {% if practice %}value="{{ practice.name }}"{% endif %}
+                        autocomplete="off"
+                    />
+                    <ul
+                        class="list-group position-absolute top-100 start-0 end-0 mt-2 shadow d-none z-3"
+                        id="practice-results"
+                        role="listbox"
+                        aria-label="Practice search results"
+                        style="max-height: 18rem; overflow-y: auto;"
+                    ></ul>
+                </div>
+                <div class="form-text">Start typing a practice name or code to highlight a single surgery.</div>
             </div>
         </div>
     </div>
@@ -53,6 +71,7 @@
 {% block extra_js %}
 {{ bnf_codes|json_script:"bnf-codes" }}
 {{ bnf_levels|json_script:"bnf-levels" }}
+{{ practices|json_script:"practices" }}
 {{ prescribing_api_url|json_script:"prescribing-api-url" }}
 <script src="https://cdn.jsdelivr.net/npm/vega@6.2.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-lite@6.4.1"></script>
