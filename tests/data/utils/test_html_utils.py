@@ -72,3 +72,19 @@ def test_parse_date():
     assert html_utils.parse_date("6 July 2025") == date(2025, 7, 6)
     with pytest.raises(ValueError):
         html_utils.parse_date("2020-01-01")
+
+
+def test_find_url():
+    html = """\
+    <a href="/foo/1/bar/"></a>
+    <a href="/foo/2/baz/"></a>
+    """
+
+    assert html_utils.find_url(html, "/1/") == "/foo/1/bar/"
+    assert html_utils.find_url(html, "4", "3", "2") == "/foo/2/baz/"
+
+    with pytest.raises(AssertionError, match="Ambiguous"):
+        html_utils.find_url(html, "/foo/")
+
+    with pytest.raises(AssertionError, match="No matches"):
+        html_utils.find_url(html, "wat")

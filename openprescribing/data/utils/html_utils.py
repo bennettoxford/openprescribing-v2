@@ -37,3 +37,14 @@ def parse_date(date_str):
     except ValueError:
         # Parses dates like "1 Jan 2020"
         return datetime.datetime.strptime(date_str, "%d %b %Y").date()
+
+
+def find_url(html, *url_regexes):
+    doc = bs4.BeautifulSoup(html, "html5lib")
+    for url_re in url_regexes:
+        matcher = re.compile(url_re)
+        matches = {a["href"] for a in doc.find_all("a", href=matcher)}
+        assert len(matches) <= 1, f"Ambiguous matches for {url_re!r}: {matches}"
+        if len(matches) == 1:
+            return list(matches)[0]
+    assert False, f"No matches for patterns: {url_regexes}"
