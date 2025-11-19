@@ -4,35 +4,64 @@ const setupSearch = () => {
     const search = document.getElementById('bnf-search');
     const results = document.getElementById('bnf-results');
 
-    search.addEventListener('input', (event) => {
-        const query = search.value.trim().toLowerCase();
-        if (query.length < 3) {
+    const navigateWithParams = (updateFn) => {
+        const url = new URL(window.location.href);
+        updateFn(url.searchParams);
+        window.location.href = url.toString();
+    };
+
+    createTypeahead({
+        input: search,
+        results: results,
+        minChars: 3,
+        getMatches: (query) => codes.filter((c) => c.name.toLowerCase().includes(query)),
+        renderItem: (item) => `
+            <div class="fw-semibold">${item.name}</div>
+            <div class="text-muted small">${item.code} - ${levels[item.level]}</div>
+        `,
+        onSelect: (item) => {
+            navigateWithParams((params) => {
+                params.set('code', item.code);
+            });
+        },
+    });
+}
+
+const createTypeahead = ({ input, results, minChars, getMatches, renderItem, onSelect }) => {
+    if (!input || !results) {
+        return;
+    }
+
+    input.addEventListener('input', () => {
+        const query = input.value.trim().toLowerCase();
+        if (query.length < minChars) {
             results.innerHTML = '';
             results.classList.add('d-none');
             return;
         }
-        const matches = codes.filter((c) => c.name.toLowerCase().includes(query))
+
+        const matches = getMatches(query);
         results.innerHTML = '';
+        if (!matches.length) {
+            results.classList.add('d-none');
+            return;
+        }
+
         const fragment = document.createDocumentFragment();
-        matches.forEach((c) => {
+        matches.forEach((match) => {
             const item = document.createElement('button');
             item.type = 'button';
             item.className = 'list-group-item list-group-item-action';
-            item.innerHTML = `
-            <div class="fw-semibold">${c.name}</div>
-            <div class="text-muted small">${c.code} - ${levels[c.level]}</div>
-            `;
+            item.innerHTML = renderItem(match);
             item.addEventListener('click', () => {
-                const url = new URL(window.location.href);
-                url.searchParams.set('code', c.code);
-                window.location.href = url.toString();
+                onSelect(match);
             });
             fragment.appendChild(item);
         });
         results.appendChild(fragment);
-        results.classList.toggle('d-none', matches.length === 0);
+        results.classList.remove('d-none');
     });
-}
+};
 
 const updateChart = () => {
     const chartContainer = document.querySelector('#prescribing-chart');
