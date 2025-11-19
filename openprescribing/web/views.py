@@ -18,9 +18,9 @@ def index(request):
         api_url = None
 
     ctx = {
+        "bnf_code": bnf_code,
         "bnf_codes": list(BNFCode.objects.order_by("level", "name").values()),
         "bnf_levels": BNFCode.Level.choices,
-        "bnf_code": bnf_code,
         "prescribing_api_url": api_url,
     }
 
