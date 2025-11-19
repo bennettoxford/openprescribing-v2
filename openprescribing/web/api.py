@@ -2,7 +2,7 @@ import altair as alt
 from django.http import JsonResponse
 
 from openprescribing.data import rxdb
-from openprescribing.data.models import BNFCode
+from openprescribing.data.models import BNFCode, Org
 
 from .deciles import build_deciles_chart_df
 
@@ -20,6 +20,11 @@ def prescribing(request):
 
     with rxdb.get_cursor() as cursor:
         pdm = rxdb.get_practice_date_matrix(cursor, sql)
+
+    rlm = (
+        (org.id, org.id) for org in Org.objects.filter(org_type=Org.OrgType.PRACTICE)
+    )
+    pdm = pdm.group_rows_by_label(rlm)
 
     chart_df = build_deciles_chart_df(pdm, practice_id)
 
