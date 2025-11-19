@@ -23,6 +23,8 @@ def ingest():
         settings.DOWNLOAD_DIR.glob("list_size/*_v2_*")
     )
 
+    # List sizes are published on a different schedule from prescribing data, but we
+    # only care about files corresponding to periods for which we have prescribing data
     list_size_files = {
         date: filename
         for date, filename in list_size_files.items()
@@ -64,15 +66,14 @@ def ingest():
         [(f.name,) for f in all_files],
     )
 
-    # Create a view over all our prescribing source files as if they were a single
-    # table. We then query this view to build the rest of the tables we need.
+    # Create views over all our source files, presenting each group of files as if they
+    # were a single table. We then query these views to build the rest of the tables.
     conn.sql(
         "CREATE TEMPORARY VIEW prescribing_source AS "
         + sql_for_prescribing_source_view(
             prescribing_files,
         )
     )
-
     conn.sql(
         "CREATE TEMPORARY VIEW list_size_source AS "
         + sql_for_list_size_source_view(
@@ -83,9 +84,8 @@ def ingest():
     # Set the new database we're building as the default schema
     conn.sql("USE new")
 
-    # Ingest all the data by querying the `prescribing_source` view and writing the
-    # results to tables
-    ingest_prescribing_source(conn)
+    # Ingest all the data by querying the source views and writing the results to tables
+    ingest_sources(conn)
 
     conn.close()
     tmp_file.replace(target_file)
@@ -164,7 +164,7 @@ def sql_for_list_size_source_view(list_size_files_by_date):
     """
 
 
-def ingest_prescribing_source(conn):
+def ingest_sources(conn):
     log.info("Building `date` table")
     conn.sql("CREATE TABLE date AS " + sql_for_date_table())
 

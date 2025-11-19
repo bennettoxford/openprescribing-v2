@@ -4,7 +4,7 @@ import textwrap
 import duckdb
 import pyarrow
 
-from openprescribing.data.ingestors.prescribing import ingest_prescribing_source
+from openprescribing.data.ingestors.prescribing import ingest_sources
 
 
 PRESCRIBING_SOURCE_SCHEMA = pyarrow.schema(
@@ -118,7 +118,7 @@ def rxdb_ingest(conn, prescribing_data=(), list_size_data=()):
     # Register the PyArrow Tables so they can be queried like any other table in DuckDB
     conn.register("prescribing_source", prescribing_source)
     conn.register("list_size_source", list_size_source)
-    ingest_prescribing_source(conn)
+    ingest_sources(conn)
     conn.unregister("prescribing_source")
     conn.unregister("list_size_source")
 
