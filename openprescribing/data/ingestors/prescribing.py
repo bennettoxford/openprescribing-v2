@@ -19,6 +19,8 @@ def ingest():
         settings.DOWNLOAD_DIR.glob("prescribing/*")
     )
 
+    all_files = sorted(prescribing_files.values())
+
     conn = duckdb.connect()
 
     if target_file.exists():
@@ -30,11 +32,11 @@ def ingest():
     else:
         ingested_files = set()
 
-    if {f.name for f in prescribing_files.values()} == ingested_files:
+    if {f.name for f in all_files} == ingested_files:
         log.debug("No new data to ingest")
         return
 
-    for filename in prescribing_files.values():
+    for filename in all_files:
         log.info(f"Preparing to ingest file: {filename.name}")
 
     # Attach the file we're in the process of building under the schema name "new". The
@@ -49,7 +51,7 @@ def ingest():
     conn.sql("CREATE TABLE new.ingested_file (filename TEXT)")
     conn.executemany(
         "INSERT INTO new.ingested_file VALUES (?)",
-        sorted((f.name,) for f in prescribing_files.values()),
+        [(f.name,) for f in all_files],
     )
 
     # Create a view over all our prescribing source files as if they were a single
