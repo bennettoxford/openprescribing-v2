@@ -1,15 +1,10 @@
 import datetime
 import logging
 import re
-import tempfile
-from pathlib import Path
 
-from openprescribing.data.utils.csv_to_parquet import csv_to_parquet
-from openprescribing.data.utils.filename_utils import (
-    get_latest_files_by_date,
-    get_temp_filename_for,
-)
+from openprescribing.data.utils.filename_utils import get_latest_files_by_date
 from openprescribing.data.utils.http_session import HTTPSession
+from openprescribing.data.utils.remote_csv_utils import remote_csv_to_parquet
 
 
 log = logging.getLogger(__name__)
@@ -82,14 +77,3 @@ def get_items_to_fetch(existing_files, response_data):
     )
 
     return to_fetch
-
-
-def remote_csv_to_parquet(http, csv_url, output_filename, **parquet_kwargs):
-    with tempfile.TemporaryDirectory() as tmp_name:
-        csv_path = Path(tmp_name) / "file.csv"
-        http.download_to_file(csv_url, csv_path)
-        # Convert extracted CSV to Parquet
-        output_filename.parent.mkdir(parents=True, exist_ok=True)
-        parquet_tmp = get_temp_filename_for(output_filename)
-        csv_to_parquet(csv_path, parquet_tmp, **parquet_kwargs)
-        parquet_tmp.replace(output_filename)
