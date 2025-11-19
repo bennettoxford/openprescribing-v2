@@ -13,6 +13,7 @@
                     type="search"
                     class="form-control form-control-lg"
                     placeholder="e.g. Atorvastatin"
+                    {% if bnf_code %}value="{{ bnf_code.name }}"{% endif %}
                     autocomplete="off"
                 />
                 <div class="form-text">Enter at least 3 letters to see matching BNF codes.</div>
