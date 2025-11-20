@@ -41,7 +41,7 @@ def ingest_ods(conn):
     ORG_TYPE_QUERIES = {
         OrgType.REGION: "primaryRoleName = 'NHS ENGLAND (REGION)'",
         OrgType.ICB: "'INTEGRATED CARE BOARD' IN roleName",
-        OrgType.SICBL: "'SUB ICB LOCATION' IN roleName AND 'ICB COMMISSIONING PROXY' NOT IN roleName",
+        OrgType.SICBL: "'SUB ICB LOCATION' IN roleName",
         OrgType.PCN: "primaryRoleName = 'PRIMARY CARE NETWORK'",
         OrgType.PRACTICE: "'GP PRACTICE' IN roleName",
         OrgType.OTHER: "primaryRoleName = 'PRESCRIBING COST CENTRE' AND 'GP PRACTICE' NOT IN roleName",
