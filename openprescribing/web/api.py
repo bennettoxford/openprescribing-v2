@@ -22,9 +22,9 @@ def prescribing(request):
         pdm = rxdb.get_practice_date_matrix(cursor, sql)
 
     rlm = (
-        (org.id, org.id) for org in Org.objects.filter(org_type=Org.OrgType.PRACTICE)
+        (org.id, (org.id,)) for org in Org.objects.filter(org_type=Org.OrgType.PRACTICE)
     )
-    pdm = pdm.group_rows_by_label(rlm)
+    pdm = pdm.group_rows(rlm)
 
     chart_df = build_deciles_chart_df(pdm, practice_id)
 
