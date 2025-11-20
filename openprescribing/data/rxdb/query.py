@@ -43,8 +43,8 @@ def get_practice_date_matrix(cursor, sql, parameters=None, date_count=None):
     The `date_count` argument allows restricting to just the N most recent months of
     prescribing data.
 
-    Note that the column ordering doesn't matter here, and neither does the presence of
-    additional columns so as long as columns with those three names exist in the query.
+    Note that the exact form of the SQL doesn't matter so long as it selects at least
+    three columns with those names.
     """
     practice_codes, dates = get_practice_codes_and_dates(cursor, date_count)
 
