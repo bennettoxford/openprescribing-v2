@@ -37,16 +37,16 @@ def build_deciles_chart_df(pdm, practice_id):
 
 
 def _build_deciles_df(pdm):
-    percentiles = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
-    deciles_arr = np.nanpercentile(pdm.values, percentiles, axis=0)
+    centiles = [10, 20, 30, 40, 50, 60, 70, 80, 90]
+    deciles_arr = np.nanpercentile(pdm.values, centiles, axis=0)
     deciles_df = pd.DataFrame(deciles_arr, columns=pdm.col_labels)
     series = deciles_df.unstack()
     series.index.names = ["month", "line"]
     deciles_df = series.reset_index(name="value")
-    deciles_df["line"] = deciles_df["line"].apply(lambda n: f"decile-{n}")
+    deciles_df["line"] = deciles_df["line"].apply(lambda n: f"p{centiles[n]:02}")
     deciles_df["colour"] = "blue"
     deciles_df["dash"] = deciles_df["line"].apply(
-        lambda line: (6, 2) if line == "decile-5" else (2, 6)
+        lambda line: (6, 2) if line == "p50" else (2, 6)
     )
     return deciles_df
 
