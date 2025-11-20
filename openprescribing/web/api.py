@@ -12,14 +12,20 @@ def prescribing(request):
     practice_id = request.GET.get("practice_id")
     bnf_code = BNFCode.objects.get(code=code)
 
-    sql = f"""
+    ntr_sql = f"""
     SELECT practice_id, date_id, items AS value
     FROM prescribing
     WHERE bnf_code LIKE '{bnf_code.code}%'
     """
 
+    dtr_sql = "SELECT practice_id, date_id, total / 1000 AS value FROM list_size"
+
     with rxdb.get_cursor() as cursor:
-        pdm = rxdb.get_practice_date_matrix(cursor, sql)
+        # We currently have about 8 years (96 months) of list size data.
+        ntr_pdm = rxdb.get_practice_date_matrix(cursor, ntr_sql, date_count=96)
+        dtr_pdm = rxdb.get_practice_date_matrix(cursor, dtr_sql, date_count=96)
+
+    pdm = ntr_pdm / dtr_pdm
 
     practices = Org.objects.filter(org_type=Org.OrgType.PRACTICE)
     pdm = pdm.group_rows(practices.with_practice_ids())
@@ -35,7 +41,7 @@ def prescribing(request):
         .mark_line()
         .encode(
             x=alt.X("month:T", title="Month"),
-            y=alt.Y("value:Q", title="Items"),
+            y=alt.Y("value:Q", title="Items per 1000 patients"),
             detail="line",
             strokeDash=alt.StrokeDash("dash:N", legend=None, scale=None),
             color=alt.Color("colour:N", legend=None, scale=None),
