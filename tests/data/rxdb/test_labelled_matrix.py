@@ -1,4 +1,5 @@
 import numpy
+import pytest
 
 from openprescribing.data.rxdb.labelled_matrix import LabelledMatrix
 
@@ -65,3 +66,12 @@ def test_group_rows_by_label():
         [9, 0, 1],
         [0, 0, 0],
     ]
+
+    # Non-unique mappings are rejected
+    with pytest.raises(AssertionError):
+        matrix.group_rows(
+            (
+                ("X", ("A", "B", "C")),
+                ("Y", ("A", "C")),
+            )
+        )

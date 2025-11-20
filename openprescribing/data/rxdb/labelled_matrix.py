@@ -37,13 +37,15 @@ class LabelledMatrix:
 
             new_label_1 -> (old_label_1, old_label_2, old_label_3)
             new_label_2 -> (old_label_4, old_label_5)
-            new_label_3 -> (old_label_1, old_label_4)
+            new_label_3 -> (old_label_6,)
             new_label_4 -> ()
             ...
 
         Note a couple of things implied by this example:
 
-         * it's possible for the same input row to appear in multiple groups;
+         * it's possible for an output row to have only a single input in which case
+           there's no summing taking place, just a relablelling of the row;
+
          * it's possible for an output row to have no inputs at all, in which case its
            values will be zero.
 
@@ -90,6 +92,15 @@ def create_row_grouper(input_labels, label_map):
                 if label in input_label_index
             ]
         )
+
+    # We currently require that input rows appear in at most one output group. This is a
+    # guard against accidental misuse rather than a hard limitation. If we end up
+    # wanting to support summing an input row into multiple output groups then this
+    # check can be removed.
+    all_input_indexes = [i for group in output_label_groups for i in group]
+    assert len(all_input_indexes) == len(set(all_input_indexes)), (
+        "Single input row mapped to multiple output groups (see comments)"
+    )
 
     # Build the sparse grouping matrix: for each output label index, we add a 1 for each
     # row index in the input that is mapped to that label.
