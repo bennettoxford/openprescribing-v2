@@ -21,12 +21,14 @@ def prescribing(request):
     with rxdb.get_cursor() as cursor:
         pdm = rxdb.get_practice_date_matrix(cursor, sql)
 
-    rlm = (
-        (org.id, org.id) for org in Org.objects.filter(org_type=Org.OrgType.PRACTICE)
-    )
-    pdm = pdm.group_rows_by_label(rlm)
+    practices = Org.objects.filter(org_type=Org.OrgType.PRACTICE)
+    pdm = pdm.group_rows(practices.with_practice_ids())
 
-    chart_df = build_deciles_chart_df(pdm, practice_id)
+    if practice_id is not None:
+        practice = Org.objects.get(id=practice_id)
+    else:
+        practice = None
+    chart_df = build_deciles_chart_df(pdm, practice)
 
     chart = (
         alt.Chart(chart_df)

@@ -1,6 +1,5 @@
 import dataclasses
 import functools
-from collections import defaultdict
 from collections.abc import Hashable
 
 import numpy
@@ -8,7 +7,7 @@ import scipy.sparse
 
 
 type Label = Hashable | None
-LabelPair = tuple[Label, Label]
+LabelGroup = tuple[Label, ...]
 
 
 @dataclasses.dataclass
@@ -29,28 +28,36 @@ class LabelledMatrix:
     def __post_init__(self):
         assert self.values.shape == (len(self.row_labels), len(self.col_labels))
 
-    def group_rows_by_label(self, row_label_map: tuple[LabelPair, ...]):
+    def group_rows(self, row_label_map: tuple[tuple[Label, LabelGroup], ...]):
         """
-        Produce a new LabelledMatrix by mapping the existing set of rows to a new set
-        using the supplied mapping, grouping together (i.e. summing column-wise) any
-        rows which are mapped to the same output label.
+        Produce a new LabelledMatrix by mapping new output row labels to groups of input
+        row labels, summing column-wise any rows in the same group.
 
         The mapping should be supplied as a sequence of pairs:
 
-            old_label_1 -> new_label_1
-            old_label_2 -> new_label_1
-            old_label_3 -> new_label_2
-            old_label_4 -> new_label_2
+            new_label_1 -> (old_label_1, old_label_2, old_label_3)
+            new_label_2 -> (old_label_4, old_label_5)
+            new_label_3 -> (old_label_6,)
+            new_label_4 -> ()
             ...
 
-        Note that it's possible to just select a subset of rows without doing any
-        grouping simply by ensuring that each input row maps to at most one output row:
+        Note a couple of things implied by this example:
 
-            old_label_1 -> new_label_1
-            old_label_4- > new_label_2
-            old_label_9- > new_label_3
-            ...
+         * it's possible for an output row to have only a single input in which case
+           there's no summing taking place, just a relablelling of the row;
 
+         * it's possible for an output row to have no inputs at all, in which case its
+           values will be zero.
+
+        Note also a bit of behaviour not implied by the example: if an input label
+        doesn't exist in the input matrix then it's treated as having all zero values,
+        rather than this being an error. It means we can ask e.g. what the total
+        prescribing is for practices X, Y and Z and get the right answer even if
+        practice Z hasn't prescribed at all in the timeframe and so isn't present in the
+        input.
+
+        Finally, we require the mapping to be an immutable type because we want to use
+        caching and we can't use mutable values directly as cache keys.
         """
         row_grouper, new_row_labels = create_row_grouper(self.row_labels, row_label_map)
         grouped_values = row_grouper(self.values)
@@ -72,28 +79,35 @@ def create_row_grouper(input_labels, label_map):
     """
     input_label_index = {label: i for i, label in enumerate(input_labels)}
 
-    # Build a mapping from output labels to the list of input row indexes which are
-    # mapped to that label
-    output_labels = defaultdict(list)
-    for input_label, output_label in label_map:
-        input_indexes = output_labels[output_label]
-        try:
-            input_index = input_label_index[input_label]
-        except KeyError:
-            # It's convenient for our purposes if missing input row labels don't throw
-            # errors but are treated as, effectively, zero-valued rows. It means we ask
-            # e.g. what the total prescribing is for practices X, Y and Z and get the
-            # right answer even if practice Z hasn't prescribed at all and isn't present
-            # in the input.
-            continue
-        input_indexes.append(input_index)
+    output_labels = []
+    output_label_groups = []
+    for output_label, input_label_group in label_map:
+        output_labels.append(output_label)
+        output_label_groups.append(
+            [
+                input_label_index[label]
+                for label in input_label_group
+                # We filter any non-matching labels (see `group_rows()` docstring for
+                # why we do this)
+                if label in input_label_index
+            ]
+        )
+
+    # We currently require that input rows appear in at most one output group. This is a
+    # guard against accidental misuse rather than a hard limitation. If we end up
+    # wanting to support summing an input row into multiple output groups then this
+    # check can be removed.
+    all_input_indexes = [i for group in output_label_groups for i in group]
+    assert len(all_input_indexes) == len(set(all_input_indexes)), (
+        "Single input row mapped to multiple output groups (see comments)"
+    )
 
     # Build the sparse grouping matrix: for each output label index, we add a 1 for each
     # row index in the input that is mapped to that label.
     row_indices = []
     col_indices = []
     coefficients = []
-    for output_row_index, input_indexes in enumerate(output_labels.values()):
+    for output_row_index, input_indexes in enumerate(output_label_groups):
         row_indices.extend([output_row_index] * len(input_indexes))
         col_indices.extend(sorted(input_indexes))
         coefficients.extend([1] * len(input_indexes))

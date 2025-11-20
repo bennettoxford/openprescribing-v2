@@ -1,4 +1,5 @@
 import numpy
+import pytest
 
 from openprescribing.data.rxdb.labelled_matrix import LabelledMatrix
 
@@ -18,12 +19,10 @@ def test_group_rows_by_label():
     )
 
     # Split into two groups and sum within each group
-    summed_1 = matrix.group_rows_by_label(
+    summed_1 = matrix.group_rows(
         (
-            ("A", "one"),
-            ("B", "two"),
-            ("C", "one"),
-            ("D", "two"),
+            ("one", ("A", "C")),
+            ("two", ("B", "D")),
         )
     )
 
@@ -35,11 +34,11 @@ def test_group_rows_by_label():
     ]
 
     # Select a subset of rows, re-ordered and re-labelled but with no summing
-    summed_2 = matrix.group_rows_by_label(
+    summed_2 = matrix.group_rows(
         (
-            ("C", "H"),
-            ("B", "I"),
-            ("D", "J"),
+            ("H", ("C",)),
+            ("I", ("B",)),
+            ("J", ("D",)),
         )
     )
 
@@ -52,13 +51,11 @@ def test_group_rows_by_label():
     ]
 
     # Missing input rows are treated as empty
-    summed_3 = matrix.group_rows_by_label(
+    summed_3 = matrix.group_rows(
         (
-            ("A", "X"),
-            ("B", "X"),
-            ("D", "Y"),
-            ("_", "Y"),
-            ("*", "Z"),
+            ("X", ("A", "B")),
+            ("Y", ("D", "_")),
+            ("Z", ("*",)),
         )
     )
 
@@ -69,3 +66,12 @@ def test_group_rows_by_label():
         [9, 0, 1],
         [0, 0, 0],
     ]
+
+    # Non-unique mappings are rejected
+    with pytest.raises(AssertionError):
+        matrix.group_rows(
+            (
+                ("X", ("A", "B", "C")),
+                ("Y", ("A", "C")),
+            )
+        )
