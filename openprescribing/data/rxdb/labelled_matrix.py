@@ -7,7 +7,7 @@ import scipy.sparse
 
 
 type Label = Hashable | None
-LabelGroup = tuple[Label, ...]
+LabelGroup = tuple[Label, ...] | frozenset[Label, ...]
 
 
 @dataclasses.dataclass

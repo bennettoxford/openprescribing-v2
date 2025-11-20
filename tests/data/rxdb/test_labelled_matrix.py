@@ -68,7 +68,7 @@ def test_group_rows_by_label():
     ]
 
     # Non-unique mappings are rejected
-    with pytest.raises(AssertionError):
+    with pytest.raises(AssertionError, match="input row mapped to multiple"):
         matrix.group_rows(
             (
                 ("X", ("A", "B", "C")),
