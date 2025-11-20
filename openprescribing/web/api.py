@@ -40,7 +40,7 @@ def prescribing(request):
         alt.Chart(chart_df)
         .mark_line()
         .encode(
-            x=alt.X("month:T", title="Month"),
+            x=alt.X("month:T", title="Month", axis=alt.Axis(format="%Y %b")),
             y=alt.Y("value:Q", title="Items per 1000 patients"),
             detail="line",
             strokeDash=alt.StrokeDash("dash:N", legend=None, scale=None),
