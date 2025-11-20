@@ -28,6 +28,15 @@ class LabelledMatrix:
     def __post_init__(self):
         assert self.values.shape == (len(self.row_labels), len(self.col_labels))
 
+    def __truediv__(self, other):
+        assert self.row_labels == other.row_labels
+        assert self.col_labels == other.col_labels
+        # NumPy's default behaviour is for 0/0 to give np.nan and x/0 to give np.inf.
+        # We always want np.nan, since we might be displaying the result on a chart.
+        new_values = numpy.divide(self.values, other.values, where=(other.values != 0))
+        new_values[other.values == 0] = numpy.nan
+        return self.__class__(new_values, self.row_labels, self.col_labels)
+
     def group_rows(self, row_label_map: tuple[tuple[Label, LabelGroup], ...]):
         """
         Produce a new LabelledMatrix by mapping new output row labels to groups of input

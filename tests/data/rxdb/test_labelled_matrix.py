@@ -1,7 +1,17 @@
 import numpy
 import pytest
+from numpy.testing import assert_array_equal
 
 from openprescribing.data.rxdb.labelled_matrix import LabelledMatrix
+
+
+def test_div():
+    ntr = LabelledMatrix(numpy.array([[0, 1], [0, 1]]), ("A", "B"), (1, 2))
+    dtr = LabelledMatrix(numpy.array([[0, 0], [1, 1]]), ("A", "B"), (1, 2))
+    ratio = ntr / dtr
+    assert ratio.row_labels == ("A", "B")
+    assert ratio.col_labels == (1, 2)
+    assert_array_equal(ratio.values, numpy.array([[numpy.nan, numpy.nan], [0, 1]]))
 
 
 def test_group_rows_by_label():
