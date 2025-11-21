@@ -23,7 +23,7 @@ def pdm():
 
 @pytest.mark.django_db(databases=["data"])
 def test_build_chart_df(pdm):
-    chart_df = build_deciles_chart_df(pdm, practice=None)
+    chart_df = build_deciles_chart_df(pdm, org=None)
 
     expected_df = pd.DataFrame(
         [
@@ -56,7 +56,7 @@ def test_build_chart_df(pdm):
 
 @pytest.mark.django_db(databases=["data"])
 def test_build_chart_df_with_practice(pdm):
-    chart_df = build_deciles_chart_df(pdm, practice=Org.objects.get(id="PRAC05"))
+    chart_df = build_deciles_chart_df(pdm, org=Org.objects.get(id="PRAC05"))
 
     expected_df = pd.DataFrame(
         [
@@ -81,8 +81,8 @@ def test_build_chart_df_with_practice(pdm):
             ["2025-02-01", "p80", 17.0, "blue", (2, 6)],
             ["2025-02-01", "p90", 19.0, "blue", (2, 6)],
             # Note extra rows for practice
-            ["2025-01-01", "practice", 5.0, "red", (1, 0)],
-            ["2025-02-01", "practice", 6.0, "red", (1, 0)],
+            ["2025-01-01", "org", 5.0, "red", (1, 0)],
+            ["2025-02-01", "org", 6.0, "red", (1, 0)],
         ],
         columns=["month", "line", "value", "colour", "dash"],
     )

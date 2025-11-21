@@ -13,7 +13,7 @@ def index(request):
     api_url = None
 
     if org_id:
-        org = get_object_or_404(Org, id=org_id, org_type=Org.OrgType.PRACTICE)
+        org = get_object_or_404(Org, id=org_id)
 
     if code:
         bnf_code = get_object_or_404(BNFCode, code=code)
