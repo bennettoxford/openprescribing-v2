@@ -38,6 +38,9 @@ class Org(models.Model):
         db_table = "org"
 
     class OrgType(models.TextChoices):
+        # It is important that these choices are ordered such that larger organisation
+        # types come higher.  This is relied on when ingesting ODS data and when
+        # displaying organisations to users.
         NATION = ("nat", "Nation")
         REGION = ("reg", "Region")
         ICB = ("icb", "ICB")
