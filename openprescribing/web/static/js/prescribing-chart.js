@@ -2,6 +2,7 @@ const setupSearch = () => {
     const bnfCodes = JSON.parse(document.getElementById('bnf-codes').textContent);
     const bnfLevels = Object.fromEntries(JSON.parse(document.getElementById('bnf-levels').textContent));
     const orgs = JSON.parse(document.getElementById('orgs').textContent);
+    const orgTypes = Object.fromEntries(JSON.parse(document.getElementById('org-types').textContent));
 
     const bnfSearch = document.getElementById('bnf-search');
     const bnfResults = document.getElementById('bnf-results');
@@ -42,7 +43,7 @@ const setupSearch = () => {
         }),
         renderItem: (org) => `
             <div class="fw-semibold">${org.name}</div>
-            <div class="text-muted small">${org.id}</div>
+            <div class="text-muted small">${org.id} - ${orgTypes[org.org_type]}</div>
         `,
         onSelect: (org) => {
             navigateWithParams((params) => {

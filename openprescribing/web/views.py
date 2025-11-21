@@ -21,16 +21,20 @@ def index(request):
         if org_id:
             api_url += f"&org_id={org_id}"
 
+    bnf_codes = list(BNFCode.objects.order_by("level", "name").values())
+    org_type_levels = [c[0] for c in Org.OrgType.choices]
+    orgs = sorted(
+        Org.objects.order_by("name").values("id", "name", "org_type"),
+        key=lambda o: org_type_levels.index(o["org_type"]),
+    )
+
     ctx = {
         "bnf_code": bnf_code,
-        "bnf_codes": list(BNFCode.objects.order_by("level", "name").values()),
+        "bnf_codes": bnf_codes,
         "bnf_levels": BNFCode.Level.choices,
         "org": org,
-        "orgs": list(
-            Org.objects.filter(org_type=Org.OrgType.PRACTICE)
-            .order_by("name")
-            .values("id", "name")
-        ),
+        "orgs": orgs,
+        "org_types": Org.OrgType.choices,
         "prescribing_api_url": api_url,
     }
 
