@@ -1,6 +1,6 @@
 const setupSearch = () => {
     const bnfCodes = JSON.parse(document.getElementById('bnf-codes').textContent);
-    const levels = Object.fromEntries(JSON.parse(document.getElementById('bnf-levels').textContent));
+    const bnfLevels = Object.fromEntries(JSON.parse(document.getElementById('bnf-levels').textContent));
     const orgs = JSON.parse(document.getElementById('orgs').textContent);
 
     const bnfSearch = document.getElementById('bnf-search');
@@ -21,7 +21,7 @@ const setupSearch = () => {
         getMatches: (query) => bnfCodes.filter((c) => c.name.toLowerCase().includes(query)),
         renderItem: (item) => `
             <div class="fw-semibold">${item.name}</div>
-            <div class="text-muted small">${item.code} - ${levels[item.level]}</div>
+            <div class="text-muted small">${item.code} - ${bnfLevels[item.level]}</div>
         `,
         onSelect: (item) => {
             navigateWithParams((params) => {
