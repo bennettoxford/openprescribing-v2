@@ -34,7 +34,7 @@ def ingest(force=False):
     conn.close()
 
     count = Org.objects.count()
-    log.info(f"Ingested {count} organisations")
+    log.info(f"Ingested {count:,} organisations in total")
 
 
 def ingest_ods(conn):
@@ -55,7 +55,6 @@ def ingest_ods(conn):
         if org_type == OrgType.NATION:
             continue
 
-        log.info(f"Ingesting {org_type!r}")
         where_clause = ORG_TYPE_QUERIES[org_type]
         results = conn.execute(
             f"""
@@ -70,10 +69,9 @@ def ingest_ods(conn):
             """
         )
 
-        rows = results.fetchall()
-        assert rows, f"No orgs of type {org_type!r} found – aborting"
+        counts_by_status = {False: 0, True: 0}
 
-        for id_, name, inactive, related_ids in rows:
+        for id_, name, inactive, related_ids in results.fetchall():
             org = Org.objects.create(
                 id=id_, org_type=org_type, name=name, inactive=inactive
             )
@@ -84,6 +82,14 @@ def ingest_ods(conn):
             parent_ids = known_ids.intersection(related_ids)
             org.parents.add(*parent_ids)
             known_ids.add(id_)
+            counts_by_status[inactive] += 1
+
+        total = sum(counts_by_status.values())
+        log.info(
+            f"Ingested {total:,} orgs of {org_type!r} "
+            f"(of which {counts_by_status[False]:,} are active)"
+        )
+        assert total, f"No orgs of type {org_type!r} found – aborting"
 
     # Create a "dummy" organisation to represent all of NHS England and set it as the
     # parent of each of the regions. This avoids needing special logic elsewhere to

@@ -36,7 +36,7 @@ def ingest(force=False):
     conn.close()
 
     count = BNFCode.objects.count()
-    log.info(f"Ingested {count} BNF codes")
+    log.info(f"Ingested {count:,} BNF codes")
 
 
 def ingest_bnf_codes(conn):
