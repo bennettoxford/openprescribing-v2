@@ -28,13 +28,20 @@ class Command(BaseCommand):
             metavar="FETCHER_NAME",
             help=f"Available options: {', '.join(fetcher_choices)}",
         )
+        parser.add_argument(
+            "--quiet",
+            "-q",
+            action="store_true",
+            help="Don't produce output if there is nothing new to fetch",
+        )
 
-    def handle(self, fetcher_names, **options):
+    def handle(self, fetcher_names, quiet=False, **options):
         if "all" in fetcher_names:
             fetcher_names = self.available_fetchers.keys()
 
         log_handler = LogHandler(
             self.stdout.write,
+            log_level="INFO" if quiet else "DEBUG",
             # Knowing the length of the names upfront allows us to produce more readable
             # logs by justifying them correctly
             max_name_width=max(len(name) for name in fetcher_names),

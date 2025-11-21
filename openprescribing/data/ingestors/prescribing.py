@@ -13,7 +13,7 @@ from openprescribing.data.utils.filename_utils import (
 log = logging.getLogger(__name__)
 
 
-def ingest():
+def ingest(force=False):
     target_file = settings.PRESCRIBING_DATABASE
     prescribing_files = get_latest_files_by_date(
         settings.DOWNLOAD_DIR.glob("prescribing/*")
@@ -35,7 +35,7 @@ def ingest():
 
     conn = duckdb.connect()
 
-    if target_file.exists():
+    if not force and target_file.exists():
         conn.sql(f"ATTACH {escape(target_file)} AS old (READONLY)")
         ingested_files = {
             f["filename"]
@@ -167,15 +167,19 @@ def sql_for_list_size_source_view(list_size_files_by_date):
 def ingest_sources(conn):
     log.info("Building `date` table")
     conn.sql("CREATE TABLE date AS " + sql_for_date_table())
+    log.info(f"Ingested {count_table(conn, 'date'):,} dates")
 
     log.info("Building `practice` table")
     conn.sql("CREATE TABLE practice AS " + sql_for_practice_table())
+    log.info(f"Ingested {count_table(conn, 'practice'):,} practices")
 
     log.info("Building `presentation` table")
     conn.sql("CREATE TABLE presentation AS " + sql_for_presentation_table())
+    log.info(f"Ingested {count_table(conn, 'presentation'):,} presentations")
 
     log.info("Building `list_size_norm` table")
     conn.sql("CREATE TABLE list_size_norm AS " + sql_for_list_size_normalised())
+    log.info(f"Ingested {count_table(conn, 'list_size_norm'):,} list size rows")
 
     # We store the prescribing data in a fully normalised table ("prescribing_norm") so
     # that date and practice and presentation (bnf and snomed code) are stored as
@@ -233,6 +237,8 @@ def ingest_sources(conn):
             + " ORDER BY presentation_id, date_id, practice_id",
             params=[bnf_start, bnf_end],
         )
+
+    log.info(f"Ingested {count_table(conn, 'prescribing_norm'):,} prescribing rows")
 
     # To make ad-hoc queries of the data easier we create denormalised views which
     # include the practice codes, dates etc rather than just foreign keys
@@ -444,3 +450,7 @@ def fetch_as_dicts(conn, query):
     cursor = conn.execute(query)
     columns = [d[0] for d in cursor.description]
     return [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+
+def count_table(conn, table):
+    return conn.sql(f"SELECT COUNT(*) FROM {table}").fetchone()[0]

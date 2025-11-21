@@ -11,11 +11,13 @@ from openprescribing.data.utils.duckdb_utils import escape
 log = logging.getLogger(__name__)
 
 
-def ingest():
+def ingest(force=False):
     bnf_codes_files = settings.DOWNLOAD_DIR.glob("bnf_codes/*.parquet")
     latest_file = max(bnf_codes_files, default=None)
 
-    if not latest_file or latest_file.name <= IngestedFile.get_by_name("bnf_codes"):
+    if not force and (
+        not latest_file or latest_file.name <= IngestedFile.get_by_name("bnf_codes")
+    ):
         log.debug("Found no new data to ingest")
         return
 
@@ -34,7 +36,7 @@ def ingest():
     conn.close()
 
     count = BNFCode.objects.count()
-    log.info(f"Ingested {count} BNF codes")
+    log.info(f"Ingested {count:,} BNF codes")
 
 
 def ingest_bnf_codes(conn):

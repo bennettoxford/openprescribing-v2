@@ -71,3 +71,22 @@ def test_fetch_logging(monkeypatch, freezer):
         "2025-01-02T03:04:05 [  fetcher] world\n"
         "2025-01-02T03:04:05 [fetcher_2] another\n"
     )
+
+
+def test_fetch_logging_quiet(monkeypatch, freezer):
+    log = logging.getLogger("openprescribing.data.fetchers")
+
+    def fetcher(*_, **__):
+        log.debug("this should not appear")
+        log.info("but this should")
+
+    monkeypatch.setattr(
+        fetch.Command,
+        "available_fetchers",
+        {"fetcher": fetcher},
+    )
+
+    freezer.move_to("2025-01-02T03:04:05")
+    stdout = io.StringIO()
+    call_command("fetch", ["fetcher", "--quiet"], stdout=stdout)
+    assert stdout.getvalue() == "2025-01-02T03:04:05 [fetcher] but this should\n"
