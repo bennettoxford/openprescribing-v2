@@ -2,13 +2,13 @@ import numpy as np
 import pandas as pd
 
 
-def build_deciles_chart_df(pdm, practice_id):
+def build_deciles_chart_df(pdm, practice):
     """Return a DataFrame that can be passed to Altair to display a deciles chart.
 
     The chart will show blue dotted lines indicating the value at each decile for each
     month in the given PDM.  The median value will be shown in a heavier dashed line.
 
-    Additionally, if practice_id is not None, the chart will show a solid red line for
+    Additionally, if practice is not None, the chart will show a solid red line for
     that practice's values.
 
     The DataFrame will have one row per point on the chart, with the following columns:
@@ -29,10 +29,10 @@ def build_deciles_chart_df(pdm, practice_id):
     """
     deciles_df = _build_deciles_df(pdm)
 
-    if practice_id is None:
+    if practice is None:
         return deciles_df
     else:
-        practice_df = _build_practice_df(pdm, practice_id)
+        practice_df = _build_practice_df(pdm, practice)
         return pd.concat([deciles_df, practice_df], ignore_index=True)
 
 
@@ -51,8 +51,8 @@ def _build_deciles_df(pdm):
     return deciles_df
 
 
-def _build_practice_df(pdm, practice_id):
-    practice_ix = pdm.row_labels.index(practice_id)
+def _build_practice_df(pdm, practice):
+    practice_ix = pdm.row_labels.index(practice)
     practice_values = pdm.values[practice_ix]
     practice_df = pd.DataFrame(
         {
