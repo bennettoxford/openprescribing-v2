@@ -1,12 +1,12 @@
 const setupSearch = () => {
     const bnfCodes = JSON.parse(document.getElementById('bnf-codes').textContent);
     const levels = Object.fromEntries(JSON.parse(document.getElementById('bnf-levels').textContent));
-    const practices = JSON.parse(document.getElementById('practices').textContent);
+    const orgs = JSON.parse(document.getElementById('orgs').textContent);
 
     const bnfSearch = document.getElementById('bnf-search');
     const bnfResults = document.getElementById('bnf-results');
-    const practiceSearch = document.getElementById('practice-search');
-    const practiceResults = document.getElementById('practice-results');
+    const orgSearch = document.getElementById('org-search');
+    const orgResults = document.getElementById('org-results');
 
     const navigateWithParams = (updateFn) => {
         const url = new URL(window.location.href);
@@ -31,22 +31,22 @@ const setupSearch = () => {
     });
 
     createTypeahead({
-        input: practiceSearch,
-        results: practiceResults,
+        input: orgSearch,
+        results: orgResults,
         minChars: 2,
-        getMatches: (query) => practices.filter((practice) => {
+        getMatches: (query) => orgs.filter((org) => {
             return (
-                practice.name.toLowerCase().includes(query) ||
-                practice.id.toLowerCase().includes(query)
+                org.name.toLowerCase().includes(query) ||
+                org.id.toLowerCase().includes(query)
             );
         }),
-        renderItem: (practice) => `
-            <div class="fw-semibold">${practice.name}</div>
-            <div class="text-muted small">${practice.id}</div>
+        renderItem: (org) => `
+            <div class="fw-semibold">${org.name}</div>
+            <div class="text-muted small">${org.id}</div>
         `,
-        onSelect: (practice) => {
+        onSelect: (org) => {
             navigateWithParams((params) => {
-                params.set('practice_id', practice.id);
+                params.set('org_id', org.id);
             });
         },
     });

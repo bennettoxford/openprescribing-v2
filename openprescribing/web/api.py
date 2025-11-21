@@ -9,7 +9,7 @@ from .deciles import build_deciles_chart_df
 
 def prescribing(request):
     code = request.GET.get("code")
-    practice_id = request.GET.get("practice_id")
+    org_id = request.GET.get("org_id")
     bnf_code = BNFCode.objects.get(code=code)
 
     ntr_sql = f"""
@@ -30,11 +30,11 @@ def prescribing(request):
     practices = Org.objects.filter(org_type=Org.OrgType.PRACTICE)
     pdm = pdm.group_rows(practices.with_practice_ids())
 
-    if practice_id is not None:
-        practice = Org.objects.get(id=practice_id)
+    if org_id is not None:
+        org = Org.objects.get(id=org_id)
     else:
-        practice = None
-    chart_df = build_deciles_chart_df(pdm, practice)
+        org = None
+    chart_df = build_deciles_chart_df(pdm, org)
 
     chart = (
         alt.Chart(chart_df)

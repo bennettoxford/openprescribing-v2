@@ -14,5 +14,5 @@ def test_index(client):
     rsp = client.get("/?code=0601023AW")
     assert rsp.status_code == 200
 
-    rsp = client.get("/?code=0601023AW&practice_id=PRAC05")
+    rsp = client.get("/?code=0601023AW&org_id=PRAC05")
     assert rsp.status_code == 200

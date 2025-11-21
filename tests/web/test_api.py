@@ -33,5 +33,5 @@ def test_prescribing_with_practice(client, rxdb):
         ],
     )
 
-    rsp = client.get("/api/prescribing/?code=0601023AW&practice_id=PRAC05")
+    rsp = client.get("/api/prescribing/?code=0601023AW&org_id=PRAC05")
     assert rsp.status_code == 200

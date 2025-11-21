@@ -6,27 +6,27 @@ from openprescribing.data.models import BNFCode, Org
 
 def index(request):
     code = request.GET.get("code")
-    practice_id = request.GET.get("practice_id")
+    org_id = request.GET.get("org_id")
 
     bnf_code = None
-    practice = None
+    org = None
     api_url = None
 
-    if practice_id:
-        practice = get_object_or_404(Org, id=practice_id, org_type=Org.OrgType.PRACTICE)
+    if org_id:
+        org = get_object_or_404(Org, id=org_id, org_type=Org.OrgType.PRACTICE)
 
     if code:
         bnf_code = get_object_or_404(BNFCode, code=code)
         api_url = f"{reverse('api_prescribing')}?code={code}"
-        if practice_id:
-            api_url += f"&practice_id={practice_id}"
+        if org_id:
+            api_url += f"&org_id={org_id}"
 
     ctx = {
         "bnf_code": bnf_code,
         "bnf_codes": list(BNFCode.objects.order_by("level", "name").values()),
         "bnf_levels": BNFCode.Level.choices,
-        "practice": practice,
-        "practices": list(
+        "org": org,
+        "orgs": list(
             Org.objects.filter(org_type=Org.OrgType.PRACTICE)
             .order_by("name")
             .values("id", "name")
