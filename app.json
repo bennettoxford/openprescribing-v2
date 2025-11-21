@@ -1,8 +1,9 @@
 {
   "cron": [
     {
-      "command": "./manage.py fetch",
-      "schedule": "*/5 * * * *"
+      "command": "./manage.py fetch --quiet && echo 'done'",
+      "schedule": "* * * * *",
+      "concurrency_policy": "forbid"
     }
   ]
 }
