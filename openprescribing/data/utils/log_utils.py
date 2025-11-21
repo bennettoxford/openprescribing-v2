@@ -3,8 +3,9 @@ import logging
 
 
 class LogHandler:
-    def __init__(self, writer, max_name_width=0):
+    def __init__(self, writer, log_level="DEBUG", max_name_width=0):
         self.writer = writer
+        self.log_level = log_level
         self.max_name_width = max_name_width
 
         root_module = __name__.partition(".")[0]
@@ -28,7 +29,7 @@ class LogHandler:
         return self
 
     def __enter__(self):
-        self.logger.setLevel("DEBUG")
+        self.logger.setLevel(self.log_level)
         self.logger.addHandler(self.log_handler)
         return self
 

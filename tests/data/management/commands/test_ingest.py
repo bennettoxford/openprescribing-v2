@@ -83,3 +83,22 @@ def test_ingest_logging(monkeypatch, freezer):
         "2025-01-02T03:04:05 [  ingestor] world\n"
         "2025-01-02T03:04:05 [ingestor_2] another\n"
     )
+
+
+def test_ingest_logging_quiet(monkeypatch, freezer):
+    log = logging.getLogger("openprescribing.data.ingestors")
+
+    def ingestor(*_, **__):
+        log.debug("this should not appear")
+        log.info("but this should")
+
+    monkeypatch.setattr(
+        ingest.Command,
+        "available_ingestors",
+        {"ingestor": ingestor},
+    )
+
+    freezer.move_to("2025-01-02T03:04:05")
+    stdout = io.StringIO()
+    call_command("ingest", ["ingestor", "--quiet"], stdout=stdout)
+    assert stdout.getvalue() == "2025-01-02T03:04:05 [ingestor] but this should\n"

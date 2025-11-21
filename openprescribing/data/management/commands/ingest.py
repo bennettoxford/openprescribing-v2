@@ -31,6 +31,12 @@ class Command(BaseCommand):
             action="store_true",
             help="Force re-ingesting existing data",
         )
+        parser.add_argument(
+            "--quiet",
+            "-q",
+            action="store_true",
+            help="Don't produce output if there is nothing new to ingest",
+        )
 
     def handle(self, *args, **options):
         try:
@@ -44,12 +50,13 @@ class Command(BaseCommand):
                 )
             raise
 
-    def handle_inner(self, ingestor_names, force=False, **options):
+    def handle_inner(self, ingestor_names, force=False, quiet=False, **options):
         if "all" in ingestor_names:
             ingestor_names = self.available_ingestors.keys()
 
         log_handler = LogHandler(
             self.stdout.write,
+            log_level="INFO" if quiet else "DEBUG",
             # Knowing the length of the names upfront allows us to produce more readable
             # logs by justifying them correctly
             max_name_width=max(len(name) for name in ingestor_names),
