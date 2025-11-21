@@ -53,10 +53,6 @@ const setupSearch = () => {
 }
 
 const createTypeahead = ({ input, results, minChars, getMatches, renderItem, onSelect }) => {
-    if (!input || !results) {
-        return;
-    }
-
     input.addEventListener('input', () => {
         const query = input.value.trim().toLowerCase();
         if (query.length < minChars) {
@@ -90,10 +86,6 @@ const createTypeahead = ({ input, results, minChars, getMatches, renderItem, onS
 
 const updateChart = () => {
     const chartContainer = document.querySelector('#prescribing-chart');
-    if (!chartContainer) {
-        return;
-    }
-
     const prescribingApiUrl = JSON.parse(document.getElementById('prescribing-api-url').textContent);
 
     fetch(prescribingApiUrl)
