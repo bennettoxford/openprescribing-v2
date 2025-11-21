@@ -49,6 +49,13 @@ def ingest_ods(conn):
         OrgType.OTHER: "primaryRoleName = 'PRESCRIBING COST CENTRE' AND 'GP PRACTICE' NOT IN roleName",
     }
 
+    # Create a "dummy" organisation to represent all of NHS England and set it as the
+    # parent of every other organisation. This avoids needing special logic elsewhere to
+    # handle national totals.
+    nation = Org.objects.create(
+        id="ENGLAND", org_type=OrgType.NATION, name="NHS England", inactive=False
+    )
+
     known_ids = set()
 
     for org_type in OrgType:
@@ -80,7 +87,7 @@ def ingest_ods(conn):
             # creating relationships where the target already exists we know that all
             # the relationships are child->parent.
             parent_ids = known_ids.intersection(related_ids)
-            org.parents.add(*parent_ids)
+            org.parents.add(nation, *parent_ids)
             known_ids.add(id_)
             counts_by_status[inactive] += 1
 
@@ -90,12 +97,3 @@ def ingest_ods(conn):
             f"(of which {counts_by_status[False]:,} are active)"
         )
         assert total, f"No orgs of type {org_type!r} found – aborting"
-
-    # Create a "dummy" organisation to represent all of NHS England and set it as the
-    # parent of each of the regions. This avoids needing special logic elsewhere to
-    # handle national totals.
-    nation = Org.objects.create(
-        id="ENGLAND", org_type=OrgType.NATION, name="NHS England", inactive=False
-    )
-    for region in Org.objects.filter(org_type=OrgType.REGION):
-        region.parents.add(nation)
