@@ -2,14 +2,14 @@ import numpy as np
 import pandas as pd
 
 
-def build_deciles_chart_df(pdm, practice_id):
+def build_deciles_chart_df(odm, org):
     """Return a DataFrame that can be passed to Altair to display a deciles chart.
 
     The chart will show blue dotted lines indicating the value at each decile for each
     month in the given PDM.  The median value will be shown in a heavier dashed line.
 
-    Additionally, if practice_id is not None, the chart will show a solid red line for
-    that practice's values.
+    Additionally, if org is not None, the chart will show a solid red line for that
+    org's values.
 
     The DataFrame will have one row per point on the chart, with the following columns:
 
@@ -19,7 +19,7 @@ def build_deciles_chart_df(pdm, practice_id):
         * colour
         * dash
 
-    Points are grouped by line, which will be "decile-{n}" or "practice".
+    Points are grouped by line, which will be "decile-{n}" or "org".
 
     Dashes are specified as (on, off) pairs:
 
@@ -27,19 +27,19 @@ def build_deciles_chart_df(pdm, practice_id):
         * (6, 2) gives a dashed line
         * (1, 0) gives a continuous line
     """
-    deciles_df = _build_deciles_df(pdm)
+    deciles_df = _build_deciles_df(odm)
 
-    if practice_id is None:
+    if org is None:
         return deciles_df
     else:
-        practice_df = _build_practice_df(pdm, practice_id)
-        return pd.concat([deciles_df, practice_df], ignore_index=True)
+        org_df = _build_org_df(odm, org)
+        return pd.concat([deciles_df, org_df], ignore_index=True)
 
 
-def _build_deciles_df(pdm):
+def _build_deciles_df(odm):
     centiles = [10, 20, 30, 40, 50, 60, 70, 80, 90]
-    deciles_arr = np.nanpercentile(pdm.values, centiles, axis=0)
-    deciles_df = pd.DataFrame(deciles_arr, columns=pdm.col_labels)
+    deciles_arr = np.nanpercentile(odm.values, centiles, axis=0)
+    deciles_df = pd.DataFrame(deciles_arr, columns=odm.col_labels)
     series = deciles_df.unstack()
     series.index.names = ["month", "line"]
     deciles_df = series.reset_index(name="value")
@@ -51,16 +51,16 @@ def _build_deciles_df(pdm):
     return deciles_df
 
 
-def _build_practice_df(pdm, practice_id):
-    practice_ix = pdm.row_labels.index(practice_id)
-    practice_values = pdm.values[practice_ix]
-    practice_df = pd.DataFrame(
+def _build_org_df(odm, org):
+    org_ix = odm.row_labels.index(org)
+    org_values = odm.values[org_ix]
+    org_df = pd.DataFrame(
         {
-            "month": pdm.col_labels,
-            "line": "practice",
-            "value": practice_values,
+            "month": odm.col_labels,
+            "line": "org",
+            "value": org_values,
             "colour": "red",
-            "dash": [(1, 0)] * len(practice_values),
+            "dash": [(1, 0)] * len(org_values),
         }
     )
-    return practice_df
+    return org_df

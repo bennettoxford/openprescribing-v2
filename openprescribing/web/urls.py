@@ -5,5 +5,9 @@ from . import api, views
 
 urlpatterns = [
     path("", views.index),
-    path("api/prescribing/", api.prescribing, name="api_prescribing"),
+    path(
+        "api/prescribing-deciles/",
+        api.prescribing_deciles,
+        name="api_prescribing_deciles",
+    ),
 ]

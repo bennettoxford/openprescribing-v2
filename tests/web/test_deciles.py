@@ -3,6 +3,7 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
+from openprescribing.data.models import Org
 from openprescribing.data.rxdb.labelled_matrix import LabelledMatrix
 from openprescribing.web.deciles import build_deciles_chart_df
 
@@ -10,13 +11,19 @@ from openprescribing.web.deciles import build_deciles_chart_df
 @pytest.fixture
 def pdm():
     values = np.array([[i, i + 1] for i in range(21)])
-    practices = [f"PRAC{i:02}" for i in range(21)]
+    practices = [
+        Org.objects.create(
+            id=f"PRAC{i:02}", name=f"Practice {i}", org_type=Org.OrgType.PRACTICE
+        )
+        for i in range(21)
+    ]
     months = ["2025-01-01", "2025-02-01"]
     return LabelledMatrix(values, practices, months)
 
 
+@pytest.mark.django_db(databases=["data"])
 def test_build_chart_df(pdm):
-    chart_df = build_deciles_chart_df(pdm, practice_id=None)
+    chart_df = build_deciles_chart_df(pdm, org=None)
 
     expected_df = pd.DataFrame(
         [
@@ -47,8 +54,9 @@ def test_build_chart_df(pdm):
     assert_frame_equal(chart_df, expected_df)
 
 
+@pytest.mark.django_db(databases=["data"])
 def test_build_chart_df_with_practice(pdm):
-    chart_df = build_deciles_chart_df(pdm, practice_id="PRAC05")
+    chart_df = build_deciles_chart_df(pdm, org=Org.objects.get(id="PRAC05"))
 
     expected_df = pd.DataFrame(
         [
@@ -73,8 +81,8 @@ def test_build_chart_df_with_practice(pdm):
             ["2025-02-01", "p80", 17.0, "blue", (2, 6)],
             ["2025-02-01", "p90", 19.0, "blue", (2, 6)],
             # Note extra rows for practice
-            ["2025-01-01", "practice", 5.0, "red", (1, 0)],
-            ["2025-02-01", "practice", 6.0, "red", (1, 0)],
+            ["2025-01-01", "org", 5.0, "red", (1, 0)],
+            ["2025-02-01", "org", 6.0, "red", (1, 0)],
         ],
         columns=["month", "line", "value", "colour", "dash"],
     )

@@ -7,9 +7,9 @@ from openprescribing.data.models import BNFCode, Org
 from .deciles import build_deciles_chart_df
 
 
-def prescribing(request):
+def prescribing_deciles(request):
     code = request.GET.get("code")
-    practice_id = request.GET.get("practice_id")
+    org_id = request.GET.get("org_id")
     bnf_code = BNFCode.objects.get(code=code)
 
     ntr_sql = f"""
@@ -25,16 +25,21 @@ def prescribing(request):
         ntr_pdm = rxdb.get_practice_date_matrix(cursor, ntr_sql, date_count=96)
         dtr_pdm = rxdb.get_practice_date_matrix(cursor, dtr_sql, date_count=96)
 
-    pdm = ntr_pdm / dtr_pdm
-
-    practices = Org.objects.filter(org_type=Org.OrgType.PRACTICE)
-    pdm = pdm.group_rows(practices.with_practice_ids())
-
-    if practice_id is not None:
-        practice = Org.objects.get(id=practice_id)
+    if org_id is not None:
+        org = Org.objects.get(id=org_id)
+        org_type = org.org_type
     else:
-        practice = None
-    chart_df = build_deciles_chart_df(pdm, practice)
+        org = None
+        org_type = Org.OrgType.PRACTICE
+
+    org_to_practice_ids = Org.objects.filter(org_type=org_type).with_practice_ids()
+
+    ntr_odm = ntr_pdm.group_rows(org_to_practice_ids)
+    dtr_odm = dtr_pdm.group_rows(org_to_practice_ids)
+
+    odm = ntr_odm / dtr_odm
+
+    chart_df = build_deciles_chart_df(odm, org)
 
     chart = (
         alt.Chart(chart_df)

@@ -6,31 +6,35 @@ from openprescribing.data.models import BNFCode, Org
 
 def index(request):
     code = request.GET.get("code")
-    practice_id = request.GET.get("practice_id")
+    org_id = request.GET.get("org_id")
 
     bnf_code = None
-    practice = None
+    org = None
     api_url = None
 
-    if practice_id:
-        practice = get_object_or_404(Org, id=practice_id, org_type=Org.OrgType.PRACTICE)
+    if org_id:
+        org = get_object_or_404(Org, id=org_id)
 
     if code:
         bnf_code = get_object_or_404(BNFCode, code=code)
-        api_url = f"{reverse('api_prescribing')}?code={code}"
-        if practice_id:
-            api_url += f"&practice_id={practice_id}"
+        api_url = f"{reverse('api_prescribing_deciles')}?code={code}"
+        if org_id:
+            api_url += f"&org_id={org_id}"
+
+    bnf_codes = list(BNFCode.objects.order_by("level", "name").values())
+    org_type_levels = [c[0] for c in Org.OrgType.choices]
+    orgs = sorted(
+        Org.objects.order_by("name").values("id", "name", "org_type"),
+        key=lambda o: org_type_levels.index(o["org_type"]),
+    )
 
     ctx = {
         "bnf_code": bnf_code,
-        "bnf_codes": list(BNFCode.objects.order_by("level", "name").values()),
+        "bnf_codes": bnf_codes,
         "bnf_levels": BNFCode.Level.choices,
-        "practice": practice,
-        "practices": list(
-            Org.objects.filter(org_type=Org.OrgType.PRACTICE)
-            .order_by("name")
-            .values("id", "name")
-        ),
+        "org": org,
+        "orgs": orgs,
+        "org_types": Org.OrgType.choices,
         "prescribing_api_url": api_url,
     }
 

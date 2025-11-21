@@ -4,7 +4,7 @@ from openprescribing.data.models import BNFCode, Org
 
 
 @pytest.mark.django_db(databases=["data"])
-def test_prescribing(client, rxdb):
+def test_prescribing_deciles(client, rxdb):
     BNFCode.objects.create(code="0601023AW", name="Semaglutide", level=5)
     Org.objects.create(id="PRAC05", name="Practice 5", org_type=Org.OrgType.PRACTICE)
     rxdb.ingest(
@@ -16,12 +16,12 @@ def test_prescribing(client, rxdb):
         ],
     )
 
-    rsp = client.get("/api/prescribing/?code=0601023AW")
+    rsp = client.get("/api/prescribing-deciles/?code=0601023AW")
     assert rsp.status_code == 200
 
 
 @pytest.mark.django_db(databases=["data"])
-def test_prescribing_with_practice(client, rxdb):
+def test_prescribing_deciles_with_practice(client, rxdb):
     BNFCode.objects.create(code="0601023AW", name="Semaglutide", level=5)
     Org.objects.create(id="PRAC05", name="Practice 5", org_type=Org.OrgType.PRACTICE)
     rxdb.ingest(
@@ -33,5 +33,5 @@ def test_prescribing_with_practice(client, rxdb):
         ],
     )
 
-    rsp = client.get("/api/prescribing/?code=0601023AW&practice_id=PRAC05")
+    rsp = client.get("/api/prescribing-deciles/?code=0601023AW&org_id=PRAC05")
     assert rsp.status_code == 200
