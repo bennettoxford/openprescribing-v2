@@ -17,7 +17,7 @@ def index(request):
 
     if code:
         bnf_code = get_object_or_404(BNFCode, code=code)
-        api_url = f"{reverse('api_prescribing')}?code={code}"
+        api_url = f"{reverse('api_prescribing_deciles')}?code={code}"
         if org_id:
             api_url += f"&org_id={org_id}"
 

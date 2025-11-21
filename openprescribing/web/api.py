@@ -7,7 +7,7 @@ from openprescribing.data.models import BNFCode, Org
 from .deciles import build_deciles_chart_df
 
 
-def prescribing(request):
+def prescribing_deciles(request):
     code = request.GET.get("code")
     org_id = request.GET.get("org_id")
     bnf_code = BNFCode.objects.get(code=code)
