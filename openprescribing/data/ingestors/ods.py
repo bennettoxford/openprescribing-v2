@@ -11,11 +11,13 @@ from openprescribing.data.utils.duckdb_utils import escape
 log = logging.getLogger(__name__)
 
 
-def ingest():
+def ingest(force=False):
     ods_files = settings.DOWNLOAD_DIR.glob("ods/*.parquet")
     latest_file = max(ods_files, default=None)
 
-    if not latest_file or latest_file.name <= IngestedFile.get_by_name("ods"):
+    if not force and (
+        not latest_file or latest_file.name <= IngestedFile.get_by_name("ods")
+    ):
         log.debug("Found no new data to ingest")
         return
 

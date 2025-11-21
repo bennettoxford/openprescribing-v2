@@ -26,6 +26,11 @@ class Command(BaseCommand):
             metavar="INGESTOR_NAME",
             help=f"Available options: {', '.join(ingestor_choices)}",
         )
+        parser.add_argument(
+            "--force",
+            action="store_true",
+            help="Force re-ingesting existing data",
+        )
 
     def handle(self, *args, **options):
         try:
@@ -39,7 +44,7 @@ class Command(BaseCommand):
                 )
             raise
 
-    def handle_inner(self, ingestor_names, **options):
+    def handle_inner(self, ingestor_names, force=False, **options):
         if "all" in ingestor_names:
             ingestor_names = self.available_ingestors.keys()
 
@@ -53,4 +58,4 @@ class Command(BaseCommand):
         for name in ingestor_names:
             ingestor = self.available_ingestors[name]
             with log_handler.capture_logs_as(name):
-                ingestor()
+                ingestor(force=force)

@@ -13,7 +13,7 @@ from openprescribing.data.utils.filename_utils import (
 log = logging.getLogger(__name__)
 
 
-def ingest():
+def ingest(force=False):
     target_file = settings.PRESCRIBING_DATABASE
     prescribing_files = get_latest_files_by_date(
         settings.DOWNLOAD_DIR.glob("prescribing/*")
@@ -35,7 +35,7 @@ def ingest():
 
     conn = duckdb.connect()
 
-    if target_file.exists():
+    if not force and target_file.exists():
         conn.sql(f"ATTACH {escape(target_file)} AS old (READONLY)")
         ingested_files = {
             f["filename"]
