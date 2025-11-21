@@ -31,59 +31,62 @@ def test_org_repr():
 
 @pytest.mark.django_db(databases=["data"])
 def test_as_practice_code_map():
-    region = Org.objects.create(id="r", org_type=Org.OrgType.REGION)
-
-    for icb_i in range(3):
+    for icb_i in range(2):
         icb = Org.objects.create(id=f"icb{icb_i}", org_type=Org.OrgType.ICB)
-        icb.parents.add(region)
-        for pcn_i in range(3):
+        for pcn_i in range(2):
             pcn = Org.objects.create(id=f"pcn{icb_i}{pcn_i}", org_type=Org.OrgType.PCN)
             pcn.parents.add(icb)
-            for pra_i in range(3):
-                pra = Org.objects.create(
-                    id=f"pra{icb_i}{pcn_i}{pra_i}", org_type=Org.OrgType.PRACTICE
-                )
-                pra.parents.add(pcn)
+        for pra_i in range(3):
+            pra = Org.objects.create(
+                id=f"pra{icb_i}{pra_i}", org_type=Org.OrgType.PRACTICE
+            )
+            pra.parents.add(icb)
 
-    # Check that we get the right results when selecting a subset of ICBs
-    icbs = Org.objects.filter(org_type=Org.OrgType.ICB).exclude(id="icb1")
-    results = icbs.with_practice_ids()
+    result = Org.objects.filter(org_type=Org.OrgType.ICB).with_practice_ids()
 
-    expected = []
-    for icb_i in [0, 2]:
-        icb = Org.objects.get(id=f"icb{icb_i}")
-        practice_ids = frozenset(
-            f"pra{icb_i}{pcn_i}{pra_i}" for pcn_i in range(3) for pra_i in range(3)
-        )
-        expected.append((icb, practice_ids))
+    assert result == (
+        (
+            Org.objects.get(id="icb0"),
+            {"pra00", "pra01", "pra02"},
+        ),
+        (
+            Org.objects.get(id="icb1"),
+            {"pra10", "pra11", "pra12"},
+        ),
+    )
 
-    assert set(results) == set(expected)
 
-    # Check that we get the right results for the entire region
-    region_results = Org.objects.filter(id="r").with_practice_ids()
+@pytest.mark.django_db(databases=["data"])
+def test_as_practice_code_map_only_uses_direct_relations():
+    region = Org.objects.create(id="r", org_type=Org.OrgType.REGION)
+    icb = Org.objects.create(id="i", org_type=Org.OrgType.ICB)
+    practice = Org.objects.create(id="p", org_type=Org.OrgType.PRACTICE)
 
-    region_expected = [
+    icb.parents.add(region)
+    practice.parents.add(icb)
+
+    assert Org.objects.filter(id="r").with_practice_ids() == (
         (
             region,
-            frozenset(
-                f"pra{icb_i}{pcn_i}{pra_i}"
-                for icb_i in range(3)
-                for pcn_i in range(3)
-                for pra_i in range(3)
-            ),
-        )
+            frozenset(),
+        ),
+    )
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_as_practice_code_map_treats_practices_as_their_own_descendants():
+    practices = [
+        Org.objects.create(id=f"pra{i}", org_type=Org.OrgType.PRACTICE)
+        for i in range(3)
     ]
 
-    assert set(region_results) == set(region_expected)
-
-    # Check that empty results sets work without error
-    assert Org.objects.filter(id="MISSING").with_practice_ids() == ()
-
-    # Check that practices get mapped to themselves
-    practices = Org.objects.filter(
-        id__startswith="pra00", org_type=Org.OrgType.PRACTICE
+    assert Org.objects.with_practice_ids() == (
+        (practices[0], {"pra0"}),
+        (practices[1], {"pra1"}),
+        (practices[2], {"pra2"}),
     )
-    practice_results = practices.with_practice_ids()
 
-    practice_expected = {(p, frozenset([p.id])) for p in practices}
-    assert set(practice_results) == practice_expected
+
+@pytest.mark.django_db(databases=["data"])
+def test_as_practice_code_map_handles_empty_querysets():
+    assert Org.objects.with_practice_ids() == ()

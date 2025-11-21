@@ -1,4 +1,4 @@
-from django.db import connections, models
+from django.db import models
 
 
 class OrgQuerySet(models.QuerySet):
@@ -14,15 +14,22 @@ class OrgQuerySet(models.QuerySet):
         This is the structure required by `LabelledMatrix.group_rows()` so this can be
         used to group a practice-date matrix into higher level organisations.
         """
-        by_id = {org.id: (org, []) for org in self}
-        descendants = get_descendents_of_type(
-            org_type=Org.OrgType.PRACTICE,
-            org_ids=by_id.keys(),
+        orgs_by_id = {
+            org.id: (
+                org,
+                # We consider practices as "belonging" to themselves as this makes the
+                # behaviour we want elsewhere drop out neatly
+                [org.id] if org.org_type == Org.OrgType.PRACTICE else [],
+            )
+            for org in self
+        }
+        relations = OrgRelation.objects.filter(
+            parent__in=orgs_by_id.keys(), child__org_type=Org.OrgType.PRACTICE
         )
-        for org_id, practice_id in descendants:
-            by_id[org_id][1].append(practice_id)
+        for org_id, practice_id in relations.values_list("parent_id", "child_id"):
+            orgs_by_id[org_id][1].append(practice_id)
         return tuple(
-            (org, frozenset(practice_ids)) for org, practice_ids in by_id.values()
+            (org, frozenset(practice_ids)) for org, practice_ids in orgs_by_id.values()
         )
 
 
@@ -72,55 +79,3 @@ class OrgRelation(models.Model):
         on_delete=models.CASCADE,
         related_name="+",
     )
-
-
-def get_descendents_of_type(org_type, org_ids):
-    """
-    Given a list of Org IDs find all descendant Orgs of the requested type
-
-    Return the result as a list of pairs of IDs:
-
-        parent_org_1, descendant_org_1
-        parent_org_1, descendant_org_2
-        parent_org_2, descendant_org_3
-        ...
-
-    """
-    if not org_ids:
-        return []
-
-    org_id_placeholders = ", ".join(["(%s)"] * len(org_ids))
-    orgs_sql = f"""\
-    WITH RECURSIVE
-
-        root_org(id) AS (
-            VALUES {org_id_placeholders}
-        ),
-
-        descendant AS (
-            SELECT
-                root_org.id AS root_id,
-                root_org.id AS child_id
-            FROM
-                root_org
-
-            UNION ALL
-
-            SELECT
-                descendant.root_id,
-                org_relation.child_id
-            FROM
-                org_relation
-            JOIN
-                descendant ON descendant.child_id = org_relation.parent_id
-        )
-
-    SELECT DISTINCT
-      descendant.root_id,
-      org.id
-    FROM descendant
-    JOIN org ON org.id = descendant.child_id
-    WHERE org.org_type = %s
-    """
-    with connections["data"].cursor() as cursor:
-        return cursor.execute(orgs_sql, [*org_ids, org_type]).fetchall()
