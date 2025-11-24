@@ -9,6 +9,9 @@ from openprescribing.data.utils.duckdb_utils import escape
 
 __all__ = ["get_cursor"]
 
+# Force DuckDB to look for extension modules in the virtualenv rather than the user's
+# home directory (!)
+DUCKDB_EXTENSION_DIR = f"{sys.prefix}/duckdb"
 
 CONNECTION_MANAGER = None
 
@@ -51,9 +54,7 @@ class ConnectionManager:
         # read-only
         connection = duckdb.connect(
             config={
-                # Force DuckDB to look for extension modules in the virtualenv rather
-                # than the user's home directory (!)
-                "extension_directory": f"{sys.prefix}/duckdb"
+                "extension_directory": DUCKDB_EXTENSION_DIR,
             }
         )
         connection.execute(
