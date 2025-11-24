@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
+
+if [[ "${1:-}" == '' || "${1:-}" == '--help' || "${1:-}" == '-h' ]]; then
+  echo 'Usage: ddb-view FILE...'
+  echo
+  echo 'Reads a number of files of any type supported by DuckDB and UNIONs'
+  echo 'them together in a single view called `f`.'
+  echo
+  echo 'Rows in this view have an additional `_filename` column indicating'
+  echo 'their source file.'
+  exit 1
+fi
+
+join_str='UNION ALL BY NAME'
+union_query=''
+for filename in "$@"; do
+  escaped="${filename//\'/\'\'}"
+  select_query="SELECT *, '$escaped' AS _filename FROM '$escaped'"
+  if [[ -z "$union_query" ]]; then
+    union_query="$select_query"
+  else
+    union_query="$union_query $join_str $select_query"
+  fi
+done
+
+initial_query="SELECT * FROM f LIMIT 10;"
+
+extension_dir="$(dirname -- "$script_dir")/duckdb"
+escaped_extension_dir="${extension_dir//\'/\'\'}"
+
+cmd="\
+  SET extension_directory = '$escaped_extension_dir';
+  CREATE VIEW f AS $union_query;
+  $initial_query
+  "
+
+echo -e "\n  $initial_query\n"
+exec "$script_dir/duckdb" --cmd "$cmd"

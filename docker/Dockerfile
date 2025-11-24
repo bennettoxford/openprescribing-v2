@@ -117,8 +117,8 @@ RUN --mount=type=cache,target=/root/.cache \
 # DuckDB. And we also want the CLI tool for debugging and data investigation
 # purposes. This script installs these things. (We use `-u` for immediate
 # unbuffered output).
-RUN --mount=type=bind,source=scripts/install_duckdb_extras.py,target=/root/install_duckdb_extras.py \
-     /opt/venv/bin/python3 -u /root/install_duckdb_extras.py
+RUN --mount=type=bind,source=scripts/,target=/root/scripts \
+     /opt/venv/bin/python3 -u /root/scripts/install_duckdb_extras.py
 
 ##################################################
 #
