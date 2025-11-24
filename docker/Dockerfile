@@ -113,15 +113,12 @@ RUN --mount=type=cache,target=/root/.cache \
     --mount=type=bind,source=uv.lock,target=/root/uv.lock \
     uv sync --frozen --no-dev --no-install-project --directory /root
 
-# We need the SQLite extension to support attaching SQLite files in DuckDB.  By
-# default DuckDB lazily installs these extensions on first use, but we need to
-# do this as part of the container build process (DuckDB won't have permission
-# to do this later, even if installing stuff at runtime didn't already feel
-# like a bad idea).
-RUN /opt/venv/bin/python3 \
-    -c 'import duckdb, sys; \
-    conn = duckdb.connect(config={"extension_directory": f"{sys.prefix}/duckdb"}); \
-    conn.sql("INSTALL sqlite_scanner")'
+# We need to install the SQLite extension to support attaching SQLite files in
+# DuckDB. And we also want the CLI tool for debugging and data investigation
+# purposes. This script installs these things. (We use `-u` for immediate
+# unbuffered output).
+RUN --mount=type=bind,source=scripts/install_duckdb_extras.py,target=/root/install_duckdb_extras.py \
+     /opt/venv/bin/python3 -u /root/install_duckdb_extras.py
 
 ##################################################
 #
