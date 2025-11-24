@@ -118,6 +118,7 @@ RUN --mount=type=cache,target=/root/.cache \
 # purposes. This script installs these things. (We use `-u` for immediate
 # unbuffered output).
 RUN --mount=type=bind,source=scripts/install_duckdb_extras.py,target=/root/install_duckdb_extras.py \
+    --mount=type=bind,source=scripts/ddb-view,target=/root/ddb-view \
      /opt/venv/bin/python3 -u /root/install_duckdb_extras.py
 
 ##################################################

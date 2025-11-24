@@ -58,6 +58,19 @@ def install_cli():
     tmp_file.replace(target_bin)
 
 
+def install_ddb_view_script():
+    target_path = Path(sys.prefix) / "bin" / "ddb-view"
+    source_path = Path(__file__).parent / "ddb-view"
+    if (
+        target_path.exists()
+        and target_path.stat().st_mtime == source_path.stat().st_mtime
+    ):
+        return
+    print(f"Installing `ddb-view` script to {target_path}")
+    shutil.copy(source_path, target_path)
+
+
 if __name__ == "__main__":
     install_sqlite_extension()
     install_cli()
+    install_ddb_view_script()
