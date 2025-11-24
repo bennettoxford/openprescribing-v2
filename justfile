@@ -45,6 +45,7 @@ prodenv:
 # Install dev requirements into venv without removing extraneous packages
 devenv: _dotenv && install-precommit
     uv sync --inexact
+    uv run python scripts/install_duckdb_extras.py
 
 # Ensure precommit is installed
 install-precommit:
