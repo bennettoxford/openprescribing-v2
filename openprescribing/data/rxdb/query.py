@@ -1,3 +1,5 @@
+import functools
+
 import numpy
 from scipy.sparse._sparsetools import coo_todense
 
@@ -29,7 +31,13 @@ __all__ = ["get_practice_date_matrix"]
 # land on what looked like the optimal value. It may well be possible to improve it.
 RECORD_BATCH_SIZE = 2048 * 64
 
+# The largest of these matrices are about 16MB in size (140 dates x 15,000 practices x 8
+# bytes per value). Caching the most recently used 128 only takes 2GB of RAM and should
+# mean we can serve common queries from the cache.
+PRACTICE_DATE_MATRIX_CACHE_SIZE = 128
 
+
+@functools.lru_cache(maxsize=PRACTICE_DATE_MATRIX_CACHE_SIZE)
 def get_practice_date_matrix(cursor, sql, parameters=None, date_count=None):
     """
     Given a SQL query of the form:
@@ -69,6 +77,7 @@ def get_practice_date_matrix(cursor, sql, parameters=None, date_count=None):
     )
 
 
+@functools.cache
 def get_practice_codes_and_dates(cursor, date_count):
     """
     Find the N most recent dates for which we have prescribing data and all the practice
