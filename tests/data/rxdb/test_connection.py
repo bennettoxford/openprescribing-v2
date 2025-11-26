@@ -79,6 +79,7 @@ def test_get_cursor_cache_key_wrapper(tmp_path):
     sqlite_conn = sqlite3.connect(sqlite_file)
     sqlite_conn.executescript(
         """
+        PRAGMA journal_mode = WAL;
         CREATE TABLE foo (v INT);
         INSERT INTO foo VALUES (1), (2), (3);
         """
@@ -140,14 +141,25 @@ def test_get_cursor_cache_key_wrapper(tmp_path):
     assert cached_query.cache_info().hits == 1
     assert cached_query.cache_info().misses == 2
 
-    # Update the SQLite file
+    # Update the SQLite file and commit but don't force a WAL checkpoint
     sqlite_conn.execute("UPDATE foo SET v = v * 2")
     sqlite_conn.commit()
+
+    # Confirm that this still gives the previous cached result
+    with manager.get_cursor() as cursor:
+        results = cached_query(cursor, "SELECT * FROM foo UNION ALL SELECT * FROM bar")
+        assert results == [(1,), (2,), (3,), (10,), (11,), (12,)]
+
+    assert cached_query.cache_info().hits == 2
+    assert cached_query.cache_info().misses == 2
+
+    # Force a WAL checkpoint which will update the main database file
+    sqlite_conn.execute("PRAGMA wal_checkpoint(FULL)")
 
     # Confirm this results in a cache miss and gives fresh results
     with manager.get_cursor() as cursor:
         results = cached_query(cursor, "SELECT * FROM foo UNION ALL SELECT * FROM bar")
         assert results == [(2,), (4,), (6,), (10,), (11,), (12,)]
 
-    assert cached_query.cache_info().hits == 1
+    assert cached_query.cache_info().hits == 2
     assert cached_query.cache_info().misses == 3
