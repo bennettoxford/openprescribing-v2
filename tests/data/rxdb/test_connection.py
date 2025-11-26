@@ -33,14 +33,15 @@ def test_connection_get_cursor(tmp_path, monkeypatch, settings):
     # Confirm that we can read from both
     with connection.get_cursor() as cursor:
         results = cursor.execute("SELECT * FROM foo UNION ALL SELECT * FROM bar")
-        results.fetchall() == [(1,), (2,), (3,), (4,), (5,), (6,)]
+        assert results.fetchall() == [(1,), (2,), (3,), (4,), (5,), (6,)]
 
     # Update the SQLite table and confirm we can read the changes
     sqlite_conn.execute("UPDATE foo SET v = v * 2")
+    sqlite_conn.commit()
 
     with connection.get_cursor() as cursor:
         results = cursor.execute("SELECT * FROM foo UNION ALL SELECT * FROM bar")
-        results.fetchall() == [(2,), (4,), (6,), (4,), (5,), (6,)]
+        assert results.fetchall() == [(2,), (4,), (6,), (4,), (5,), (6,)]
 
     # Replace the DuckDB file and confirm that we pick up the new file and can read the
     # changes
@@ -57,4 +58,4 @@ def test_connection_get_cursor(tmp_path, monkeypatch, settings):
 
     with connection.get_cursor() as cursor:
         results = cursor.execute("SELECT * FROM foo UNION ALL SELECT * FROM bar")
-        results.fetchall() == [(2,), (4,), (6,), (10,), (11,), (12,)]
+        assert results.fetchall() == [(2,), (4,), (6,), (10,), (11,), (12,)]
