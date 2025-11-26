@@ -1,10 +1,13 @@
+import contextlib
 import datetime
 import textwrap
+import uuid
 
 import duckdb
 import pyarrow
 
 from openprescribing.data.ingestors.prescribing import ingest_sources
+from openprescribing.data.rxdb.connection import CursorCacheKeyWrapper
 
 
 PRESCRIBING_SOURCE_SCHEMA = pyarrow.schema(
@@ -72,6 +75,7 @@ class RXDBFixture:
     def __init__(self):
         self.conn = duckdb.connect()
         self.has_data = False
+        self.cache_key = None
 
     def get_cursor(self):
         if not self.has_data:  # pragma: no cover
@@ -92,7 +96,8 @@ class RXDBFixture:
 
             """
             raise RuntimeError(textwrap.dedent(msg))
-        return self.conn.cursor()
+        wrapped = CursorCacheKeyWrapper(self.conn.cursor(), self.cache_key)
+        return contextlib.closing(wrapped)
 
     def ingest(self, prescribing_data, list_size_data=()):
         rxdb_ingest(
@@ -101,6 +106,8 @@ class RXDBFixture:
             list_size_data=list_size_data,
         )
         self.has_data = True
+        # Use an arbitrary unique value here so tests never shared cached values
+        self.cache_key = uuid.uuid4()
 
 
 def rxdb_ingest(conn, prescribing_data=(), list_size_data=()):
