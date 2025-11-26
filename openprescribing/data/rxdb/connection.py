@@ -109,7 +109,81 @@ class ConnectionManager:
         # Search path needs to be set per-cursor for some reason; it isn't persistent on
         # the connection.
         self.set_search_path(cursor)
+        # Wrap the cursor in a class that allows it to function as a cache key
+        wrapped = CursorCacheKeyWrapper(
+            cursor,
+            # We chose the components of the `data_version_id` such that two cursors
+            # with the same ID can be expected to return the same results for the same
+            # query
+            data_version_id=(
+                self.duckdb_file,
+                self.duckdb_last_modified,
+                # There's a harmless edge case here in that (unlike the DuckDB file) the
+                # contents of the SQLite database could change between creating the
+                # cursor and executing a query. If this happens then we could end up
+                # caching newer data under an old cache key. However subsequent queries
+                # will use the newer cache key and so the effect is just a small amount
+                # of wasted work in storing a cached value that will never be used. And
+                # given how short-lived the cursors are and how infrequently the data
+                # changes I expect these to be extremely rare in any case.
+                self.sqlite_file,
+                self.sqlite_file.stat().st_mtime,
+                # Two cursors with the same files but different views could return
+                # different results so this should be part of the key as well
+                self.init_sql,
+            ),
+        )
         try:
-            yield cursor
+            yield wrapped
         finally:
-            cursor.close()
+            wrapped.close()
+
+
+class CursorCacheKeyWrapper:
+    """
+    Our data changes fairly infrequently and many of the queries we run against it are
+    quite expensive. This makes it a good candidate for caching. However caching brings
+    its own set of problems and so we want a system which:
+
+        (a) is simple to implement;
+        (b) doesn't require error-prone invalidation logic.
+
+    By placing the database cursor in a wrapper which is tagged with a "data version ID"
+    (an opaque value which changes whenever the contents of the database changes) we can
+    use it with Python's standard `functools.lru_cache` decorator:
+
+        @functools.lru_cache
+        def function_that_queries_rxdb(cursor, other_arg_1, other_arg_2):
+            ...
+
+    This will naturally do the right thing, so long as we ensure that wrapped cursors
+    compare equal if and only if their data version IDs are equal.
+    """
+
+    def __init__(self, cursor, data_version_id):
+        self.cursor = cursor
+        self.data_version_id = data_version_id
+
+    def __eq__(self, other):
+        return (
+            isinstance(other, self.__class__)
+            and self.data_version_id == other.data_version_id
+        )
+
+    def __hash__(self):
+        return hash(self.data_version_id)
+
+    def close(self):
+        self.cursor.close()
+        # We expect the wrapper object to hang around for some time as it's designed to
+        # get stored as part of the cache. However we very much don't want the
+        # underlying cursor to be stored: we want to discard that as soon as we no
+        # longer need it so that it can be garbage collected. So we drop the reference
+        # to it immediately after closing.
+        self.cursor = None
+
+    def execute(self, *args, **kwargs):
+        return self.cursor.execute(*args, **kwargs)
+
+    def sql(self, *args, **kwargs):
+        return self.cursor.sql(*args, **kwargs)
