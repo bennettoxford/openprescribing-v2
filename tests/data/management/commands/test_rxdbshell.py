@@ -9,6 +9,7 @@ from openprescribing.data.management.commands import rxdbshell
 
 
 def test_rxdbshell(tmp_path, settings, monkeypatch):
+    monkeypatch.setattr(rxdbshell, "CREATE_VIEWS_PATH", tmp_path / "views.sql")
     settings.PRESCRIBING_DATABASE = tmp_path / "prescribing.duckdb"
     settings.SQLITE_DATABASE = tmp_path / "data.sqlite"
 
@@ -32,10 +33,18 @@ def test_rxdbshell(tmp_path, settings, monkeypatch):
     )
     duckdb_conn.close()
 
+    # Create a view that reads from both databases
+    rxdbshell.CREATE_VIEWS_PATH.write_text(
+        """
+        CREATE VIEW test_view AS
+            SELECT * FROM foo UNION ALL SELECT * FROM bar;
+        """
+    )
+
     fake_exec = FakeExec(
-        # Select results from both databases (showing both are mounted) and get results
+        # Select results from view (showing both databases are mounted) and get results
         # as CSV
-        input=".mode csv\nSELECT * FROM foo UNION ALL SELECT * FROM bar",
+        input=".mode csv\nSELECT * FROM test_view",
         check=True,
         text=True,
         capture_output=True,
