@@ -2,11 +2,13 @@ import io
 import logging
 from unittest.mock import Mock
 
+import pytest
 from django.core.management import call_command
 
 from openprescribing.data.management.commands import ingest
 
 
+@pytest.mark.django_db(databases=["data"])
 def test_ingest_named_ingestor(monkeypatch):
     mock_ingestor_1 = Mock()
     mock_ingestor_2 = Mock()
@@ -25,6 +27,7 @@ def test_ingest_named_ingestor(monkeypatch):
     mock_ingestor_2.assert_not_called()
 
 
+@pytest.mark.django_db(databases=["data"])
 def test_ingest_all(monkeypatch):
     mock_ingestor_1 = Mock()
     mock_ingestor_2 = Mock()
@@ -43,6 +46,7 @@ def test_ingest_all(monkeypatch):
     mock_ingestor_2.assert_called_once_with(force=False)
 
 
+@pytest.mark.django_db(databases=["data"])
 def test_ingest_force(monkeypatch):
     mock_ingestor_1 = Mock()
     monkeypatch.setattr(
@@ -56,6 +60,7 @@ def test_ingest_force(monkeypatch):
     mock_ingestor_1.assert_called_once_with(force=True)
 
 
+@pytest.mark.django_db(databases=["data"])
 def test_ingest_logging(monkeypatch, freezer):
     log = logging.getLogger("openprescribing.data.ingestors")
 
@@ -85,6 +90,7 @@ def test_ingest_logging(monkeypatch, freezer):
     )
 
 
+@pytest.mark.django_db(databases=["data"])
 def test_ingest_logging_quiet(monkeypatch, freezer):
     log = logging.getLogger("openprescribing.data.ingestors")
 

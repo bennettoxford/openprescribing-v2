@@ -1,3 +1,4 @@
+import django.db
 from django.core.management.base import BaseCommand
 from django.db.utils import OperationalError
 
@@ -66,3 +67,28 @@ class Command(BaseCommand):
             ingestor = self.available_ingestors[name]
             with log_handler.capture_logs_as(name):
                 ingestor(force=force)
+                flush_sqlite_write_ahead_log()
+
+
+def flush_sqlite_write_ahead_log():
+    # This ensures that any committed data currently only stored in the `.wal` file gets
+    # moved into the main `.sqlite` file. SQLite does this automatically when the WAL
+    # gets to a certain size but we want to do it whenever the data changes as that
+    # gives us a couple of nice properties:
+    #
+    #  1. The last-modified timestamp on the database file becomes an accurate
+    #     indication of when any data last changed, which is useful for caching
+    #     purposes.
+    #
+    #  2. Copying the single SQLite file always results in an up-to-date copy of the
+    #     current production data.
+    #
+    # If there are no new commits in the WAL then this is a no-op and the last-modified
+    # timestamp remains unchanged.
+    conn = django.db.connections["data"]
+    with conn.cursor() as cursor:
+        # We use FULL (which ensures that the process completes) rather than default
+        # PASSIVE (which is best effort only). This blocks other writers but not other
+        # readers, which is fine for our purposes as `ingest` is the only writer.
+        # https://sqlite.org/pragma.html#pragma_wal_checkpoint
+        cursor.execute("PRAGMA wal_checkpoint(FULL)")
