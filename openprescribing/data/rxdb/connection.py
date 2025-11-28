@@ -1,4 +1,5 @@
 import contextlib
+import pathlib
 import sys
 
 import duckdb
@@ -13,6 +14,8 @@ __all__ = ["get_cursor"]
 # home directory (!)
 DUCKDB_EXTENSION_DIR = f"{sys.prefix}/duckdb"
 
+CREATE_VIEWS_PATH = pathlib.Path(__file__).parent / "create_views.sql"
+
 CONNECTION_MANAGER = None
 
 
@@ -22,14 +25,16 @@ def get_cursor():
         CONNECTION_MANAGER = ConnectionManager(
             duckdb_file=settings.PRESCRIBING_DATABASE,
             sqlite_file=settings.SQLITE_DATABASE,
+            init_sql=CREATE_VIEWS_PATH.read_text(),
         )
     return CONNECTION_MANAGER.get_cursor()
 
 
 class ConnectionManager:
-    def __init__(self, duckdb_file, sqlite_file):
+    def __init__(self, duckdb_file, sqlite_file, init_sql=""):
         self.duckdb_file = duckdb_file
         self.sqlite_file = sqlite_file
+        self.init_sql = init_sql
         self.duckdb_last_modified = None
         self.reconnect_if_duckdb_modified()
 
@@ -69,6 +74,10 @@ class ConnectionManager:
         # database files. Given that these are attached read-only there's now no
         # possibility of issuing SQL queries which modify any external state.
         connection.execute("SET enable_external_access = false")
+
+        # Run the initialisation SQL to create any views we might need
+        self.set_search_path(connection)
+        connection.execute(self.init_sql)
 
         # Ideally we'd also switch the mode of the in-memory database to read-only
         # using:

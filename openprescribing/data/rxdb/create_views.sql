@@ -1,0 +1,4 @@
+-- Views which only involve tables in `prescribing.duckdb` can be defined when building
+-- that file, but views which involve tables in the SQLite database must be defined
+-- here. These are initialised dynamically when the RXDB connection is created so
+-- there's no need for any migrations.
