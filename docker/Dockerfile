@@ -166,8 +166,8 @@ COPY . /app
 
 # set the entrypoint to ensure some basic tasks are performed before the cli command
 ENTRYPOINT ["/app/docker/entrypoints/prod.sh"]
-# set a default command (if needed; replace this comment if you do so)
-CMD ["gunicorn", "openprescribing.config.wsgi"]
+# run gunicorn to serve the app
+CMD ["gunicorn", "--config", "openprescribing/config/gunicorn.conf.py"]
 
 # finally, tag with build information. These will change regularly, therefore
 # we do them as the last action.
