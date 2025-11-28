@@ -60,7 +60,9 @@ class RXDBFixture:
        I don't know how long it will take to get the patch landed in DuckDB.)
 
      * Tests need to run in "transaction mode" using:
-       @pytest.mark.django_db(databases=["data"], transaction=True)
+
+           @pytest.mark.django_db(databases=["data"], transaction=True)
+
        This is because in order for DuckDB to see changes in the SQLite database they
        need to be commited, rather than held in temporary transactions.
 
