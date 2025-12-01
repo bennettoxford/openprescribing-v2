@@ -53,7 +53,7 @@ class LabelledMatrix:
         Note a couple of things implied by this example:
 
          * it's possible for an output row to have only a single input in which case
-           there's no summing taking place, just a relablelling of the row;
+           there's no summing taking place, just a relabelling of the row;
 
          * it's possible for an output row to have no inputs at all, in which case its
            values will be zero.
@@ -79,7 +79,7 @@ class LabelledMatrix:
 @functools.cache
 def create_row_grouper(input_labels, label_map):
     """
-    Construct a function which can efficiently sum together arbitrary groups of rows in a matrix
+    Construct a function which efficiently sums together groups of rows in a matrix
 
     All the number crunching here is done using a SciPy sparse matrix dot product, hence
     the efficiency. We just need to construct the appropriate sparse matrix. As with the
