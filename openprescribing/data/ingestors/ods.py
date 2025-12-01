@@ -68,7 +68,7 @@ def ingest_ods(conn):
             SELECT
                 id, name, inactive,
                 -- Combine the various fields which may contain related orgs IDs into a single list
-                isPartnerToCode || [PCO, ICB, NHSER] AS related_ids
+                isPartnerToCode || [RE4, ICB, NHSER] AS related_ids
             FROM
                 ods
             WHERE
