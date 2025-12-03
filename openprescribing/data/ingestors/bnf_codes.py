@@ -51,4 +51,9 @@ def ingest_bnf_codes(conn):
             """
         )
         for code, name in results.fetchall():
-            BNFCode(code=code, name=name, level=level).save()
+            # Where levels of the hierarchy are missing for a given presentation (e.g.
+            # bandages have no chemical substance) the source data repeats the code and
+            # name for the previous level. We want to ignore these repetitions.
+            BNFCode.objects.update_or_create(
+                code=code, name=name, create_defaults={"level": level}
+            )
