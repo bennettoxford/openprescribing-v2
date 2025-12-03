@@ -41,6 +41,23 @@ def test_bnf_codes_ingest(tmp_path, settings):
             "BNF_PRESENTATION": "Terazosin 2mg tablets and Terazosin 1mg tablets",
             "BNF_PRESENTATION_CODE": "0205040V0AAAAAA",
         },
+        # The source data contains some blank rows which we need to handle gracefully
+        {
+            "BNF_CHAPTER": None,
+            "BNF_CHAPTER_CODE": None,
+            "BNF_SECTION": None,
+            "BNF_SECTION_CODE": None,
+            "BNF_PARAGRAPH": None,
+            "BNF_PARAGRAPH_CODE": None,
+            "BNF_SUBPARAGRAPH": None,
+            "BNF_SUBPARAGRAPH_CODE": None,
+            "BNF_CHEMICAL_SUBSTANCE": None,
+            "BNF_CHEMICAL_SUBSTANCE_CODE": None,
+            "BNF_PRODUCT": None,
+            "BNF_PRODUCT_CODE": None,
+            "BNF_PRESENTATION": None,
+            "BNF_PRESENTATION_CODE": None,
+        },
     ]
 
     bnf_codes_file = settings.DOWNLOAD_DIR / "bnf_codes" / "bnf_codes.parquet"

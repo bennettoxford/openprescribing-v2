@@ -45,7 +45,10 @@ def ingest_bnf_codes(conn):
         name_column = f"BNF_{level.name}"
         code_column = f"BNF_{level.name}_CODE"
         results = conn.sql(
-            f"SELECT DISTINCT {code_column}, {name_column} FROM bnf_codes"
+            f"""
+            SELECT DISTINCT {code_column}, {name_column} FROM bnf_codes
+            WHERE {code_column} IS NOT NULL AND {name_column} IS NOT NULL
+            """
         )
         for code, name in results.fetchall():
             BNFCode(code=code, name=name, level=level).save()
