@@ -35,9 +35,6 @@ def ingest(force=False):
 
     conn.close()
 
-    count = BNFCode.objects.count()
-    log.info(f"Ingested {count:,} BNF codes")
-
 
 def ingest_bnf_codes(conn):
     # CHAPTER, SECTION, PARAGRAPH etc.
@@ -57,3 +54,5 @@ def ingest_bnf_codes(conn):
             BNFCode.objects.update_or_create(
                 code=code, name=name, create_defaults={"level": level}
             )
+        count = BNFCode.objects.filter(level=level).count()
+        log.info(f"Ingested {count:,} BNF codes of {level!r}")
