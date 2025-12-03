@@ -41,6 +41,41 @@ def test_bnf_codes_ingest(tmp_path, settings):
             "BNF_PRESENTATION": "Terazosin 2mg tablets and Terazosin 1mg tablets",
             "BNF_PRESENTATION_CODE": "0205040V0AAAAAA",
         },
+        # The source data contains some blank rows which we need to handle gracefully
+        {
+            "BNF_CHAPTER": None,
+            "BNF_CHAPTER_CODE": None,
+            "BNF_SECTION": None,
+            "BNF_SECTION_CODE": None,
+            "BNF_PARAGRAPH": None,
+            "BNF_PARAGRAPH_CODE": None,
+            "BNF_SUBPARAGRAPH": None,
+            "BNF_SUBPARAGRAPH_CODE": None,
+            "BNF_CHEMICAL_SUBSTANCE": None,
+            "BNF_CHEMICAL_SUBSTANCE_CODE": None,
+            "BNF_PRODUCT": None,
+            "BNF_PRODUCT_CODE": None,
+            "BNF_PRESENTATION": None,
+            "BNF_PRESENTATION_CODE": None,
+        },
+        # Not all levels of the hierarchy are always present which results in repeated
+        # values in the source data which we need to handle correctly
+        {
+            "BNF_CHAPTER": "Dressings",
+            "BNF_CHAPTER_CODE": "20",
+            "BNF_SECTION": "Arm Sling/Bandages",
+            "BNF_SECTION_CODE": "2002",
+            "BNF_PARAGRAPH": "Arm Sling/Bandages",
+            "BNF_PARAGRAPH_CODE": "2002",
+            "BNF_SUBPARAGRAPH": "Arm Sling/Bandages",
+            "BNF_SUBPARAGRAPH_CODE": "2002",
+            "BNF_CHEMICAL_SUBSTANCE": "Arm Sling/Bandages",
+            "BNF_CHEMICAL_SUBSTANCE_CODE": "2002",
+            "BNF_PRODUCT": "Arm sling web adjustable",
+            "BNF_PRODUCT_CODE": "20020100101",
+            "BNF_PRESENTATION": "Arm sling web adjustable",
+            "BNF_PRESENTATION_CODE": "20020100101",
+        },
     ]
 
     bnf_codes_file = settings.DOWNLOAD_DIR / "bnf_codes" / "bnf_codes.parquet"
@@ -59,6 +94,11 @@ def test_bnf_codes_ingest(tmp_path, settings):
             "name": "Cardiovascular System",
         },
         {
+            "code": "20",
+            "level": "CHAPTER",
+            "name": "Dressings",
+        },
+        {
             "code": "0201",
             "level": "SECTION",
             "name": "Positive inotropic drugs",
@@ -67,6 +107,11 @@ def test_bnf_codes_ingest(tmp_path, settings):
             "code": "0205",
             "level": "SECTION",
             "name": "Hypertension and heart failure",
+        },
+        {
+            "code": "2002",
+            "level": "SECTION",
+            "name": "Arm Sling/Bandages",
         },
         {
             "code": "020101",
@@ -107,6 +152,11 @@ def test_bnf_codes_ingest(tmp_path, settings):
             "code": "0205040V0AA",
             "level": "PRODUCT",
             "name": "Terazosin hydrochloride (Antihypertensive)",
+        },
+        {
+            "code": "20020100101",
+            "level": "PRODUCT",
+            "name": "Arm sling web adjustable",
         },
         {
             "code": "0201010F0AAAAAA",

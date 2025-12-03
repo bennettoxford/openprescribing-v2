@@ -35,9 +35,6 @@ def ingest(force=False):
 
     conn.close()
 
-    count = BNFCode.objects.count()
-    log.info(f"Ingested {count:,} BNF codes")
-
 
 def ingest_bnf_codes(conn):
     # CHAPTER, SECTION, PARAGRAPH etc.
@@ -45,7 +42,17 @@ def ingest_bnf_codes(conn):
         name_column = f"BNF_{level.name}"
         code_column = f"BNF_{level.name}_CODE"
         results = conn.sql(
-            f"SELECT DISTINCT {code_column}, {name_column} FROM bnf_codes"
+            f"""
+            SELECT DISTINCT {code_column}, {name_column} FROM bnf_codes
+            WHERE {code_column} IS NOT NULL AND {name_column} IS NOT NULL
+            """
         )
         for code, name in results.fetchall():
-            BNFCode(code=code, name=name, level=level).save()
+            # Where levels of the hierarchy are missing for a given presentation (e.g.
+            # bandages have no chemical substance) the source data repeats the code and
+            # name for the previous level. We want to ignore these repetitions.
+            BNFCode.objects.update_or_create(
+                code=code, name=name, create_defaults={"level": level}
+            )
+        count = BNFCode.objects.filter(level=level).count()
+        log.info(f"Ingested {count:,} BNF codes of {level!r}")
