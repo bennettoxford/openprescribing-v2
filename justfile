@@ -192,8 +192,8 @@ get-prod-data *args:
         just shell -v0 -c"from django.conf import settings; print(settings.$1)" 2>/dev/null
     }
 
-    local_work_dir=$(get_setting WORK_DIR)
-    remote_work_dir=$(ssh $HOST "dokku storage:list openprescribing" | cut -d: -f1)
+    local_work_dir=$(get_setting DATA_DIR)
+    remote_work_dir=$(ssh $HOST "dokku storage:list openprescribing" | grep -v downloads | cut -d: -f1)
 
     if [ "$#" -gt 0 ]; then
         databases=("$@")
