@@ -2,5 +2,3 @@
 *
 # Apart from this file
 !/.gitignore
-# Delegate this subdirectory
-!/data

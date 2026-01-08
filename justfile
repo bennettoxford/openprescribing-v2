@@ -165,7 +165,7 @@ fix:
     -just --fmt --unstable
 
 # Run manage.py commands
-manage *args:
+manage *args: _checkenv
     uv run python manage.py "$@"
 
 # Run database migrations over all databases
