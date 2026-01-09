@@ -1,4 +1,6 @@
-from openprescribing.data.utils.load_package_modules import load_all_modules_with_method
+from openprescribing.data.utils.load_package_modules import (
+    load_all_modules_with_function,
+)
 
 
-available_fetchers = load_all_modules_with_method(__path__, __name__, "fetch")
+available_fetchers = load_all_modules_with_function(__path__, __name__, "fetch")
