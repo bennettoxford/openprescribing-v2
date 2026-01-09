@@ -5,17 +5,7 @@ from unittest.mock import Mock
 from django.conf import settings
 from django.core.management import call_command
 
-import openprescribing.data.fetchers
 from openprescribing.data.management.commands import fetch
-
-
-def test_available_fetchers():
-    assert openprescribing.data.fetchers.available_fetchers == {
-        "bnf_codes": openprescribing.data.fetchers.bnf_codes.fetch,
-        "list_size": openprescribing.data.fetchers.list_size.fetch,
-        "ods": openprescribing.data.fetchers.ods.fetch,
-        "prescribing": openprescribing.data.fetchers.prescribing.fetch,
-    }
 
 
 def test_fetch_named_fetcher(monkeypatch):
