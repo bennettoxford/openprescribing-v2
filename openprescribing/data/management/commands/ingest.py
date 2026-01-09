@@ -2,21 +2,15 @@ import django.db
 from django.core.management.base import BaseCommand
 from django.db.utils import OperationalError
 
-import openprescribing.data.ingestors.bnf_codes
-import openprescribing.data.ingestors.ods
-import openprescribing.data.ingestors.prescribing
+import openprescribing.data.ingestors
 from openprescribing.data.utils.log_utils import LogHandler
 
 
 class Command(BaseCommand):
     help = "Run the specified functions to ingest previously fetched data"
 
-    # We can populate this dynamically in future but let's keep it simple for now
-    available_ingestors = {
-        "bnf_codes": openprescribing.data.ingestors.bnf_codes.ingest,
-        "ods": openprescribing.data.ingestors.ods.ingest,
-        "prescribing": openprescribing.data.ingestors.prescribing.ingest,
-    }
+    # keep a reference so that we can easily monkeypatch
+    available_ingestors = openprescribing.data.ingestors.available_ingestors
 
     def add_arguments(self, parser):
         ingestor_choices = ["all", *self.available_ingestors.keys()]
