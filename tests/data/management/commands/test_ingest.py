@@ -6,10 +6,19 @@ import django.db
 import pytest
 from django.core.management import call_command
 
+import openprescribing.data.ingestors
 from openprescribing.data.management.commands import ingest
 
 
 pytestmark = pytest.mark.django_db(databases=["data"])
+
+
+def test_available_ingestors():
+    assert openprescribing.data.ingestors.available_ingestors == {
+        "bnf_codes": openprescribing.data.ingestors.bnf_codes.ingest,
+        "ods": openprescribing.data.ingestors.ods.ingest,
+        "prescribing": openprescribing.data.ingestors.prescribing.ingest,
+    }
 
 
 def test_ingest_named_ingestor(monkeypatch):
