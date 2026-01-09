@@ -208,13 +208,13 @@ def ingest_sources(conn):
     )
 
     # The order in which we insert the normalised prescribing data is important because
-    # it changes how data is clustered on disk which changes query performance. We want
-    # data primarily ordered by `presentation_id` as that's what we most frequently
-    # query on and it's also the highest cardinality column (i.e. querying on it allows
-    # us to quickly discard a large proportion of the data). After that, `date_id` is
-    # the next most important as we will sometimes limit our queries by date. Finally we
-    # order by `practice_id`; we rarely query on this but it's better to have the data
-    # ordered than not.
+    # it allows DuckDB to produce more useful zonemaps, which improves query performance.
+    # We want data primarily ordered by `presentation_id` as that's what we most
+    # frequently query on and it's also the highest cardinality column (i.e. querying on
+    # it allows us to quickly discard a large proportion of the data). After that,
+    # `date_id` is the next most important as we will sometimes limit our queries by
+    # date. Finally we order by `practice_id`; we rarely query on this but it's better to
+    # have the data ordered than not.
     #
     # Due to the size of the prescribing data we can't just issue a single query to
     # fetch, sort and insert the data: DuckDB ends up spilling to disk while doing the
