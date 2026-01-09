@@ -1,23 +1,15 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand
 
-import openprescribing.data.fetchers.bnf_codes
-import openprescribing.data.fetchers.list_size
-import openprescribing.data.fetchers.ods
-import openprescribing.data.fetchers.prescribing
+import openprescribing.data.fetchers
 from openprescribing.data.utils.log_utils import LogHandler
 
 
 class Command(BaseCommand):
     help = "Run the specified fetcher functions to fetch external data"
 
-    # We can populate this dynamically in future but let's keep it simple for now
-    available_fetchers = {
-        "bnf_codes": openprescribing.data.fetchers.bnf_codes.fetch,
-        "list_size": openprescribing.data.fetchers.list_size.fetch,
-        "ods": openprescribing.data.fetchers.ods.fetch,
-        "prescribing": openprescribing.data.fetchers.prescribing.fetch,
-    }
+    # keep a reference here so that we can easily monkeypatch in tests
+    available_fetchers = openprescribing.data.fetchers.available_fetchers
 
     def add_arguments(self, parser):
         fetcher_choices = ["all", *self.available_fetchers.keys()]
