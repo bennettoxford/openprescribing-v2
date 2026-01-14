@@ -4,6 +4,12 @@
 # pragma: no cover file
 import os
 
+from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
 
 wsgi_app = "openprescribing.config.wsgi"
 
@@ -25,3 +31,22 @@ worker_class = "gthread"
 # needing to redeploy
 workers = int(os.environ.get("GUNICORN_WORKERS", 1))
 threads = int(os.environ.get("GUNICORN_THREADS", os.cpu_count()))
+
+
+# Because of Gunicorn's pre-fork web server model, we need to initialise opentelemetry
+# in gunicorn's post_fork method in order to instrument our application process, see:
+# https://opentelemetry-python.readthedocs.io/en/latest/examples/fork-process-model/README.html
+def post_fork(server, worker):
+    # opentelemetry initialisation needs this, so ensure its set
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "openprescribing.config.settings")
+    os.environ.setdefault("PYTHONPATH", "")
+    server.log.info("Worker spawned (pid: %s)", worker.pid)
+    resource = Resource.create(attributes={"service.name": "openprescribing-v2"})
+    trace.set_tracer_provider(TracerProvider(resource=resource))
+    if "OTEL_EXPORTER_OTLP_ENDPOINT" in os.environ:
+        span_processor = BatchSpanProcessor(OTLPSpanExporter())
+        trace.get_tracer_provider().add_span_processor(span_processor)
+
+    from opentelemetry.instrumentation.auto_instrumentation import (  # noqa: F401
+        sitecustomize,
+    )
