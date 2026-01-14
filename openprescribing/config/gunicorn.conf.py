@@ -37,15 +37,14 @@ threads = int(os.environ.get("GUNICORN_THREADS", os.cpu_count()))
 # in gunicorn's post_fork method in order to instrument our application process, see:
 # https://opentelemetry-python.readthedocs.io/en/latest/examples/fork-process-model/README.html
 def post_fork(server, worker):
-    # opentelemetry initialisation needs this, so ensure its set
+    # opentelemetry initialisation needs this, so ensure it's set
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "openprescribing.config.settings")
     os.environ.setdefault("PYTHONPATH", "")
     server.log.info("Worker spawned (pid: %s)", worker.pid)
-    resource = Resource.create(attributes={"service.name": "openprescribing-v2"})
+    resource = Resource.create(attributes={"service.name": "openprescribing"})
     trace.set_tracer_provider(TracerProvider(resource=resource))
-    if "OTEL_EXPORTER_OTLP_ENDPOINT" in os.environ:
-        span_processor = BatchSpanProcessor(OTLPSpanExporter())
-        trace.get_tracer_provider().add_span_processor(span_processor)
+    span_processor = BatchSpanProcessor(OTLPSpanExporter())
+    trace.get_tracer_provider().add_span_processor(span_processor)
 
     from opentelemetry.instrumentation.auto_instrumentation import (  # noqa: F401
         sitecustomize,
