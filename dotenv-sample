@@ -2,3 +2,7 @@ DJANGO_DEBUG="True"
 DJANGO_SECRET_KEY="django-insecure-_)wr$24j5r(iqyloz8i1@uo$h+bqxw_2(@6#r!f@8dsu^9*+py"
 OPENPRESCRIBING_DATA_DIR="work_dir/data"
 OPENPRESCRIBING_DOWNLOAD_DIR="work_dir/downloads"
+OTEL_EXPORTER_OTLP_ENDPOINT=https://api.honeycomb.io
+OTEL_EXPORTER_OTLP_HEADERS="x-honeycomb-team=<your-api-key>"
+OTEL_SERVICE_NAME="openprescribing-v2"
+OTEL_SEMCONV_STABILITY_OPT_IN=http
