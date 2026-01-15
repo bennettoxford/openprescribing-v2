@@ -13,6 +13,10 @@ from openprescribing.data.utils.duckdb_utils import (
 
 __all__ = ["get_practice_date_matrix"]
 
+from opentelemetry import trace
+
+
+tracer = trace.get_tracer("rxdb")
 
 # Sets the number of rows we fetch in each batch from DuckDB. There's no perfect answer
 # to what size these batches should be, but here are some considerations:
@@ -54,27 +58,30 @@ def get_practice_date_matrix(cursor, sql, parameters=None, date_count=None):
     Note that the exact form of the SQL doesn't matter so long as it selects at least
     three columns with those names.
     """
-    practice_codes, dates = get_practice_codes_and_dates(cursor, date_count)
+    with tracer.start_as_current_span("get_practice_date_matrix") as span:
+        span.set_attribute("sql", sql)
 
-    values = get_grouped_sum_ndarray(
-        cursor,
-        row_count=len(practice_codes),
-        col_count=len(dates),
-        sql=f"""
-        SELECT
-            practice_id AS row_index,
-            date_id AS column_index,
-            value
-        FROM ({sql})
-        """,
-        parameters=parameters,
-    )
+        practice_codes, dates = get_practice_codes_and_dates(cursor, date_count)
 
-    return LabelledMatrix(
-        values,
-        row_labels=practice_codes,
-        col_labels=dates,
-    )
+        values = get_grouped_sum_ndarray(
+            cursor,
+            row_count=len(practice_codes),
+            col_count=len(dates),
+            sql=f"""
+            SELECT
+                practice_id AS row_index,
+                date_id AS column_index,
+                value
+            FROM ({sql})
+            """,
+            parameters=parameters,
+        )
+
+        return LabelledMatrix(
+            values,
+            row_labels=practice_codes,
+            col_labels=dates,
+        )
 
 
 @functools.cache
