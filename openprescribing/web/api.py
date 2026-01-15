@@ -1,5 +1,6 @@
 import altair as alt
 from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 
 from openprescribing.data import rxdb
 from openprescribing.data.models import BNFCode, Org
@@ -8,15 +9,22 @@ from .deciles import build_deciles_chart_df
 
 
 def prescribing_deciles(request):
-    code = request.GET.get("code")
+    codes = request.GET.get("codes").split(",")
+
     org_id = request.GET.get("org_id")
-    bnf_code = BNFCode.objects.get(code=code)
+    bnf_codes = [get_object_or_404(BNFCode, code=code) for code in codes]
+
+    where_clause = " OR ".join(
+        [f"bnf_code LIKE '{bnf_code.code}%'" for bnf_code in bnf_codes]
+    )
 
     ntr_sql = f"""
     SELECT practice_id, date_id, items AS value
     FROM prescribing
-    WHERE bnf_code LIKE '{bnf_code.code}%'
+    WHERE {where_clause}
     """
+
+    org_id = request.GET.get("org_id")
 
     dtr_sql = "SELECT practice_id, date_id, total / 1000 AS value FROM list_size"
 

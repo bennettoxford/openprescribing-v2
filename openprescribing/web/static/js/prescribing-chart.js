@@ -108,6 +108,9 @@ const updateChart = () => {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    setupSearch();
+    // Only initialise the Typeahead search on pages that use it
+    if (document.getElementById('bnf-codes')) {
+      setupSearch();
+    }
     updateChart();
 });
