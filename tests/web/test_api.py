@@ -1,37 +1,13 @@
 import pytest
 
-from openprescribing.data.models import BNFCode, Org
-
 
 @pytest.mark.django_db(databases=["data"])
-def test_prescribing_deciles(client, rxdb):
-    BNFCode.objects.create(code="0601023AW", name="Semaglutide", level=5)
-    Org.objects.create(id="PRAC05", name="Practice 5", org_type=Org.OrgType.PRACTICE)
-    rxdb.ingest(
-        prescribing_data=[
-            {"bnf_code": "0601023AWAAAEAE", "practice_code": "PRAC05", "items": 10},
-        ],
-        list_size_data=[
-            {"practice_code": "PRAC05", "total": 20},
-        ],
-    )
-
-    rsp = client.get("/api/prescribing-deciles/?code=0601023AW")
+def test_prescribing_deciles(client, sample_data):
+    rsp = client.get("/api/prescribing-deciles/?code=1001030U0")
     assert rsp.status_code == 200
 
 
 @pytest.mark.django_db(databases=["data"])
-def test_prescribing_deciles_with_practice(client, rxdb):
-    BNFCode.objects.create(code="0601023AW", name="Semaglutide", level=5)
-    Org.objects.create(id="PRAC05", name="Practice 5", org_type=Org.OrgType.PRACTICE)
-    rxdb.ingest(
-        [
-            {"bnf_code": "0601023AWAAAEAE", "practice_code": "PRAC05", "items": 10},
-        ],
-        list_size_data=[
-            {"practice_code": "PRAC05", "total": 20},
-        ],
-    )
-
-    rsp = client.get("/api/prescribing-deciles/?code=0601023AW&org_id=PRAC05")
+def test_prescribing_deciles_with_practice(client, sample_data):
+    rsp = client.get("/api/prescribing-deciles/?code=1001030U0&org_id=PRA00")
     assert rsp.status_code == 200
