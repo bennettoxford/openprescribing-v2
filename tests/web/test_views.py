@@ -34,6 +34,13 @@ def test_multiple_bnf_search(client, sample_data):
     assert rsp.status_code == 200
     assert "/api/prescribing-deciles/?codes=1001030U0AAABAB,1001030U0AAABAB" in rsp.text
 
+    rsp = client.get("/bnf_codes/?codes=1001030U0AA%0D%0A-1001030U0AAABAB")
+    assert rsp.status_code == 200
+    assert (
+        "/api/prescribing-deciles/?codes=1001030U0AA,-1001030U0AAABAB"
+        in rsp.content.decode("utf-8")
+    )
+
 
 @pytest.mark.xfail
 @pytest.mark.django_db(databases=["data"])
