@@ -22,15 +22,22 @@ def test_bnf_search(client, sample_data):
 
 
 @pytest.mark.django_db(databases=["data"])
-def test_multiple_bnf_search(client):
-    BNFCode.objects.create(code="0601023AW", name="Semaglutide", level=5)
-    Org.objects.create(id="PRAC05", name="Practice 5", org_type=Org.OrgType.PRACTICE)
-
+def test_multiple_bnf_search(client, sample_data):
     rsp = client.get("/bnf_codes/")
     assert rsp.status_code == 200
 
-    rsp = client.get("/bnf_codes/?code=0601023AW")
+    rsp = client.get("/bnf_codes/?codes=1001030U0")
     assert rsp.status_code == 200
+    assert "/api/prescribing-deciles/?codes=1001030U0" in rsp.text
 
-    rsp = client.get("/bnf_codes/?code=0601023AW&org_id=PRAC05")
+    rsp = client.get("/bnf_codes/?codes=1001030U0AAABAB%0D%0A1001030U0AAABAB")
     assert rsp.status_code == 200
+    assert "/api/prescribing-deciles/?codes=1001030U0AAABAB,1001030U0AAABAB" in rsp.text
+
+
+@pytest.mark.xfail
+@pytest.mark.django_db(databases=["data"])
+def test_multiple_bnf_search_with_org(client, sample_data):
+    rsp = client.get("/bnf_codes/?codes=1001030U0&org_id=PRA00")
+    assert rsp.status_code == 200
+    assert "/api/prescribing-deciles/?codes=1001030U0&org_id=PRA00" in rsp.text
