@@ -7,6 +7,19 @@
         <div class="card h-100">
             <div class="card-body">
                 <h1 class="h4">Search for a single BNF code</h1>
+                <form>
+                   <div class="mb-3">
+                     <label for="code" class="form-label">BNF code</label>
+                     <input
+                         type="text"
+                         class="form-control"
+                         id="code"
+                         name="code"
+                         value="{{ bnf_code.code }}"
+                     >
+                   </div>
+                   <button type="submit" class="btn btn-primary">Submit</button>
+                 </form>
             </div>
         </div>
     </div>
