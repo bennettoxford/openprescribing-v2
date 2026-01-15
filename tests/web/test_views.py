@@ -1,7 +1,5 @@
 import pytest
 
-from openprescribing.data.models import BNFCode, Org
-
 
 def test_index(client):
     rsp = client.get("/")
@@ -12,15 +10,12 @@ def test_index(client):
 
 
 @pytest.mark.django_db(databases=["data"])
-def test_bnf_search(client):
-    BNFCode.objects.create(code="0601023AW", name="Semaglutide", level=5)
-    Org.objects.create(id="PRAC05", name="Practice 5", org_type=Org.OrgType.PRACTICE)
-
+def test_bnf_search(client, sample_data):
     rsp = client.get("/bnf_code/")
     assert rsp.status_code == 200
 
-    rsp = client.get("/bnf_code/?code=0601023AW")
+    rsp = client.get("/bnf_code/?code=1001030U0")
     assert rsp.status_code == 200
 
-    rsp = client.get("/bnf_code/?code=0601023AW&org_id=PRAC05")
+    rsp = client.get("/bnf_code/?code=1001030U0&org_id=PRA00")
     assert rsp.status_code == 200
