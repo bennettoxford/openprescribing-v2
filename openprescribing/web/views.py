@@ -5,6 +5,10 @@ from openprescribing.data.models import BNFCode, Org
 
 
 def index(request):
+    return render(request, "index.html")
+
+
+def bnf_code(request):
     code = request.GET.get("code")
     org_id = request.GET.get("org_id")
 
@@ -38,4 +42,4 @@ def index(request):
         "prescribing_api_url": api_url,
     }
 
-    return render(request, "index.html", ctx)
+    return render(request, "bnf_code.html", ctx)
