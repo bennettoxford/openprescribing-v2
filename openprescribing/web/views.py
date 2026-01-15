@@ -21,7 +21,7 @@ def bnf_code(request):
 
     if code:
         bnf_code = get_object_or_404(BNFCode, code=code)
-        api_url = f"{reverse('api_prescribing_deciles')}?code={code}"
+        api_url = f"{reverse('api_prescribing_deciles')}?codes={code}"
         if org_id:
             api_url += f"&org_id={org_id}"
 
@@ -46,24 +46,27 @@ def bnf_code(request):
 
 
 def bnf_codes(request):
-    code = request.GET.get("code")
+    codes = request.GET.get("codes", "")
     org_id = request.GET.get("org_id")
 
-    bnf_code = None
+    bnf_codes = [get_object_or_404(BNFCode, code=code) for code in codes.split()]
+
     org = None
     api_url = None
 
     if org_id:
         org = get_object_or_404(Org, id=org_id)
 
-    if code:
-        bnf_code = get_object_or_404(BNFCode, code=code)
-        api_url = f"{reverse('api_prescribing_deciles')}?code={code}"
+    if codes:
+        api_url = (
+            f"{reverse('api_prescribing_deciles')}?codes={','.join(codes.split())}"
+        )
         if org_id:
             api_url += f"&org_id={org_id}"
 
     ctx = {
-        "bnf_code": bnf_code,
+        "codes": codes,
+        "bnf_codes": bnf_codes,
         "org": org,
         "prescribing_api_url": api_url,
     }
