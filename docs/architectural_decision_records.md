@@ -65,10 +65,39 @@ Some process guidance may be helpful.
   we should treat *records* as immutable.
   (We should treat *decisions* as mutable, as later decisions my supersede earlier decisions.)
 
+## 001: Using a single `Org` model
+
+We have decided to use a single `Org` model for all types of organisation (e.g. nation, region, ICB).
+
+Experience tells us that fundamentally,
+an organisation is an entity with a code, a name, and a collection of practices.
+These entities exist in a hierarchy with parents and children.
+The type of organisation is important, but not *that* important.
+
+We considered using a model for each type of organisation (e.g. `Nation`, `Region`, `Icb`).
+Doing so, however, makes it hard to work with objects that could belong to any type of organisation,
+such as sign-ups for alerts.
+To work with such objects, we could
+use [generic relations][5], but [these are hard to work with][6].
+Alternatively, we could use one attribute for each type of organisation,
+but experience tells us that these are hard to work with, too:
+if we needed to add a new type of organisation, for example,
+then we would have to update each object that could belong to any type of organisation.
+
+The [Organisation Data Service][] (ODS) provide the data in this way,
+through the [Data Search and Export Service][].
+We create objects from this data,
+but we don't update or delete these objects.
+Consequently, we don't need to enforce data integrity constraints.
+
 [1]: https://www.gov.uk/government/publications/architectural-decision-record-framework/architectural-decision-record-framework
 [2]: https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions
 [3]: https://en.wikipedia.org/wiki/Architecturally_significant_requirements
 [4]: https://researchrepository.ul.ie/entities/publication/a79ae7f9-449c-4bb9-8b0b-a33d25b5af7f
+[5]: https://docs.djangoproject.com/en/6.0/ref/contrib/contenttypes/#generic-relations
+[6]: https://lukeplant.me.uk/blog/posts/avoid-django-genericforeignkey/
 [Azure Well-Architected Framework]: https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record
+[Data Search and Export Service]: https://www.odsdatasearchandexport.nhs.uk/
 [Documenting Software Architectures: Views and Beyond]: https://learning.oreilly.com/library/view/documenting-software-architectures/9780132488617/
 [Einstellung effect]: https://en.wikipedia.org/wiki/Einstellung_effect
+[Organisation Data Service]: https://digital.nhs.uk/services/organisation-data-service
