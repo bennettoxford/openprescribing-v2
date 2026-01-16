@@ -29,20 +29,20 @@
                     <h1 class="h4 mb-0">Prescribing data</h1>
                     <h4>Included codes</h4>
                     <p>
-                        {% for bnf_code in bnf_codes_inclusion %}
-                        {{bnf_code.name}} <code>{{ bnf_code.code }}</code>
+		        {% for item in description.includes %}
+			{{ item.description }} <code>{{ item.code }}</code>
                         {% endfor %}
                     </p>
-                    {% if bnf_codes_exclusion %}
+                    {% if description.excludes %}
                     <h4>Excluded codes</h4>
                     <p>
-                        {% for bnf_code in bnf_codes_exclusion %}
-                        {{bnf_code.name}} <code>{{ bnf_code.code }}</code>
+                        {% for item in description.excludes %}
+                        {{ item.description }} <code>{{ item.code }}</code>
                         {% endfor %}
                     </p>
                     {% endif %}
                 </div>
-                {% if bnf_codes_inclusion %}
+                {% if codes %}
                 <div id="prescribing-chart" class="py-3">Loading chart...</div>
                 {% else %}
                 <div class="text-center text-muted py-5">

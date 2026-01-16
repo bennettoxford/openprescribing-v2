@@ -41,3 +41,29 @@ def _build_q(term):
         return Q(code__startswith=prefix, code__endswith=suffix)
     else:
         return Q(code__startswith=term)
+
+
+def describe_search(query):
+    """Return dictionary describing the query.
+
+    See docstring of search() for description of query.
+    """
+
+    query = sorted(query)
+    return {
+        "includes": [_describe_term(term) for term in query if term[0] != "-"],
+        "excludes": [_describe_term(term[1:]) for term in query if term[0] == "-"],
+    }
+
+
+def _describe_term(term):
+    if "_" in term:
+        assert term.count("_") == 1
+        prefix, suffix = term.split("_")
+        assert len(prefix) == 9  # chemical code
+        assert len(suffix) == 2  # strength and formulation
+        generic_code_obj = BNFCode.objects.get(code=f"{prefix}AA{suffix}{suffix}")
+        description = f"{generic_code_obj.name} (branded and generic)"
+    else:
+        description = BNFCode.objects.get(code=term).name
+    return {"code": term, "description": description}
