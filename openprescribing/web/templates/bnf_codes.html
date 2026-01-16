@@ -15,7 +15,7 @@
                         id="codes"
                         name="codes"
                         style="height: 400px;"
-                    >{{ codes }}</textarea>
+                    >{% if codes %}{{ codes }}{% endif %}</textarea>
                   </div>
                   <button type="submit" class="btn btn-primary">Submit</button>
                 </form>
