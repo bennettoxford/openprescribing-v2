@@ -18,8 +18,9 @@ def search(query):
         the given strength and formulation.
     """
 
-    includes = [_build_q(term) for term in query if term[0] != "-"]
-    excludes = [_build_q(term[1:]) for term in query if term[0] == "-"]
+    fragments = [build_fragment(term) for term in query]
+    includes = [f.build_q() for f in fragments if not f.negated]
+    excludes = [f.build_q() for f in fragments if f.negated]
 
     results = (
         BNFCode.objects.filter(level=BNFCode.Level.PRESENTATION)
@@ -32,38 +33,59 @@ def search(query):
     return list(results)
 
 
-def _build_q(term):
-    if "_" in term:
-        assert term.count("_") == 1
-        prefix, suffix = term.split("_")
-        assert len(prefix) == 9  # chemical code
-        assert len(suffix) == 2  # strength and formulation
-        return Q(code__startswith=prefix, code__endswith=suffix)
-    else:
-        return Q(code__startswith=term)
-
-
 def describe_search(query):
     """Return dictionary describing the query.
 
     See docstring of search() for description of query.
     """
 
-    query = sorted(query)
+    fragments = [build_fragment(term) for term in sorted(query)]
     return {
-        "includes": [_describe_term(term) for term in query if term[0] != "-"],
-        "excludes": [_describe_term(term[1:]) for term in query if term[0] == "-"],
+        "includes": [f.describe() for f in fragments if not f.negated],
+        "excludes": [f.describe() for f in fragments if f.negated],
     }
 
 
-def _describe_term(term):
-    if "_" in term:
-        assert term.count("_") == 1
-        prefix, suffix = term.split("_")
-        assert len(prefix) == 9  # chemical code
-        assert len(suffix) == 2  # strength and formulation
-        generic_code_obj = BNFCode.objects.get(code=f"{prefix}AA{suffix}{suffix}")
-        description = f"{generic_code_obj.name} (branded and generic)"
+def build_fragment(term):
+    if term[0] == "-":
+        negated = True
+        term = term[1:]
     else:
-        description = BNFCode.objects.get(code=term).name
-    return {"code": term, "description": description}
+        negated = False
+    if "_" in term:
+        return StrengthAndFormulationFragment(term, negated)
+    else:
+        return PrefixFragment(term, negated)
+
+
+class PrefixFragment:
+    def __init__(self, term, negated):
+        self.term = term
+        self.negated = negated
+
+    def build_q(self):
+        return Q(code__startswith=self.term)
+
+    def describe(self):
+        description = BNFCode.objects.get(code=self.term).name
+        return {"code": self.term, "description": description}
+
+
+class StrengthAndFormulationFragment:
+    def __init__(self, term, negated):
+        self.term = term
+        self.negated = negated
+        assert term.count("_") == 1
+        self.prefix, self.suffix = term.split("_")
+        assert len(self.prefix) == 9  # chemical code
+        assert len(self.suffix) == 2  # strength and formulation
+
+    def build_q(self):
+        return Q(code__startswith=self.prefix, code__endswith=self.suffix)
+
+    def describe(self):
+        generic_code_obj = BNFCode.objects.get(
+            code=f"{self.prefix}AA{self.suffix}{self.suffix}"
+        )
+        description = f"{generic_code_obj.name} (branded and generic)"
+        return {"code": self.term, "description": description}
