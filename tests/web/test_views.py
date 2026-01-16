@@ -4,9 +4,7 @@ import pytest
 def test_index(client):
     rsp = client.get("/")
     assert rsp.status_code == 200
-    assert "Prescribing data over time for a single BNF Code" in rsp.content.decode(
-        "utf-8"
-    )
+    assert "Prescribing data over time for a single BNF Code" in rsp.text
 
 
 @pytest.mark.django_db(databases=["data"])
@@ -36,10 +34,7 @@ def test_multiple_bnf_search(client, sample_data):
 
     rsp = client.get("/bnf_codes/?codes=1001030U0AA%0D%0A-1001030U0AAABAB")
     assert rsp.status_code == 200
-    assert (
-        "/api/prescribing-deciles/?codes=1001030U0AA,-1001030U0AAABAB"
-        in rsp.content.decode("utf-8")
-    )
+    assert "/api/prescribing-deciles/?codes=1001030U0AA,-1001030U0AAABAB" in rsp.text
 
 
 @pytest.mark.xfail
