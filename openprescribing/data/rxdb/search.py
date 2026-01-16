@@ -17,12 +17,10 @@ def search(query):
 
     results = (
         BNFCode.objects.filter(level=BNFCode.Level.PRESENTATION)
-        .filter(reduce(Q.__or__, includes))
+        .filter(reduce(Q.__or__, includes, Q()))
+        .exclude(reduce(Q.__or__, excludes, Q()))
         .order_by("code")
         .values_list("code", flat=True)
     )
-
-    if excludes:
-        results = results.exclude(reduce(Q.__or__, excludes))
 
     return list(results)
