@@ -49,7 +49,13 @@ def bnf_codes(request):
     codes = request.GET.get("codes", "")
     org_id = request.GET.get("org_id")
 
-    bnf_codes = [get_object_or_404(BNFCode, code=code) for code in codes.split()]
+    bnf_codes_inclusion = []
+    bnf_codes_exclusion = []
+    for code in codes.split():
+        if code[0] == "-":
+            bnf_codes_exclusion.append(get_object_or_404(BNFCode, code=code[1:]))
+        else:
+            bnf_codes_inclusion.append(get_object_or_404(BNFCode, code=code))
 
     org = None
     api_url = None
@@ -66,7 +72,8 @@ def bnf_codes(request):
 
     ctx = {
         "codes": codes,
-        "bnf_codes": bnf_codes,
+        "bnf_codes_inclusion": bnf_codes_inclusion,
+        "bnf_codes_exclusion": bnf_codes_exclusion,
         "org": org,
         "prescribing_api_url": api_url,
     }

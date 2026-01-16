@@ -12,16 +12,28 @@ def prescribing_deciles(request):
     codes = request.GET.get("codes").split(",")
 
     org_id = request.GET.get("org_id")
-    bnf_codes = [get_object_or_404(BNFCode, code=code) for code in codes]
+    bnf_codes_inclusion = []
+    bnf_codes_exclusion = []
+    for code in codes:
+        if code[0] == "-":
+            bnf_codes_exclusion.append(get_object_or_404(BNFCode, code=code[1:]))
+        else:
+            bnf_codes_inclusion.append(get_object_or_404(BNFCode, code=code))
 
-    where_clause = " OR ".join(
-        [f"bnf_code LIKE '{bnf_code.code}%'" for bnf_code in bnf_codes]
+    inclusion_clause = " OR ".join(
+        [f"bnf_code LIKE '{bnf_code.code}%'" for bnf_code in bnf_codes_inclusion]
     )
+    if bnf_codes_exclusion:
+        exclusion_clause = " AND NOT " + " OR ".join(
+            [f"bnf_code LIKE '{bnf_code.code}%'" for bnf_code in bnf_codes_exclusion]
+        )
+    else:
+        exclusion_clause = ""
 
     ntr_sql = f"""
     SELECT practice_id, date_id, items AS value
     FROM prescribing
-    WHERE {where_clause}
+    WHERE {inclusion_clause} {exclusion_clause}
     """
 
     org_id = request.GET.get("org_id")
