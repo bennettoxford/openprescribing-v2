@@ -40,13 +40,7 @@ def prevent_rxdb_access():
 
 
 @pytest.fixture
-def sample_data(rxdb):
-    """This fixture generates three months (Jan-Mar 2025) of list size and prescribing
-    data (for generic and branded methotrexate) for four practices in two ICBs.
-
-    This data should be just about rich enough for the tests of the website and API.
-    """
-
+def bnf_codes():
     for level, code, name in [
         [1, "10", "Musculoskeletal and Joint Diseases"],
         [2, "1001", "Drugs used in rheumatic diseases and gout"],
@@ -61,6 +55,15 @@ def sample_data(rxdb):
         [7, "1001030U0BDABAC", "Maxtrex 10mg tablets"],
     ]:
         BNFCode.objects.create(code=code, name=name, level=level)
+
+
+@pytest.fixture
+def sample_data(rxdb, bnf_codes):
+    """This fixture generates three months (Jan-Mar 2025) of list size and prescribing
+    data (for generic and branded methotrexate) for four practices in two ICBs.
+
+    This data should be just about rich enough for the tests of the website and API.
+    """
 
     list_size_data = []
     prescribing_data = []
