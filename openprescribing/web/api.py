@@ -43,6 +43,11 @@ def prescribing_deciles(request):
     odm = ntr_odm / dtr_odm
 
     deciles_df = build_deciles_df(odm)
+    stroke_dash = (
+        alt.when(alt.datum.line == "p50")
+        .then(alt.value((6, 2)))
+        .otherwise(alt.value((2, 6)))
+    )
     deciles_chart = (
         alt.Chart(deciles_df)
         .mark_line(color="blue")
@@ -50,7 +55,7 @@ def prescribing_deciles(request):
             x=alt.X("month:T", title="Month", axis=alt.Axis(format="%Y %b")),
             y=alt.Y("value:Q", title="Items per 1000 patients"),
             detail="line",
-            strokeDash=alt.StrokeDash("dash:N", legend=None, scale=None),
+            strokeDash=stroke_dash,
         )
         .properties(width=660, height=360)
     )

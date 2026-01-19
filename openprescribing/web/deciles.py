@@ -10,9 +10,6 @@ def build_deciles_df(odm):
     series.index.names = ["month", "line"]
     deciles_df = series.reset_index(name="value")
     deciles_df["line"] = deciles_df["line"].apply(lambda n: f"p{centiles[n]:02}")
-    deciles_df["dash"] = deciles_df["line"].apply(
-        lambda line: (6, 2) if line == "p50" else (2, 6)
-    )
     return deciles_df
 
 
@@ -24,7 +21,6 @@ def build_org_df(odm, org):
             "month": odm.col_labels,
             "line": "org",
             "value": org_values,
-            "dash": [(1, 0)] * len(org_values),
         }
     )
     return org_df
