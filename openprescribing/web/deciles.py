@@ -2,40 +2,6 @@ import numpy as np
 import pandas as pd
 
 
-def build_deciles_chart_df(odm, org):
-    """Return a DataFrame that can be passed to Altair to display a deciles chart.
-
-    The chart will show blue dotted lines indicating the value at each decile for each
-    month in the given PDM.  The median value will be shown in a heavier dashed line.
-
-    Additionally, if org is not None, the chart will show a solid red line for that
-    org's values.
-
-    The DataFrame will have one row per point on the chart, with the following columns:
-
-        * month
-        * line
-        * value
-        * colour
-        * dash
-
-    Points are grouped by line, which will be "decile-{n}" or "org".
-
-    Dashes are specified as (on, off) pairs:
-
-        * (2, 6) gives a dotted line
-        * (6, 2) gives a dashed line
-        * (1, 0) gives a continuous line
-    """
-    deciles_df = build_deciles_df(odm)
-
-    if org is None:
-        return deciles_df
-    else:
-        org_df = build_org_df(odm, org)
-        return pd.concat([deciles_df, org_df], ignore_index=True)
-
-
 def build_deciles_df(odm):
     centiles = [10, 20, 30, 40, 50, 60, 70, 80, 90]
     deciles_arr = np.nanpercentile(odm.values, centiles, axis=0)
