@@ -57,12 +57,8 @@ def test_build_org_df(pdm):
     chart_df = build_org_df(pdm, org=Org.objects.get(id="PRAC05"))
 
     expected_df = pd.DataFrame(
-        [
-            # Note extra rows for practice
-            ["2025-01-01", "org", 5],
-            ["2025-02-01", "org", 6],
-        ],
-        columns=["month", "line", "value"],
+        [["2025-01-01", 5], ["2025-02-01", 6]],
+        columns=["month", "value"],
     )
 
     assert_frame_equal(chart_df, expected_df)
