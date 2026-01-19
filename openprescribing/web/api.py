@@ -45,13 +45,12 @@ def prescribing_deciles(request):
     deciles_df = build_deciles_df(odm)
     deciles_chart = (
         alt.Chart(deciles_df)
-        .mark_line()
+        .mark_line(color="blue")
         .encode(
             x=alt.X("month:T", title="Month", axis=alt.Axis(format="%Y %b")),
             y=alt.Y("value:Q", title="Items per 1000 patients"),
             detail="line",
             strokeDash=alt.StrokeDash("dash:N", legend=None, scale=None),
-            color=alt.Color("colour:N", legend=None, scale=None),
         )
         .properties(width=660, height=360)
     )
@@ -60,11 +59,10 @@ def prescribing_deciles(request):
         org_df = build_org_df(odm, org)
         org_chart = (
             alt.Chart(org_df)
-            .mark_line()
+            .mark_line(color="red")
             .encode(
                 x=alt.X("month:T", title="Month", axis=alt.Axis(format="%Y %b")),
                 y=alt.Y("value:Q", title="Items per 1000 patients"),
-                color=alt.Color("colour:N", legend=None, scale=None),
             )
         )
         chart = deciles_chart + org_chart
