@@ -27,16 +27,16 @@ def build_deciles_chart_df(odm, org):
         * (6, 2) gives a dashed line
         * (1, 0) gives a continuous line
     """
-    deciles_df = _build_deciles_df(odm)
+    deciles_df = build_deciles_df(odm)
 
     if org is None:
         return deciles_df
     else:
-        org_df = _build_org_df(odm, org)
+        org_df = build_org_df(odm, org)
         return pd.concat([deciles_df, org_df], ignore_index=True)
 
 
-def _build_deciles_df(odm):
+def build_deciles_df(odm):
     centiles = [10, 20, 30, 40, 50, 60, 70, 80, 90]
     deciles_arr = np.nanpercentile(odm.values, centiles, axis=0)
     deciles_df = pd.DataFrame(deciles_arr, columns=odm.col_labels)
@@ -51,7 +51,7 @@ def _build_deciles_df(odm):
     return deciles_df
 
 
-def _build_org_df(odm, org):
+def build_org_df(odm, org):
     org_ix = odm.row_labels.index(org)
     org_values = odm.values[org_ix]
     org_df = pd.DataFrame(
