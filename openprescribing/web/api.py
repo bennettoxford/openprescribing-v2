@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from openprescribing.data import rxdb
 from openprescribing.data.models import Org
 
-from .deciles import build_deciles_chart_df
+from .deciles import build_deciles_df, build_org_df
 
 
 def prescribing_deciles(request):
@@ -42,10 +42,9 @@ def prescribing_deciles(request):
 
     odm = ntr_odm / dtr_odm
 
-    chart_df = build_deciles_chart_df(odm, org)
-
-    chart = (
-        alt.Chart(chart_df)
+    deciles_df = build_deciles_df(odm)
+    deciles_chart = (
+        alt.Chart(deciles_df)
         .mark_line()
         .encode(
             x=alt.X("month:T", title="Month", axis=alt.Axis(format="%Y %b")),
@@ -56,5 +55,20 @@ def prescribing_deciles(request):
         )
         .properties(width=660, height=360)
     )
+
+    if org is not None:
+        org_df = build_org_df(odm, org)
+        org_chart = (
+            alt.Chart(org_df)
+            .mark_line()
+            .encode(
+                x=alt.X("month:T", title="Month", axis=alt.Axis(format="%Y %b")),
+                y=alt.Y("value:Q", title="Items per 1000 patients"),
+                color=alt.Color("colour:N", legend=None, scale=None),
+            )
+        )
+        chart = deciles_chart + org_chart
+    else:
+        chart = deciles_chart
 
     return JsonResponse(chart.to_dict())
