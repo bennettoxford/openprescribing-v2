@@ -61,11 +61,10 @@ def test_build_org_df(pdm):
     expected_df = pd.DataFrame(
         [
             # Note extra rows for practice
-            ["2025-01-01", "org", 5.0, "red", (1, 0)],
-            ["2025-02-01", "org", 6.0, "red", (1, 0)],
+            ["2025-01-01", "org", 5, "red", (1, 0)],
+            ["2025-02-01", "org", 6, "red", (1, 0)],
         ],
         columns=["month", "line", "value", "colour", "dash"],
     )
-    expected_df["value"] = expected_df["value"].astype("int64")
 
     assert_frame_equal(chart_df, expected_df)
