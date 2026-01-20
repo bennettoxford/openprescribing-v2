@@ -19,8 +19,6 @@ def prescribing_deciles(request):
     WHERE bnf_code IN ({", ".join(f"'{c}'" for c in codes)})
     """
 
-    org_id = request.GET.get("org_id")
-
     dtr_sql = "SELECT practice_id, date_id, total / 1000 AS value FROM list_size"
 
     with rxdb.get_cursor() as cursor:
