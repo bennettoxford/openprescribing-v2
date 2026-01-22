@@ -3,14 +3,16 @@ from django.http import JsonResponse
 
 from openprescribing.data import rxdb
 from openprescribing.data.models import Org
+from openprescribing.data.rxdb.search import ProductType, search
 from openprescribing.data.utils.deciles_utils import build_deciles_df, build_org_df
 
 
 def prescribing_deciles(request):
     query = request.GET.get("codes").split(",")
+    product_type = ProductType(request.GET.get("product_type", "all"))
     org_id = request.GET.get("org_id")
 
-    codes = rxdb.search(query)
+    codes = search(query, product_type)
 
     ntr_sql = f"""
     SELECT practice_id, date_id, items AS value

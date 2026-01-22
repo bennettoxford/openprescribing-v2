@@ -1,3 +1,4 @@
+from enum import StrEnum
 from functools import reduce
 
 from django.db.models import Q
@@ -5,10 +6,19 @@ from django.db.models import Q
 from ..models import BNFCode
 
 
-def search(query):
+class ProductType(StrEnum):
+    ALL = "all"
+    GENERIC = "generic"
+    BRANDED = "branded"
+
+
+def search(terms, product_type):
     """Return BNF codes (as strings) of presentations matching query.
 
-    A query is a list of terms, where a term is either:
+    A query is a list of terms and an indication of whether to search for only generic
+    or branded presentations.
+
+    A term is either:
 
       * a BNF code (as a string) at any level of the hierarchy, which matches all
         presentations below that code;
@@ -18,11 +28,11 @@ def search(query):
         the given strength and formulation.
     """
 
-    fragments = [build_fragment(term) for term in query]
+    fragments = [build_fragment(term) for term in terms]
     includes = [f.build_q() for f in fragments if not f.negated]
     excludes = [f.build_q() for f in fragments if f.negated]
 
-    results = (
+    codes = list(
         BNFCode.objects.filter(level=BNFCode.Level.PRESENTATION)
         .filter(reduce(Q.__or__, includes, Q()))
         .exclude(reduce(Q.__or__, excludes, Q()))
@@ -30,19 +40,27 @@ def search(query):
         .values_list("code", flat=True)
     )
 
-    return list(results)
+    if product_type == ProductType.ALL:
+        return codes
+    elif product_type == ProductType.GENERIC:
+        return [c for c in codes if c[9:11] == "AA"]
+    elif product_type == ProductType.BRANDED:
+        return [c for c in codes if c[9:11] != "AA"]
+    else:
+        assert False, product_type
 
 
-def describe_search(query):
+def describe_search(terms, product_type):
     """Return dictionary describing the query.
 
     See docstring of search() for description of query.
     """
 
-    fragments = [build_fragment(term) for term in sorted(query)]
+    fragments = [build_fragment(term) for term in sorted(terms)]
     return {
-        "includes": [f.describe() for f in fragments if not f.negated],
-        "excludes": [f.describe() for f in fragments if f.negated],
+        "product_type": product_type,
+        "includes": [f.describe(product_type) for f in fragments if not f.negated],
+        "excludes": [f.describe(product_type) for f in fragments if f.negated],
     }
 
 
@@ -66,7 +84,7 @@ class PrefixFragment:
     def build_q(self):
         return Q(code__startswith=self.term)
 
-    def describe(self):
+    def describe(self, product_type):
         description = BNFCode.objects.get(code=self.term).name
         return {"code": self.term, "description": description}
 
@@ -83,9 +101,12 @@ class StrengthAndFormulationFragment:
     def build_q(self):
         return Q(code__startswith=self.prefix, code__endswith=self.suffix)
 
-    def describe(self):
+    def describe(self, product_type):
         generic_code_obj = BNFCode.objects.get(
             code=f"{self.prefix}AA{self.suffix}{self.suffix}"
         )
-        description = f"{generic_code_obj.name} (branded and generic)"
+        if product_type == ProductType.ALL:
+            description = f"{generic_code_obj.name} (branded and generic)"
+        else:
+            description = generic_code_obj.name
         return {"code": self.term, "description": description}
