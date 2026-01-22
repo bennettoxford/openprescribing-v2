@@ -92,10 +92,12 @@ exclude-newer-package = {}
 [dependency-groups]
 dev = [
     "coverage>=7.10.6",
+    "playwright>=1.56.0",
     "pre-commit>=4.3.0",
     "pytest>=8.4.1",
     "pytest-django>=4.11.1",
     "pytest-freezer>=0.4.9",
+    "pytest-playwright>=0.7.1",
     "pyyaml>=6.0.2",
     "responses>=0.25.8",
     "ruff>=0.12.11",
