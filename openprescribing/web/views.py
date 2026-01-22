@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
 from openprescribing.data.models import BNFCode, Org
-from openprescribing.data.rxdb import describe_search
+from openprescribing.data.rxdb.search import describe_search
 
 
 def index(request):
@@ -48,6 +48,7 @@ def bnf_code(request):
 
 def bnf_codes(request):
     codes = request.GET.get("codes")
+    product_type = request.GET.get("product_type", "all")
     org_id = request.GET.get("org_id")
 
     org = None
@@ -58,18 +59,17 @@ def bnf_codes(request):
         org = get_object_or_404(Org, id=org_id)
 
     if codes:
-        api_url = (
-            f"{reverse('api_prescribing_deciles')}?codes={','.join(codes.split())}"
-        )
+        api_url = f"{reverse('api_prescribing_deciles')}?codes={','.join(codes.split())}&product_type={product_type}"
         if org_id:
             api_url += f"&org_id={org_id}"
-        description = describe_search(codes.split())
+        description = describe_search(codes.split(), product_type)
 
     ctx = {
         "codes": codes,
         "description": description,
         "org": org,
         "prescribing_api_url": api_url,
+        "product_type": product_type,
     }
 
     return render(request, "bnf_codes.html", ctx)
