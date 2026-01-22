@@ -196,6 +196,13 @@ RUN --mount=type=cache,target=/root/.cache \
     --mount=type=bind,source=uv.lock,target=/root/uv.lock \
     uv sync --frozen --no-install-project --directory /root
 
+ENV PLAYWRIGHT_BROWSERS_PATH="/opt/.playwright-browsers/" \
+    PLAYWRIGHT_BROWSER_EXECUTABLE_PATH="/opt/.playwright-browsers/chrome-linux/chrome"
+
+# Install playwright chromium dependencies. This needs to be done AFTER
+# playwright is installed by uv
+RUN uv run playwright install --with-deps chromium
+
 # Override ENTRYPOINT rather than CMD so we can pass arbitrary commands to the entrypoint script
 ENTRYPOINT ["/app/docker/entrypoints/dev.sh"]
 

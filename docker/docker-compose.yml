@@ -70,4 +70,10 @@ services:
     # add .test.env file for different default test environment variables
     # env_file:
     #   - ../.test.env
+    environment:
+      # For Playwright:
+      # Ensure playwright browser binaries are installed to a path that the
+      # non-root docker user has access to
+      - PLAYWRIGHT_BROWSERS_PATH=/opt/.playwright-browsers/
+      - PLAYWRIGHT_BROWSER_EXECUTABLE_PATH=/opt/.playwright-browsers/chrome-linux/chrome
     command: pytest
