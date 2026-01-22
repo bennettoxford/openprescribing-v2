@@ -15,7 +15,7 @@
                         id="codes"
                         name="codes"
                         style="height: 400px;"
-                    >{{ codes }}</textarea>
+                    >{% if codes %}{{ codes }}{% endif %}</textarea>
                   </div>
                   <button type="submit" class="btn btn-primary">Submit</button>
                 </form>
@@ -25,24 +25,28 @@
     <div class="col-lg-7">
         <div class="card h-100">
             <div class="card-body">
+                {% if codes %}
                 <div>
-                    <h1 class="h4 mb-0">Prescribing data</h1>
-                    <h4>Included codes</h4>
-                    <p>
-                        {% for bnf_code in bnf_codes_inclusion %}
-                        {{bnf_code.name}} <code>{{ bnf_code.code }}</code>
-                        {% endfor %}
-                    </p>
-                    {% if bnf_codes_exclusion %}
-                    <h4>Excluded codes</h4>
-                    <p>
-                        {% for bnf_code in bnf_codes_exclusion %}
-                        {{bnf_code.name}} <code>{{ bnf_code.code }}</code>
-                        {% endfor %}
-                    </p>
-                    {% endif %}
+                    <h1 class="h4">Prescribing data</h1>
+                    <ul>
+                        <li>Included codes
+                            <ul>
+                                {% for item in description.includes %}
+                                <li>{{ item.description }} <code>{{ item.code }}</code></li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                        {% if description.excludes %}
+                        <li>Excluded codes
+                            <ul>
+                                {% for item in description.excludes %}
+                                <li>{{ item.description }} <code>{{ item.code }}</code></li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                        {% endif %}
+                    </ul>
                 </div>
-                {% if bnf_codes_inclusion %}
                 <div id="prescribing-chart" class="py-3">Loading chart...</div>
                 {% else %}
                 <div class="text-center text-muted py-5">
