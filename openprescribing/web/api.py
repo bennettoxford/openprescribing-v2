@@ -3,8 +3,7 @@ from django.http import JsonResponse
 
 from openprescribing.data import rxdb
 from openprescribing.data.models import Org
-
-from .deciles import build_deciles_df, build_org_df
+from openprescribing.data.utils.deciles_utils import build_deciles_df, build_org_df
 
 
 def prescribing_deciles(request):
