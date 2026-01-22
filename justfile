@@ -46,6 +46,7 @@ prodenv:
 devenv: _dotenv && install-precommit
     uv sync --inexact
     uv run python scripts/install_duckdb_extras.py
+    uv run playwright install --with-deps chromium
 
 # Ensure precommit is installed
 install-precommit:
