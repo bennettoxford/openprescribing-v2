@@ -2,6 +2,9 @@ import pytest
 from playwright.sync_api import Page, expect
 
 
+pytestmark = pytest.mark.functional
+
+
 @pytest.mark.django_db(databases=["data"])
 def test_bnf_code(live_server, page: Page, sample_data):
     page.goto(live_server.url)

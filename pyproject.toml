@@ -27,6 +27,8 @@ branch = true
 dynamic_context = "test_function"
 omit = [
   ".venv/*",
+  # exclude functional tests from coverage, as we run them separately
+  "tests/functional/*",
 ]
 
 [tool.coverage.report]
@@ -48,6 +50,9 @@ show_contexts = true
 DJANGO_SETTINGS_MODULE = "openprescribing.config.settings"
 testpaths = [
    "tests"
+]
+markers = [
+  "functional: tests that use Playwright in functional tests",
 ]
 
 [tool.ruff]

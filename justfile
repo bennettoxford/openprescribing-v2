@@ -100,9 +100,16 @@ update-dependencies: bump-uv-cutoff upgrade-all
 # *args is variadic, 0 or more. This allows us to do `just test -k match`, for example.
 
 # Run the tests
-test *args:
-    uv run coverage run --source openprescribing,tests,scripts --module pytest "$@"
+test: test-py test-functional
+
+# Run tests, excluding playwright tests
+test-py *args:
+    uv run coverage run --source openprescribing,tests,scripts --module pytest -m 'not functional' "$@"
     uv run coverage report || uv run coverage html
+
+# Run only the playwright tests
+test-functional *args:
+    uv run pytest -m 'functional' "$@"
 
 format *args:
     uv run ruff format --diff --quiet "$@" .
