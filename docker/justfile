@@ -29,7 +29,10 @@ build env="dev": _dotenv
 test *pytest_args="": _dotenv build
     #!/bin/bash
     # Note, we do *not* run coverage in docker, as we want to use xdist, and coverage does not seem to work reliably.
-    docker compose run --rm test pytest {{ pytest_args }}
+    docker compose run --rm test pytest -m "not functional" {{ pytest_args }}
+    # run playwright tests separately, because `live_server` cleans up after itself
+    # and breaks the database config for subsequent tests
+    docker compose run --rm test pytest -m "functional" {{ pytest_args }}
 
 
 # run command in dev|prod container
