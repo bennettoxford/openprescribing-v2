@@ -5,7 +5,7 @@ from pandas.testing import assert_frame_equal
 
 from openprescribing.data.models import Org
 from openprescribing.data.rxdb.labelled_matrix import LabelledMatrix
-from openprescribing.web.deciles import build_deciles_df, build_org_df
+from openprescribing.data.utils.deciles_utils import build_deciles_df, build_org_df
 
 
 @pytest.fixture
