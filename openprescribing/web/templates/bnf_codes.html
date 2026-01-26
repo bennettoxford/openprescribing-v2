@@ -9,9 +9,9 @@
                 <h1 class="h3">Search for BNF codes</h1>
                 <form>
                     <h2 class="h5">Numerator</h2>
-                    {% include "./_bnf_codes_form_controls.html" with prefix="ntr" codes=ntr_codes product_type=ntr_product_type %}
+                    {% include "./_bnf_codes_form_controls.html" with prefix="ntr" codes=ntr_codes product_type=ntr_product_type placeholder="BNF codes for numerator" %}
                     <h2 class="h5">Denominator</h2>
-                    {% include "./_bnf_codes_form_controls.html" with prefix="dtr" codes=dtr_codes product_type=dtr_product_type %}
+                    {% include "./_bnf_codes_form_controls.html" with prefix="dtr" codes=dtr_codes product_type=dtr_product_type placeholder="BNF codes for denominator, or leave blank to use list size" %}
                     <button type="submit" class="btn btn-primary">Submit</button>
 		</form>
             </div>
