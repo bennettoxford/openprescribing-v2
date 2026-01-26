@@ -8,53 +8,8 @@
             <div class="card-body">
                 <h1 class="h4">Search for a BNF code</h1>
                 <form>
-                  <div class="mb-3">
-                    <label for="codes" class="form-label">BNF code</label>
-                    <textarea
-                        class="form-control"
-                        id="codes"
-                        name="codes"
-                        style="height: 400px;"
-                    >{% if codes %}{{ codes }}{% endif %}</textarea>
-                  </div>
-                  <div class="mb-3">
-                    <div class="form-label">Product type</div>
-                    <div class="form-check form-check-inline">
-                      <input
-                        class="form-check-input"
-                        id="product-type-all"
-                        type="radio"
-                        name="product_type"
-                        value="all"
-                        {% if product_type == "all" %}checked{% endif %}
-                      />
-                      <label class="form-check-label" for="product-type-all">all</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                      <input
-                        class="form-check-input"
-                        id="product-type-generic"
-                        type="radio"
-                        name="product_type"
-                        value="generic"
-                        {% if product_type == "generic" %}checked{% endif %}
-                      />
-                      <label class="form-check-label" for="product-type-generic">generic</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                      <input
-                        class="form-check-input"
-                        id="product-type-branded"
-                        type="radio"
-                        name="product_type"
-                        value="branded"
-                        {% if product_type == "branded" %}checked{% endif %}
-                      />
-                      <label class="form-check-label" for="product-type-branded">branded</label>
-                    </div>
-                  </div>
-                  <button type="submit" class="btn btn-primary">Submit</button>
-                </form>
+                    {% include "./_bnf_codes_form_controls.html" %}
+		</form>
             </div>
         </div>
     </div>
