@@ -49,19 +49,12 @@ def bnf_code(request):
 def bnf_codes(request):
     codes = request.GET.get("codes")
     product_type = request.GET.get("product_type", "all")
-    org_id = request.GET.get("org_id")
 
-    org = None
     api_url = None
     description = None
 
-    if org_id:
-        org = get_object_or_404(Org, id=org_id)
-
     if codes:
         api_url = f"{reverse('api_prescribing_deciles')}?codes={','.join(codes.split())}&product_type={product_type}"
-        if org_id:
-            api_url += f"&org_id={org_id}"
         description = describe_search(codes.split(), product_type)
 
     ctx = {
