@@ -1,3 +1,4 @@
+import re
 from dataclasses import dataclass
 
 from django.db import models
@@ -22,14 +23,20 @@ class BNFCode(models.Model):
 
     @property
     def slots(self):
-        boundaries = [0, 2, 4, 6, 7, 9, 11, 13, 15]
-        kwargs = {}
-        for ix, field in enumerate(Slots.__dataclass_fields__):
-            if len(self.code) >= boundaries[ix + 1]:
-                kwargs[field] = self.code[boundaries[ix] : boundaries[ix + 1]]
-            else:
-                kwargs[field] = None
-        return Slots(**kwargs)
+        pattern = r"""
+            \A
+            (?P<chapter>.{2})
+            (?P<section>.{2})?
+            (?P<paragraph>.{2})?
+            (?P<subparagraph>.{1})?
+            (?P<chemical_substance>.{2})?
+            (?P<product>.{2})?
+            (?P<strength_and_formulation>.{2})?
+            (?P<generic_equivalent>.{2})?
+            \Z
+        """
+        match = re.match(pattern, self.code, re.VERBOSE)
+        return Slots(**match.groupdict())
 
     def is_generic(self):
         assert self.level in [BNFCode.Level.PRODUCT, BNFCode.Level.PRESENTATION]
