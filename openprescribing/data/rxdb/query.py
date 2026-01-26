@@ -1,6 +1,6 @@
 import functools
 
-import numpy
+import numpy as np
 from scipy.sparse._sparsetools import coo_todense
 
 from openprescribing.data.rxdb.labelled_matrix import LabelledMatrix
@@ -128,7 +128,7 @@ def get_grouped_sum_ndarray(cursor, row_count, col_count, sql, parameters=None):
 
         SELECT row_index, column_index, value FROM ...
 
-    Build a two-dimensional `numpy.ndarray` from the results.
+    Build a two-dimensional `np.ndarray` from the results.
 
     It's expected that we'll see multiple values for the same coordinate in the array
     and these values will be summed together. The effect is thus the same as doing:
@@ -155,9 +155,9 @@ def get_grouped_sum_ndarray(cursor, row_count, col_count, sql, parameters=None):
     results = results.filter(f"row_index < {row_count} AND column_index < {col_count}")
 
     # Make a zero-valued accumulator matrix of the right type
-    accumulator = numpy.zeros(
+    accumulator = np.zeros(
         shape=(row_count, col_count),
-        dtype=numpy.float64 if value_is_float else numpy.int64,
+        dtype=np.float64 if value_is_float else np.int64,
     )
 
     # Prepare some values that `coo_todense` needs (based on reading the SciPy source)
