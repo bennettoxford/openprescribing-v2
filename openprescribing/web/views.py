@@ -110,7 +110,9 @@ def bnf_browser_tree(request):
                 lines.append((level * 2, "</ul>"))
                 lines.append((level * 2 - 1, "</li>"))
         assert level == code.level
-        lines.append((level * 2 - 1, f'<li data-code="{code.code}">'))
+        lines.append(
+            (level * 2 - 1, f'<li data-code="{code.code}" data-name="{code.name}">')
+        )
         lines.append((level * 2, f"<span><code>{code.code}</code> {code.name}</span>"))
 
     while level > 0:
