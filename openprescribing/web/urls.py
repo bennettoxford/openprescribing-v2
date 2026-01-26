@@ -12,4 +12,6 @@ urlpatterns = [
         api.prescribing_deciles,
         name="api_prescribing_deciles",
     ),
+    path("bnf/", views.bnf_browser_tree),
+    path("bnf/<slug:code>/", views.bnf_browser_table),
 ]

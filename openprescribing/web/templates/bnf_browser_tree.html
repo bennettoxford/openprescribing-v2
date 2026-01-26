@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+@scope (#bnf-tree) {
+  ul ul {
+    display: none;
+  }
+  li[data-open] > ul {
+    display: block;
+  }
+  span {
+    display: block;
+    cursor: pointer;
+    user-select: none;
+  }
+  ul {
+    list-style-type: none;
+  }
+  span:hover {
+    background-color: #f0f0f0;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>BNF Browser</h1>
+
+<p>For now, only chapters 1-19 are included.</p>
+<p>Clicking on a chemical substance will open a new browser tab showing the related products and presentations.</p>
+
+<div id="bnf-tree">
+{{ tree|safe }}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const tree = document.getElementById("bnf-tree");
+
+tree.addEventListener("click", (e) => {
+    const li = e.target.closest("li");
+    const code = li.dataset["code"];
+    if (code.length == 9) {
+        window.open(code + "/");
+    } else {
+        li.toggleAttribute("data-open");
+    }
+});
+</script>
+{% endblock %}
