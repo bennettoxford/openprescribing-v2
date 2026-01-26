@@ -28,6 +28,18 @@ class LabelledMatrix:
     def __post_init__(self):
         assert self.values.shape == (len(self.row_labels), len(self.col_labels))
 
+    def __eq__(self, other):
+        if not isinstance(other, LabelledMatrix):  # pragma: no cover
+            return NotImplemented
+
+        return (
+            self.row_labels == other.row_labels
+            and self.col_labels == other.col_labels
+            # Treat NaNs in the same position as equal so we can compare results of
+            # matrix operations which introduce NaNs (e.g. division).
+            and numpy.array_equal(self.values, other.values, equal_nan=True)
+        )
+
     def __mul__(self, n):
         isinstance(n, (int, float))
         return self.__class__(self.values * n, self.row_labels, self.col_labels)
