@@ -22,6 +22,13 @@ def test_eq():
     )
 
 
+def test_mul():
+    matrix = LabelledMatrix(numpy.array([[1, numpy.nan], [2, 3]]), ("A", "B"), (1, 2))
+    assert matrix * 10 == LabelledMatrix(
+        numpy.array([[10, numpy.nan], [20, 30]]), ("A", "B"), (1, 2)
+    )
+
+
 def test_div():
     ntr = LabelledMatrix(numpy.array([[0, 1], [0, 1]]), ("A", "B"), (1, 2))
     dtr = LabelledMatrix(numpy.array([[0, 0], [1, 1]]), ("A", "B"), (1, 2))
