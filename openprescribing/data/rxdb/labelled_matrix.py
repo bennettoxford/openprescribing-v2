@@ -2,7 +2,7 @@ import dataclasses
 import functools
 from collections.abc import Hashable
 
-import numpy
+import numpy as np
 import scipy.sparse
 
 
@@ -13,7 +13,7 @@ LabelGroup = tuple[Label, ...] | frozenset[Label, ...]
 @dataclasses.dataclass
 class LabelledMatrix:
     """
-    Wrapper around a two-dimensional `numpy.ndarray` with labelled rows and columns
+    Wrapper around a two-dimensional `np.ndarray` with labelled rows and columns
 
     A label can be anything you could use as a dictionary key (i.e. any hashable type).
     Strings are the obvious candidate, but dates or custom objects are perfectly
@@ -21,12 +21,24 @@ class LabelledMatrix:
     for a row or column.
     """
 
-    values: numpy.ndarray
+    values: np.ndarray
     row_labels: tuple[Label, ...]
     col_labels: tuple[Label, ...]
 
     def __post_init__(self):
         assert self.values.shape == (len(self.row_labels), len(self.col_labels))
+
+    def __eq__(self, other):
+        if not isinstance(other, LabelledMatrix):  # pragma: no cover
+            return NotImplemented
+
+        return (
+            self.row_labels == other.row_labels
+            and self.col_labels == other.col_labels
+            # Treat NaNs in the same position as equal so we can compare results of
+            # matrix operations which introduce NaNs (e.g. division).
+            and np.array_equal(self.values, other.values, equal_nan=True)
+        )
 
     def __mul__(self, n):
         isinstance(n, (int, float))
@@ -37,8 +49,8 @@ class LabelledMatrix:
         assert self.col_labels == other.col_labels
         # NumPy's default behaviour is for 0/0 to give np.nan and x/0 to give np.inf.
         # We always want np.nan, since we might be displaying the result on a chart.
-        new_values = numpy.divide(self.values, other.values, where=(other.values != 0))
-        new_values[other.values == 0] = numpy.nan
+        new_values = np.divide(self.values, other.values, where=(other.values != 0))
+        new_values[other.values == 0] = np.nan
         return self.__class__(new_values, self.row_labels, self.col_labels)
 
     def group_rows(self, row_label_map: tuple[tuple[Label, LabelGroup], ...]):

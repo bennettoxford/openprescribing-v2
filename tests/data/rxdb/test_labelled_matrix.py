@@ -1,24 +1,47 @@
-import numpy
+import numpy as np
 import pytest
-from numpy.testing import assert_array_equal
 
 from openprescribing.data.rxdb.labelled_matrix import LabelledMatrix
 
 
-def test_div():
-    ntr = LabelledMatrix(numpy.array([[0, 1], [0, 1]]), ("A", "B"), (1, 2))
-    dtr = LabelledMatrix(numpy.array([[0, 0], [1, 1]]), ("A", "B"), (1, 2))
-    ratio = ntr / dtr
-    assert ratio.row_labels == ("A", "B")
-    assert ratio.col_labels == (1, 2)
-    assert_array_equal(ratio.values, numpy.array([[numpy.nan, numpy.nan], [0, 1]]))
+def test_eq():
+    values = np.array([[1.0, np.nan], [2.0, 3.0]])
+    matrix = LabelledMatrix(values, ("A", "B"), (1, 2))
+
+    assert matrix == LabelledMatrix(values, ("A", "B"), (1, 2))
+
+    # Different row labels
+    assert matrix != LabelledMatrix(values, ("A", "C"), (1, 2))
+
+    # Different column  labels
+    assert matrix != LabelledMatrix(values, ("A", "B"), (1, 3))
+
+    # Different values
+    assert matrix != LabelledMatrix(
+        np.array([[1.0, np.nan], [2.0, 4.0]]), ("A", "B"), (1, 2)
+    )
+
+
+def test_mul():
+    matrix = LabelledMatrix(np.array([[1, np.nan], [2, 3]]), ("A", "B"), (1, 2))
+    assert matrix * 10 == LabelledMatrix(
+        np.array([[10, np.nan], [20, 30]]), ("A", "B"), (1, 2)
+    )
+
+
+def test_truediv():
+    ntr = LabelledMatrix(np.array([[0, 1], [0, 1]]), ("A", "B"), (1, 2))
+    dtr = LabelledMatrix(np.array([[0, 0], [1, 1]]), ("A", "B"), (1, 2))
+    assert ntr / dtr == LabelledMatrix(
+        np.array([[np.nan, np.nan], [0, 1]]), ("A", "B"), (1, 2)
+    )
 
 
 def test_group_rows_by_label():
     matrix = LabelledMatrix(
         col_labels=(1, 2, 3),
         row_labels=("A", "B", "C", "D"),
-        values=numpy.array(
+        values=np.array(
             [
                 [0, 1, 2],
                 [3, 4, 5],
