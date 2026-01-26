@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+@scope (#bnf-tree) {
+  ul ul {
+    display: none;
+  }
+  li[data-open] > ul {
+    display: block;
+  }
+  ul:has(li[data-matches-search]) {
+    display: block;
+  }
+  li[data-matches-search] > span {
+    background-color: #ffff0033;
+  }
+  span {
+    display: block;
+    cursor: pointer;
+    user-select: none;
+  }
+  ul {
+    list-style-type: none;
+  }
+  span:hover {
+    background-color: #f0f0f0;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>BNF Browser</h1>
+
+<p>For now, only chapters 1-19 are included.</p>
+<p>Clicking on a chemical substance will open a new browser tab showing the related products and presentations.</p>
+
+<form id="search-form" class="input-group mb-4">
+  <button class="btn btn-primary" type="submit">Search</button>
+  <input
+    class="form-control"
+    placeholder="Search by name or code"
+  >
+</form>
+
+<div id="bnf-tree">
+{{ tree|safe }}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const tree = document.getElementById("bnf-tree");
+
+tree.addEventListener("click", (e) => {
+    const li = e.target.closest("li");
+    const code = li.dataset["code"];
+    if (code.length == 9) {
+        window.open(code + "/");
+    } else {
+        li.toggleAttribute("data-open");
+    }
+});
+
+const searchForm = document.getElementById("search-form");
+const searchInput = searchForm.querySelector("input");
+
+searchForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const needle = searchInput.value.trim().toLowerCase();
+    document.querySelectorAll('#bnf-tree li').forEach(li => {
+        if (li.dataset["code"].toLowerCase() === needle || li.dataset["name"].toLowerCase().includes(needle)) {
+            li.setAttribute("data-matches-search", "");
+        } else {
+            li.removeAttribute("data-matches-search");
+        }
+    });
+});
+</script>
+{% endblock %}
