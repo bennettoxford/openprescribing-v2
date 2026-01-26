@@ -103,9 +103,7 @@ def bnf_browser_tree(request):
         if level < code.level:
             lines.append((level * 2, "<ul>"))
             level += 1
-        else:  # pragma: no cover
-            # This block is not hit in tests because the test BNF data is not rich
-            # enough.
+        else:
             lines.append((level * 2 - 1, "</li>"))
             while level > code.level:
                 level -= 1
@@ -131,7 +129,9 @@ def bnf_browser_table(request, code):
     to a chemical substance.
 
     In the table, there is one column per product and one row per generic presentation.
-    Cells may contain zero, one, or many presentations, presented in a list.
+    Cells may contain zero, one, or many presentations, presented in a list.  A handful
+    of chemical substances don't have generic presentations, in which case the table has
+    a single row.
     """
 
     chemical = get_object_or_404(
@@ -145,17 +145,28 @@ def bnf_browser_table(request, code):
     ).order_by("code")
     generic_equivalents = [p for p in presentations if p.is_generic()]
 
-    cells = [[[] for _ in products] for _ in generic_equivalents]
-    for p in presentations:
-        row_ix = _get_index(
-            generic_equivalents,
-            lambda ge: ge.is_generic_equivalent_of(p),
-        )
-        col_ix = _get_index(
-            products,
-            lambda product: product.is_ancestor_of(p),
-        )
-        cells[row_ix][col_ix].append(p)
+    if generic_equivalents:
+        num_rows = len(generic_equivalents)
+        cells = [[[] for _ in products] for _ in generic_equivalents]
+        for p in presentations:
+            row_ix = _get_index(
+                generic_equivalents,
+                lambda ge: ge.is_generic_equivalent_of(p),
+            )
+            col_ix = _get_index(
+                products,
+                lambda product: product.is_ancestor_of(p),
+            )
+            cells[row_ix][col_ix].append(p)
+    else:
+        num_rows = 1
+        cells = [[[] for _ in products]]
+        for p in presentations:
+            col_ix = _get_index(
+                products,
+                lambda product: product.is_ancestor_of(p),
+            )
+            cells[0][col_ix].append(p)
 
     lines = [
         '<table class="table table-sm">',
@@ -165,7 +176,7 @@ def bnf_browser_table(request, code):
     for product in products:
         lines.append(f"    <th><code>{product.code}</code><br />{product.name}</th>")
     lines.append("  </tr>")
-    for row_ix in range(len(generic_equivalents)):
+    for row_ix in range(num_rows):
         lines.append("  <tr>")
         for col_ix in range(len(products)):
             lines.append("    <td>")

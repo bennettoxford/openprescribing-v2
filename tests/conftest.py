@@ -42,6 +42,17 @@ def prevent_rxdb_access():
 @pytest.fixture
 def bnf_codes():
     for level, code, name in [
+        # This fragment of the BNF hierarchy contains an ununsual chemical substance
+        # that does not have a generic product.
+        [1, "06", "Endocrine System"],
+        [2, "0601", "Drugs used in diabetes"],
+        [3, "060106", "Diabetic diagnostic and monitoring agents"],
+        [4, "0601060", "Diabetic diagnostic and monitoring agents"],
+        [5, "0601060D0", "Glucose blood testing reagents"],
+        [6, "0601060D0BS", "Prestige"],
+        [7, "0601060D0BSAAA0", "Prestige Smart System testing strips"],
+        # This fragment of the BNF hierarchy contains a typical chemical substance that
+        # does have a generic product.
         [1, "10", "Musculoskeletal and Joint Diseases"],
         [2, "1001", "Drugs used in rheumatic diseases and gout"],
         [3, "100103", "Rheumatic disease suppressant drugs"],

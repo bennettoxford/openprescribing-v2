@@ -60,6 +60,12 @@ def test_bnf_tree(client, bnf_codes):
 
 
 @pytest.mark.django_db(databases=["data"])
-def test_bnf_table(client, bnf_codes):
+def test_bnf_table_with_generic_products(client, bnf_codes):
     rsp = client.get("/bnf/1001030U0/")
+    assert rsp.status_code == 200
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_bnf_table_with_no_generic_products(client, bnf_codes):
+    rsp = client.get("/bnf/0601060D0/")
     assert rsp.status_code == 200
