@@ -6,91 +6,36 @@
     <div class="col-lg-5">
         <div class="card h-100">
             <div class="card-body">
-                <h1 class="h4">Search for a BNF code</h1>
+                <h1 class="h3">Search for BNF codes</h1>
                 <form>
-                  <div class="mb-3">
-                    <label for="codes" class="form-label">BNF code</label>
-                    <textarea
-                        class="form-control"
-                        id="codes"
-                        name="codes"
-                        style="height: 400px;"
-                    >{% if codes %}{{ codes }}{% endif %}</textarea>
-                  </div>
-                  <div class="mb-3">
-                    <div class="form-label">Product type</div>
-                    <div class="form-check form-check-inline">
-                      <input
-                        class="form-check-input"
-                        id="product-type-all"
-                        type="radio"
-                        name="product_type"
-                        value="all"
-                        {% if product_type == "all" %}checked{% endif %}
-                      />
-                      <label class="form-check-label" for="product-type-all">all</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                      <input
-                        class="form-check-input"
-                        id="product-type-generic"
-                        type="radio"
-                        name="product_type"
-                        value="generic"
-                        {% if product_type == "generic" %}checked{% endif %}
-                      />
-                      <label class="form-check-label" for="product-type-generic">generic</label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                      <input
-                        class="form-check-input"
-                        id="product-type-branded"
-                        type="radio"
-                        name="product_type"
-                        value="branded"
-                        {% if product_type == "branded" %}checked{% endif %}
-                      />
-                      <label class="form-check-label" for="product-type-branded">branded</label>
-                    </div>
-                  </div>
-                  <button type="submit" class="btn btn-primary">Submit</button>
-                </form>
+                    <h2 class="h5">Numerator</h2>
+                    {% include "./_bnf_codes_form_controls.html" with prefix="ntr" codes=ntr_codes product_type=ntr_product_type placeholder="BNF codes for numerator" %}
+                    <h2 class="h5">Denominator</h2>
+                    {% include "./_bnf_codes_form_controls.html" with prefix="dtr" codes=dtr_codes product_type=dtr_product_type placeholder="BNF codes for denominator, or leave blank to use list size" %}
+                    <button type="submit" class="btn btn-primary">Submit</button>
+		</form>
             </div>
         </div>
     </div>
     <div class="col-lg-7">
         <div class="card h-100">
             <div class="card-body">
-                {% if codes %}
-                <div>
-                    <h1 class="h4">Prescribing data</h1>
-                    <ul>
-			{% if description.product_type == "generic" or description.product_type == "branded" %}
-			<li>{{ description.product_type|title }} prescribing only</li>
-			{% endif %}
-                        <li>Included codes
-                            <ul>
-                                {% for item in description.includes %}
-                                <li>{{ item.description }} <code>{{ item.code }}</code></li>
-                                {% endfor %}
-                            </ul>
-                        </li>
-                        {% if description.excludes %}
-                        <li>Excluded codes
-                            <ul>
-                                {% for item in description.excludes %}
-                                <li>{{ item.description }} <code>{{ item.code }}</code></li>
-                                {% endfor %}
-                            </ul>
-                        </li>
-                        {% endif %}
-                    </ul>
+                {% if ntr_codes %}
+                <h1 class="h4">Prescribing data</h1>
+                <div class="row">
+                    <div class="col-6">
+                        <h2 class="h5">Numerator</h2>
+                        {% include "./_search_description.html" with description=ntr_description %}
+                    </div>
+                    <div class="col-6">
+                        <h2 class="h5">Denominator</h2>
+                        {% include "./_search_description.html" with description=dtr_description %}
+                    </div>
                 </div>
                 <div id="prescribing-chart" class="py-3">Loading chart...</div>
                 {% else %}
                 <div class="text-center text-muted py-5">
-                    <h1 class="h5">No BNF code selected</h1>
-                    <p>Search for a BNF code to see prescribing data.</p>
+                    <p>Search for BNF codes to see prescribing data.</p>
                 </div>
                 {% endif %}
             </div>

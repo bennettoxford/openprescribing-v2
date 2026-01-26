@@ -1,0 +1,25 @@
+{% if description.text %}
+<ul><li>{{ description.text }}</li></ul>
+{% else %}
+<ul>
+    {% if description.product_type == "generic" or description.product_type == "branded" %}
+    <li>{{ description.product_type|title }} prescribing only</li>
+    {% endif %}
+    <li>Included codes
+        <ul>
+            {% for item in description.includes %}
+            <li>{{ item.description }} <code>{{ item.code }}</code></li>
+            {% endfor %}
+        </ul>
+    </li>
+    {% if description.excludes %}
+    <li>Excluded codes
+        <ul>
+            {% for item in description.excludes %}
+            <li>{{ item.description }} <code>{{ item.code }}</code></li>
+            {% endfor %}
+        </ul>
+    </li>
+    {% endif %}
+</ul>
+{% endif %}

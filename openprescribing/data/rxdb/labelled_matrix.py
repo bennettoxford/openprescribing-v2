@@ -28,6 +28,10 @@ class LabelledMatrix:
     def __post_init__(self):
         assert self.values.shape == (len(self.row_labels), len(self.col_labels))
 
+    def __mul__(self, n):
+        isinstance(n, (int, float))
+        return self.__class__(self.values * n, self.row_labels, self.col_labels)
+
     def __truediv__(self, other):
         assert self.row_labels == other.row_labels
         assert self.col_labels == other.col_labels

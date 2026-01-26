@@ -8,24 +8,39 @@ from openprescribing.data.utils.deciles_utils import build_deciles_df, build_org
 
 
 def prescribing_deciles(request):
-    query = request.GET.get("codes").split(",")
-    product_type = ProductType(request.GET.get("product_type", "all"))
-    org_id = request.GET.get("org_id")
-
-    codes = search(query, product_type)
+    ntr_query = request.GET.get("ntr_codes").split(",")
+    ntr_product_type = ProductType(request.GET.get("ntr_product_type", "all"))
+    ntr_codes = search(ntr_query, ntr_product_type)
 
     ntr_sql = f"""
     SELECT practice_id, date_id, items AS value
     FROM prescribing
-    WHERE bnf_code IN ({", ".join(f"'{c}'" for c in codes)})
+    WHERE bnf_code IN ({", ".join(f"'{c}'" for c in ntr_codes)})
     """
 
-    dtr_sql = "SELECT practice_id, date_id, total / 1000 AS value FROM list_size"
+    if "dtr_codes" in request.GET:
+        dtr_query = request.GET.get("dtr_codes").split(",")
+        dtr_product_type = ProductType(request.GET.get("dtr_product_type", "all"))
+        dtr_codes = search(dtr_query, dtr_product_type)
+
+        dtr_sql = f"""
+        SELECT practice_id, date_id, items AS value
+        FROM prescribing
+        WHERE bnf_code IN ({", ".join(f"'{c}'" for c in dtr_codes)})
+        """
+        multiplier = 100
+        title = "%"
+    else:
+        dtr_sql = "SELECT practice_id, date_id, total AS value FROM list_size"
+        multiplier = 1000
+        title = "Items per 1000 patients"
 
     with rxdb.get_cursor() as cursor:
         # We currently have about 8 years (96 months) of list size data.
         ntr_pdm = rxdb.get_practice_date_matrix(cursor, ntr_sql, date_count=96)
         dtr_pdm = rxdb.get_practice_date_matrix(cursor, dtr_sql, date_count=96)
+
+    org_id = request.GET.get("org_id")
 
     if org_id is not None:
         org = Org.objects.get(id=org_id)
@@ -39,11 +54,11 @@ def prescribing_deciles(request):
     ntr_odm = ntr_pdm.group_rows(org_to_practice_ids)
     dtr_odm = dtr_pdm.group_rows(org_to_practice_ids)
 
-    odm = ntr_odm / dtr_odm
+    odm = ntr_odm / dtr_odm * multiplier
 
     deciles_df = build_deciles_df(odm)
     x = alt.X("month:T", title="Month", axis=alt.Axis(format="%Y %b"))
-    y = alt.Y("value:Q", title="Items per 1000 patients")
+    y = alt.Y("value:Q", title=title)
     stroke_dash = (
         alt.when(alt.datum.line == "p50")
         .then(alt.value((6, 2)))

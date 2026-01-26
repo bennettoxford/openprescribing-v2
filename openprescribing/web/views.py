@@ -22,7 +22,7 @@ def bnf_code(request):
 
     if code:
         bnf_code = get_object_or_404(BNFCode, code=code)
-        api_url = f"{reverse('api_prescribing_deciles')}?codes={code}"
+        api_url = f"{reverse('api_prescribing_deciles')}?ntr_codes={code}"
         if org_id:
             api_url += f"&org_id={org_id}"
 
@@ -47,29 +47,37 @@ def bnf_code(request):
 
 
 def bnf_codes(request):
-    codes = request.GET.get("codes")
-    product_type = request.GET.get("product_type", "all")
-    org_id = request.GET.get("org_id")
+    ntr_codes_raw = request.GET.get("ntr_codes")
+    ntr_product_type = request.GET.get("ntr_product_type", "all")
+    dtr_codes_raw = request.GET.get("dtr_codes")
+    dtr_product_type = request.GET.get("dtr_product_type", "all")
 
-    org = None
     api_url = None
-    description = None
+    ntr_description = None
+    dtr_description = None
 
-    if org_id:
-        org = get_object_or_404(Org, id=org_id)
+    if ntr_codes_raw:
+        ntr_codes = ntr_codes_raw.split()
+        api_url = f"{reverse('api_prescribing_deciles')}?ntr_codes={','.join(ntr_codes)}&ntr_product_type={ntr_product_type}"
+        ntr_description = describe_search(ntr_codes, ntr_product_type)
 
-    if codes:
-        api_url = f"{reverse('api_prescribing_deciles')}?codes={','.join(codes.split())}&product_type={product_type}"
-        if org_id:
-            api_url += f"&org_id={org_id}"
-        description = describe_search(codes.split(), product_type)
+        if dtr_codes_raw:
+            dtr_codes = dtr_codes_raw.split()
+            api_url += (
+                f"&dtr_codes={','.join(dtr_codes)}&dtr_product_type={dtr_product_type}"
+            )
+            dtr_description = describe_search(dtr_codes, dtr_product_type)
+        else:
+            dtr_description = {"text": "1000 patients"}
 
     ctx = {
-        "codes": codes,
-        "description": description,
-        "org": org,
+        "ntr_codes": ntr_codes_raw,
+        "ntr_product_type": ntr_product_type,
+        "ntr_description": ntr_description,
+        "dtr_codes": dtr_codes_raw,
+        "dtr_product_type": dtr_product_type,
+        "dtr_description": dtr_description,
         "prescribing_api_url": api_url,
-        "product_type": product_type,
     }
 
     return render(request, "bnf_codes.html", ctx)

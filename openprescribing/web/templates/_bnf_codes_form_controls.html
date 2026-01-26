@@ -1,0 +1,46 @@
+<div class="mb-3">
+    <label for="codes" class="form-label">BNF codes</label>
+    <textarea
+        class="form-control"
+        id="codes"
+        name="{{ prefix }}_codes"
+        style="height: 200px;"
+        placeholder="{{ placeholder }}"
+    >{% if codes %}{{ codes }}{% endif %}</textarea>
+</div>
+<div class="mb-3">
+    <div class="form-label">Product type</div>
+    <div class="form-check form-check-inline">
+        <input
+            class="form-check-input"
+            id="product-type-all"
+            type="radio"
+            name="{{ prefix }}_product_type"
+            value="all"
+            {% if product_type == "all" %}checked{% endif %}
+        />
+        <label class="form-check-label" for="product-type-all">all</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input
+            class="form-check-input"
+            id="product-type-generic"
+            type="radio"
+            name="{{ prefix }}_product_type"
+            value="generic"
+            {% if product_type == "generic" %}checked{% endif %}
+        />
+        <label class="form-check-label" for="product-type-generic">generic</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input
+            class="form-check-input"
+            id="product-type-branded"
+            type="radio"
+            name="{{ prefix }}_product_type"
+            value="branded"
+            {% if product_type == "branded" %}checked{% endif %}
+        />
+        <label class="form-check-label" for="product-type-branded">branded</label>
+    </div>
+</div>
