@@ -98,7 +98,12 @@ class StrengthAndFormulationFragment:
     def __init__(self, term, negated):
         self.term = term
         self.negated = negated
-        assert term.count("_") == 1
+
+        # A BNF strength and formulation code has 13 characters. However, we expect
+        # the product component (two characters) to be replaced by an underscore.
+        assert len(term) == 12
+        assert term[9] == "_"
+
         self.prefix, self.suffix = term.split("_")
         assert len(self.prefix) == 9  # chemical code
         assert len(self.suffix) == 2  # strength and formulation
