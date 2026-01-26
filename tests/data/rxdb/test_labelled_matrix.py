@@ -29,7 +29,7 @@ def test_mul():
     )
 
 
-def test_div():
+def test_truediv():
     ntr = LabelledMatrix(numpy.array([[0, 1], [0, 1]]), ("A", "B"), (1, 2))
     dtr = LabelledMatrix(numpy.array([[0, 0], [1, 1]]), ("A", "B"), (1, 2))
     assert ntr / dtr == LabelledMatrix(
