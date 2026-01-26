@@ -6,9 +6,13 @@
     <div class="col-lg-5">
         <div class="card h-100">
             <div class="card-body">
-                <h1 class="h4">Search for BNF codes</h1>
+                <h1 class="h3">Search for BNF codes</h1>
                 <form>
-                    {% include "./_bnf_codes_form_controls.html" %}
+                    <h2 class="h5">Numerator</h2>
+                    {% include "./_bnf_codes_form_controls.html" with prefix="ntr" codes=ntr_codes product_type=ntr_product_type %}
+                    <h2 class="h5">Denominator</h2>
+                    {% include "./_bnf_codes_form_controls.html" with prefix="dtr" codes=dtr_codes product_type=dtr_product_type %}
+                    <button type="submit" class="btn btn-primary">Submit</button>
 		</form>
             </div>
         </div>
@@ -16,10 +20,17 @@
     <div class="col-lg-7">
         <div class="card h-100">
             <div class="card-body">
-                {% if codes %}
-                <div>
-                    <h1 class="h4">Prescribing data</h1>
-		    {% include "./_search_description.html" %}
+                {% if ntr_codes %}
+                <h1 class="h4">Prescribing data</h1>
+                <div class="row">
+                    <div class="col-6">
+                        <h2 class="h5">Numerator</h2>
+                        {% include "./_search_description.html" with description=ntr_description %}
+                    </div>
+                    <div class="col-6">
+                        <h2 class="h5">Denominator</h2>
+                        {% include "./_search_description.html" with description=dtr_description %}
+                    </div>
                 </div>
                 <div id="prescribing-chart" class="py-3">Loading chart...</div>
                 {% else %}

@@ -3,7 +3,7 @@
     <textarea
         class="form-control"
         id="codes"
-        name="codes"
+        name="{{ prefix }}_codes"
         style="height: 400px;"
     >{% if codes %}{{ codes }}{% endif %}</textarea>
 </div>
@@ -14,7 +14,7 @@
             class="form-check-input"
             id="product-type-all"
             type="radio"
-            name="product_type"
+            name="{{ prefix }}_product_type"
             value="all"
             {% if product_type == "all" %}checked{% endif %}
         />
@@ -25,7 +25,7 @@
             class="form-check-input"
             id="product-type-generic"
             type="radio"
-            name="product_type"
+            name="{{ prefix }}_product_type"
             value="generic"
             {% if product_type == "generic" %}checked{% endif %}
         />
@@ -36,11 +36,10 @@
             class="form-check-input"
             id="product-type-branded"
             type="radio"
-            name="product_type"
+            name="{{ prefix }}_product_type"
             value="branded"
             {% if product_type == "branded" %}checked{% endif %}
         />
         <label class="form-check-label" for="product-type-branded">branded</label>
     </div>
 </div>
-<button type="submit" class="btn btn-primary">Submit</button>

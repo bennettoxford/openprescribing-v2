@@ -24,23 +24,30 @@ def test_multiple_bnf_search(client, sample_data):
     rsp = client.get("/bnf_codes/")
     assert rsp.status_code == 200
 
-    rsp = client.get("/bnf_codes/?codes=1001030U0")
+    rsp = client.get("/bnf_codes/?ntr_codes=1001030U0")
     assert rsp.status_code == 200
     assert (
         rsp.context["prescribing_api_url"]
-        == "/api/prescribing-deciles/?codes=1001030U0&ntr_product_type=all"
+        == "/api/prescribing-deciles/?ntr_codes=1001030U0&ntr_product_type=all"
     )
 
-    rsp = client.get("/bnf_codes/?codes=1001030U0AAABAB%0D%0A1001030U0AAABAB")
+    rsp = client.get("/bnf_codes/?ntr_codes=1001030U0&dtr_codes=1001")
     assert rsp.status_code == 200
     assert (
         rsp.context["prescribing_api_url"]
-        == "/api/prescribing-deciles/?codes=1001030U0AAABAB,1001030U0AAABAB&ntr_product_type=all"
+        == "/api/prescribing-deciles/?ntr_codes=1001030U0&ntr_product_type=all&dtr_codes=1001&dtr_product_type=all"
     )
 
-    rsp = client.get("/bnf_codes/?codes=1001030U0AA%0D%0A-1001030U0AAABAB")
+    rsp = client.get("/bnf_codes/?ntr_codes=1001030U0AAABAB%0D%0A1001030U0AAABAB")
     assert rsp.status_code == 200
     assert (
         rsp.context["prescribing_api_url"]
-        == "/api/prescribing-deciles/?codes=1001030U0AA,-1001030U0AAABAB&ntr_product_type=all"
+        == "/api/prescribing-deciles/?ntr_codes=1001030U0AAABAB,1001030U0AAABAB&ntr_product_type=all"
+    )
+
+    rsp = client.get("/bnf_codes/?ntr_codes=1001030U0AA%0D%0A-1001030U0AAABAB")
+    assert rsp.status_code == 200
+    assert (
+        rsp.context["prescribing_api_url"]
+        == "/api/prescribing-deciles/?ntr_codes=1001030U0AA,-1001030U0AAABAB&ntr_product_type=all"
     )
