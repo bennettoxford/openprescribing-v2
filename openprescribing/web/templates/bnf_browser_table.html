@@ -24,6 +24,27 @@
 <h1>{{ chemical.name }} <code>{{ chemical.code }}</code></h1>
 
 <div id="bnf-table">
-{{ table|safe }}
+    <table class="table table-sm">
+        <tr>
+            {% for header in headers %}
+            <th><code>{{ header.code }}</code><br />{{ header.name }}</th>
+            {% endfor %}
+        </tr>
+        {% for row in rows %}
+        <tr>
+            {% for cell in row %}
+            <td>
+                {% if cell|length > 0 %}
+                <ul>
+                    {% for item in cell %}
+                    <li><code>{{ item.code }}</code><br />{{ item.name }}</li>
+                    {% endfor %}
+                </ul>
+		{% endif %}
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
 </div>
 {% endblock %}
