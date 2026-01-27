@@ -89,6 +89,9 @@ def bnf_browser_tree(request):
     """This view renders an interactive tree for chapters 01 to 19 of the BNF hierarchy.
     Nodes include BNF codes down to the chemical substance level.  For products and
     presentations, see bnf_browser_table.
+
+    Chapters 20 to 23 (devices rather than medicines) have a slightly different code
+    structure, and so will need to be handled slightly differently.
     """
 
     codes = (
