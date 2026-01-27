@@ -104,10 +104,7 @@ def bnf_browser_table(request, code):
     """This view renders a table showing all of the products and presentations belonging
     to a chemical substance.
 
-    In the table, there is one column per product and one row per generic presentation.
-    Cells may contain zero, one, or many presentations, presented in a list.  A handful
-    of chemical substances don't have generic presentations, in which case the table has
-    a single row.
+    See docstring of make_bnf_table for a description of the structure of the table.
     """
 
     chemical = get_object_or_404(
@@ -120,5 +117,7 @@ def bnf_browser_table(request, code):
         code__startswith=code, level=BNFCode.Level.PRESENTATION
     ).order_by("code")
 
-    ctx = {"chemical": chemical, "table": make_bnf_table(products, presentations)}
+    headers, rows = make_bnf_table(products, presentations)
+
+    ctx = {"chemical": chemical, "headers": headers, "rows": rows}
     return render(request, "bnf_browser_table.html", ctx)

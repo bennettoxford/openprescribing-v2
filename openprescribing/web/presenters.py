@@ -31,10 +31,23 @@ def make_bnf_tree(codes):
 
 
 def make_bnf_table(products, presentations):
+    """Return headers and rows for a table containing all products and presentations
+    belonging to a chemical substance.
+
+    There is one header per product and one row per generic presentation.  (Or, for the
+    chemical substances without generic presentations, one single row.)
+
+    Each cell may contain any number of presentations.
+
+    Products and presentations are represented as dictionaries with the keys "code" and
+    "name".
+    """
+    headers = [to_dict(product) for product in products]
+
     generic_equivalents = [p for p in presentations if p.is_generic()]
+
     if generic_equivalents:
-        num_rows = len(generic_equivalents)
-        cells = [[[] for _ in products] for _ in generic_equivalents]
+        rows = [[[] for _ in products] for _ in generic_equivalents]
         for p in presentations:
             row_ix = get_index(
                 generic_equivalents,
@@ -44,40 +57,21 @@ def make_bnf_table(products, presentations):
                 products,
                 lambda product: product.is_ancestor_of(p),
             )
-            cells[row_ix][col_ix].append(p)
+            rows[row_ix][col_ix].append(to_dict(p))
     else:
-        num_rows = 1
-        cells = [[[] for _ in products]]
+        rows = [[[] for _ in products]]
         for p in presentations:
             col_ix = get_index(
                 products,
                 lambda product: product.is_ancestor_of(p),
             )
-            cells[0][col_ix].append(p)
+            rows[0][col_ix].append(to_dict(p))
 
-    lines = [
-        '<table class="table table-sm">',
-        "  <tr>",
-    ]
+    return headers, rows
 
-    for product in products:
-        lines.append(f"    <th><code>{product.code}</code><br />{product.name}</th>")
-    lines.append("  </tr>")
-    for row_ix in range(num_rows):
-        lines.append("  <tr>")
-        for col_ix in range(len(products)):
-            lines.append("    <td>")
-            lines.append("      <ul>")
-            for presentation in cells[row_ix][col_ix]:
-                lines.append(
-                    f"        <li><code>{presentation.code}</code><br />{presentation.name}</li>"
-                )
-            lines.append("      </ul>")
-            lines.append("    </td>")
-        lines.append("  </tr>")
-    lines.append("</table>")
 
-    return "\n".join(lines)
+def to_dict(bnf_code):
+    return {"code": bnf_code.code, "name": bnf_code.name}
 
 
 def get_index(lst, predicate):
