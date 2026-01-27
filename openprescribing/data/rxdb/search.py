@@ -105,8 +105,8 @@ class StrengthAndFormulationFragment:
         assert term[9] == "_"
 
         self.prefix, self.suffix = term.split("_")
-        assert len(self.prefix) == 9  # chemical code
-        assert len(self.suffix) == 2  # strength and formulation
+        assert len(self.prefix) == 9  # chemical substance code
+        assert len(self.suffix) == 2  # strength and formulation component
 
     def build_q(self):
         return Q(code__startswith=self.prefix, code__endswith=self.suffix)
