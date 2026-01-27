@@ -1,0 +1,10 @@
+<ul>
+    {% for node in nodes %}
+    <li data-code="{{ node.code }}" data-name="{{ node.name|escape }}">
+        <span><code>{{ node.code }}</code> {{ node.name|escape }}</span>
+        {% if node.children %}
+        {% include "_bnf_tree_nodes.html" with nodes=node.children %}
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>

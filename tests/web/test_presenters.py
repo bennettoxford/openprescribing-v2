@@ -1,7 +1,75 @@
 import pytest
 
 from openprescribing.data.models import BNFCode
-from openprescribing.web.presenters import make_bnf_table
+from openprescribing.web.presenters import make_bnf_table, make_bnf_tree
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_make_bnf_tree(bnf_codes):
+    codes = BNFCode.objects.filter(
+        level__lte=BNFCode.Level.CHEMICAL_SUBSTANCE
+    ).order_by("code")
+
+    assert make_bnf_tree(codes) == [
+        {
+            "code": "06",
+            "name": "Endocrine System",
+            "children": [
+                {
+                    "code": "0601",
+                    "name": "Drugs used in diabetes",
+                    "children": [
+                        {
+                            "code": "060106",
+                            "name": "Diabetic diagnostic and monitoring agents",
+                            "children": [
+                                {
+                                    "code": "0601060",
+                                    "name": "Diabetic diagnostic and monitoring agents",
+                                    "children": [
+                                        {
+                                            "code": "0601060D0",
+                                            "name": "Glucose blood testing reagents",
+                                            "children": [],
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            "code": "10",
+            "name": "Musculoskeletal and Joint Diseases",
+            "children": [
+                {
+                    "code": "1001",
+                    "name": "Drugs used in rheumatic diseases and gout",
+                    "children": [
+                        {
+                            "code": "100103",
+                            "name": "Rheumatic disease suppressant drugs",
+                            "children": [
+                                {
+                                    "code": "1001030",
+                                    "name": "Rheumatic disease suppressant drugs",
+                                    "children": [
+                                        {
+                                            "code": "1001030U0",
+                                            "name": "Methotrexate",
+                                            "children": [],
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        },
+    ]
 
 
 @pytest.mark.django_db(databases=["data"])

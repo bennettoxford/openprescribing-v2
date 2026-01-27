@@ -2,32 +2,27 @@ from openprescribing.data.models import BNFCode
 
 
 def make_bnf_tree(codes):
-    lines = []
-    level = 0
+    """Return list of nodes of representing a tree of BNF objects from chapters down to
+    chemical substances.
 
-    for code in codes:
-        assert code.level <= BNFCode.Level.CHEMICAL_SUBSTANCE
-        if level < code.level:
-            lines.append((level * 2, "<ul>"))
-            level += 1
-        else:
-            lines.append((level * 2 - 1, "</li>"))
-            while level > code.level:
-                level -= 1
-                lines.append((level * 2, "</ul>"))
-                lines.append((level * 2 - 1, "</li>"))
-        assert level == code.level
-        lines.append(
-            (level * 2 - 1, f'<li data-code="{code.code}" data-name="{code.name}">')
-        )
-        lines.append((level * 2, f"<span><code>{code.code}</code> {code.name}</span>"))
+    Each node is a dictionary representing a BNF object and its children.
 
-    while level > 0:
-        lines.append((level * 2 - 1, "</li>"))
-        level -= 1
-        lines.append((level * 2, "</ul>"))
+    See tests.web.test_presenters.test_make_bnf_tree for an example of the output.
+    """
 
-    return "\n".join(f"{'    ' * indent}{text}" for (indent, text) in lines)
+    assert all(code.level <= BNFCode.Level.CHEMICAL_SUBSTANCE for code in codes)
+
+    root = []
+    stack = [(0, root)]  # tuples of (level, list of child nodes)
+
+    for code in sorted(codes, key=lambda code: code.code):
+        node = {"code": code.code, "name": code.name, "children": []}
+        while stack and stack[-1][0] >= code.level:
+            stack.pop()
+        stack[-1][1].append(node)
+        stack.append((code.level, node["children"]))
+
+    return root
 
 
 def make_bnf_table(products, presentations):

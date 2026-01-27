@@ -46,7 +46,7 @@
 </form>
 
 <div id="bnf-tree">
-{{ tree|safe }}
+{% include "_bnf_tree_nodes.html" with nodes=tree %}
 </div>
 {% endblock %}
 
