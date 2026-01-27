@@ -74,6 +74,7 @@ exclude = [
 extend-select = [
   "A",  # flake8-builtins
   "I",  # isort
+  "ICN",  # flake8-import-conventions
   "INP",  # flake8-no-pep420
   "ISC",  # flake8-implicit-str-concat
   "UP",  # pyupgrade
@@ -86,6 +87,11 @@ extend-ignore = [
 
 [tool.ruff.lint.isort]
 lines-after-imports = 2
+
+[tool.ruff.lint.flake8-import-conventions.aliases]
+altair = "alt"
+numpy = "np"
+pandas = "pd"
 
 # Note: any `exclude-newer-package` timestamps should be removed if > 7 days old
 # See https://github.com/opensafely-core/repo-template/blob/main/DEVELOPERS.md for details
