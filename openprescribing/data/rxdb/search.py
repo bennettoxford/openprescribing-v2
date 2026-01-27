@@ -13,21 +13,26 @@ class ProductType(StrEnum):
 
 
 def search(terms, product_type):
-    """Return BNF codes (as strings) of presentations matching query.
+    """Return the BNF presentation codes (as strings) that match the given query.
 
-    A query is a list of terms and an indication of whether to search for only generic
-    or branded presentations.
+    A query is a list of terms (as strings) and a product type.
 
     A term is either:
 
-      * a BNF code (as a string) at any level of the hierarchy, which matches all
-        presentations below that code;
-      * a chemical's BNF code, followed by an underscore, followed by the two-character
-        identifier for a strength and formulation (such as 040702040_AM for Tramadol HCl
-        300mg tablets), which matches all presentations belonging to the chemical with
-        the given strength and formulation.
-    """
+    * any BNF code. All BNF presentation codes that are descendants of this
+      BNF code are matched; or
 
+    * a BNF chemical substance code (nine-characters), an underscore, and
+      a strength and formulation component (two-characters). The underscore is a
+      wild card that replaces the product component (two-characters). All
+      BNF presentation codes that are descendants of this BNF chemical substance code,
+      and have this strength and formulation component, are matched. For example,
+      "040702040_AM" matches "040702040AAAMAM", which is the BNF presentation code for
+      "Tramadol 300mg modified-release tablets".
+
+    A product type filters the matched BNF presentation codes to generic, branded,
+    or all products.
+    """
     fragments = [build_fragment(term) for term in terms]
     includes = [f.build_q() for f in fragments if not f.negated]
     excludes = [f.build_q() for f in fragments if f.negated]
@@ -93,10 +98,15 @@ class StrengthAndFormulationFragment:
     def __init__(self, term, negated):
         self.term = term
         self.negated = negated
-        assert term.count("_") == 1
+
+        # A BNF strength and formulation code has 13 characters. However, we expect
+        # the product component (two characters) to be replaced by an underscore.
+        assert len(term) == 12
+        assert term[9] == "_"
+
         self.prefix, self.suffix = term.split("_")
-        assert len(self.prefix) == 9  # chemical code
-        assert len(self.suffix) == 2  # strength and formulation
+        assert len(self.prefix) == 9  # chemical substance code
+        assert len(self.suffix) == 2  # strength and formulation component
 
     def build_q(self):
         return Q(code__startswith=self.prefix, code__endswith=self.suffix)
