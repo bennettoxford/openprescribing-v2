@@ -1,4 +1,4 @@
-from openprescribing.data.models import BNFCode
+from openprescribing.data.models import BNFCode, Org
 
 
 def make_bnf_tree(codes):
@@ -74,3 +74,12 @@ def get_index(lst, predicate):
     matching_indexes = [ix for ix, e in enumerate(lst) if predicate(e)]
     assert len(matching_indexes) == 1
     return matching_indexes[0]
+
+
+def make_orgs():
+    org_type_levels = [c[0] for c in Org.OrgType.choices]
+    orgs = sorted(
+        Org.objects.order_by("name").values("id", "name", "org_type"),
+        key=lambda o: org_type_levels.index(o["org_type"]),
+    )
+    return orgs
