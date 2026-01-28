@@ -164,6 +164,13 @@ LABEL org.opencontainers.image.title="openprescribing-v2" \
 # copy application code except for things in .dockerignore
 COPY . /app
 
+# collect static files
+RUN DJANGO_SECRET_KEY=dummy-key \
+    DJANGO_DEBUG=False \
+    OPENPRESCRIBING_DOWNLOAD_DIR=. \
+    OPENPRESCRIBING_DATA_DIR=. \
+    python /app/manage.py collectstatic --no-input
+
 # set the entrypoint to ensure some basic tasks are performed before the cli command
 ENTRYPOINT ["/app/docker/entrypoints/prod.sh"]
 # run gunicorn to serve the app
