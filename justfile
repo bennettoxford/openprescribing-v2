@@ -53,7 +53,6 @@ devenv: _dotenv && install-precommit
 
     npm clean-install
 
-
 # Ensure precommit is installed
 install-precommit:
     #!/usr/bin/env bash
@@ -123,6 +122,9 @@ format *args:
 lint *args:
     uv run ruff check "$@" .
 
+lint-js *args:
+    npm run lint "$@"
+
 lint-actions:
     docker run --rm -v $(pwd):/repo:ro --workdir /repo rhysd/actionlint:1.7.8 -color
 
@@ -149,6 +151,7 @@ check:
     check "just check-lockfile"
     check "just format"
     check "just lint"
+    check "just lint-js"
     check "just lint-actions"
     test -d docker/ && check "just docker/lint"
 
