@@ -82,6 +82,21 @@ ENV UV_PROJECT_ENVIRONMENT="/opt/venv"
 #
 FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv-cli
 
+#################################################
+#
+# Create node image.
+#
+FROM node:22 AS node-builder
+
+WORKDIR /usr/src/app
+RUN mkdir -p ./assets
+
+# copy just what npm clean-install needs
+COPY package-lock.json package.json ./
+RUN --mount=type=cache,target=/usr/src/app/.npm \
+    npm set cache /usr/src/app/.npm && \
+    npm clean-install
+
 ##################################################
 #
 # Build image
