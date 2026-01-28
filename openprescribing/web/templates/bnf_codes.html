@@ -14,6 +14,25 @@
                     {% include "./_bnf_codes_form_controls.html" with prefix="dtr" codes=dtr_codes product_type=dtr_product_type placeholder="BNF codes for denominator, or leave blank to use list size" %}
                     <button type="submit" class="btn btn-primary">Submit</button>
           		</form>
+                <div class="mt-4 mb-3 position-relative">
+                    <label class="form-label" for="org-search">Highlight organisation (optional)</label>
+                    <input
+                        id="org-search"
+                        type="search"
+                        class="form-control form-control-lg"
+                        {% if org %}value="{{ org.name }}"{% endif %}
+                        autocomplete="off"
+                    />
+                    <ul
+                        class="list-group position-absolute top-100 start-0 end-0 mt-2 shadow d-none z-3"
+                        id="org-results"
+                        role="listbox"
+                        aria-label="Organisation search results"
+                        style="max-height: 18rem; overflow-y: auto;"
+                    ></ul>
+                </div>
+                <div class="form-text">Start typing an organisation name or code to highlight a single organisation.</div>
+
             </div>
         </div>
     </div>
@@ -32,6 +51,16 @@
                         {% include "./_search_description.html" with description=dtr_description %}
                     </div>
                 </div>
+                {% if org %}
+                <div class="row">
+                    <div class="col-6">
+                        <h2 class="h5">Organisation</h2>
+                        {{ org.name }}
+                    </div>
+                    <div class="col-6">
+                    </div>
+                </div>
+                {% endif %}
                 <div id="prescribing-chart" class="py-3">Loading chart...</div>
                 {% else %}
                 <div class="text-center text-muted py-5">
@@ -45,6 +74,8 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ orgs|json_script:"orgs" }}
+{{ org_types|json_script:"org-types" }}
 {{ prescribing_api_url|json_script:"prescribing-api-url" }}
 <script src="https://cdn.jsdelivr.net/npm/vega@6.2.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-lite@6.4.1"></script>
