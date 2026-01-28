@@ -49,10 +49,15 @@ def bnf_codes(request):
     ntr_product_type = request.GET.get("ntr_product_type", "all")
     dtr_codes_raw = request.GET.get("dtr_codes")
     dtr_product_type = request.GET.get("dtr_product_type", "all")
+    org_id = request.GET.get("org_id")
 
     api_url = None
     ntr_description = None
     dtr_description = None
+    org = None
+
+    if org_id:
+        org = get_object_or_404(Org, id=org_id)
 
     if ntr_codes_raw:
         ntr_codes = ntr_codes_raw.split()
@@ -68,6 +73,11 @@ def bnf_codes(request):
         else:
             dtr_description = {"text": "1000 patients"}
 
+        if org_id:
+            api_url += f"&org_id={org_id}"
+
+    orgs = make_orgs()
+
     ctx = {
         "ntr_codes": ntr_codes_raw,
         "ntr_product_type": ntr_product_type,
@@ -75,6 +85,9 @@ def bnf_codes(request):
         "dtr_codes": dtr_codes_raw,
         "dtr_product_type": dtr_product_type,
         "dtr_description": dtr_description,
+        "org": org,
+        "orgs": orgs,
+        "org_types": Org.OrgType.choices,
         "prescribing_api_url": api_url,
     }
 
