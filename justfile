@@ -179,6 +179,7 @@ check-lockfile:
 fix:
     -uv run ruff check --fix .
     -uv run ruff format .
+    -npm run fix
     -just --fmt --unstable
 
 # Run manage.py commands
