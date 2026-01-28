@@ -2,10 +2,11 @@
     <label for="codes" class="form-label">BNF codes</label>
     <textarea
         class="form-control"
-        id="codes"
+        id="{{ prefix }}_codes"
         name="{{ prefix }}_codes"
         style="height: 200px;"
         placeholder="{{ placeholder }}"
+        data-field="{{ prefix }}"
     >{% if codes %}{{ codes }}{% endif %}</textarea>
 </div>
 <div class="mb-3">

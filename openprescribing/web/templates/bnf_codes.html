@@ -1,6 +1,63 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block extra_css %}
+<style>
+@scope (#bnf-tree) {
+  ul ul {
+    display: none;
+  }
+  li[data-open] > ul {
+    display: block;
+  }
+  ul:has(li[data-matches-search]) {
+    display: block;
+  }
+  li[data-matches-search] > span {
+    background-color: #ffff0033;
+  }
+  span {
+    display: block;
+    cursor: pointer;
+    user-select: none;
+  }
+  ul {
+    list-style-type: none;
+  }
+  span:hover {
+    background-color: #f0f0f0;
+  }
+
+  /* included, directly */
+  li[data-included] > span { background-color: #9fc5ff; }
+  li[data-included] > span:hover { background-color: #87b5f5; }
+
+  /* included, indirectly */
+  li[data-included] li span { background-color: #d7ecff; }
+  li[data-included] li span:hover { background-color: #c6e2ff; }
+
+  /* excluded, directly or indirectly */
+  li[data-excluded] span { background-color: #ffffff !important; }
+  li[data-excluded] span:hover { background-color: #ffffff !important; }
+}
+
+@scope (#bnf-table) {
+  ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0;
+  }
+  li {
+    padding: 0;
+    border-bottom: 1px solid var(--bs-table-border-color);
+  }
+  li:last-child {
+    border-bottom: 0;
+  }
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row">
     <div class="col-lg-5">
@@ -42,12 +99,45 @@
         </div>
     </div>
 </div>
+
+<div
+  class="modal"
+  id="bnf-tree-modal"
+  tabindex="-1"
+  role="dialog"
+>
+  <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="bnf-tree-modal-title"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="bnf-tree-modal-body">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div
+  class="modal"
+  id="bnf-table-modal"
+  tabindex="-1"
+  role="dialog"
+>
+  <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="bnf-table-modal-title"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="bnf-table-modal-body">
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
-{{ prescribing_api_url|json_script:"prescribing-api-url" }}
-<script src="https://cdn.jsdelivr.net/npm/vega@6.2.0"></script>
-<script src="https://cdn.jsdelivr.net/npm/vega-lite@6.4.1"></script>
-<script src="https://cdn.jsdelivr.net/npm/vega-embed@7.0.2"></script>
-<script src="{% static 'js/prescribing-chart.js' %}"></script>
+<script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+<script src="{% static 'js/bnf-query.js' %}"></script>
 {% endblock %}
