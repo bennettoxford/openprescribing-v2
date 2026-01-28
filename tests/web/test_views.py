@@ -52,6 +52,15 @@ def test_multiple_bnf_search(client, sample_data):
         == "/api/prescribing-deciles/?ntr_codes=1001030U0AA,-1001030U0AAABAB&ntr_product_type=all"
     )
 
+    rsp = client.get(
+        "/bnf_codes/?ntr_codes=1001030U0AA%0D%0A-1001030U0AAABAB&org_id=PRA00"
+    )
+    assert rsp.status_code == 200
+    assert (
+        rsp.context["prescribing_api_url"]
+        == "/api/prescribing-deciles/?ntr_codes=1001030U0AA,-1001030U0AAABAB&ntr_product_type=all&org_id=PRA00"
+    )
+
 
 @pytest.mark.django_db(databases=["data"])
 def test_bnf_tree(client, bnf_codes):
