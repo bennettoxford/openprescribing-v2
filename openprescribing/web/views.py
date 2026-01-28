@@ -110,9 +110,9 @@ def bnf_browser_table(request, code):
     See docstring of make_bnf_table for a description of the structure of the table.
     """
 
-    chemical = get_object_or_404(
-        BNFCode, code=code, level=BNFCode.Level.CHEMICAL_SUBSTANCE
-    )
+    # Although we don't use the object found here, we want to return a 404 if the code
+    # doesn't correspond to a chemical substance.
+    get_object_or_404(BNFCode, code=code, level=BNFCode.Level.CHEMICAL_SUBSTANCE)
     products = BNFCode.objects.filter(
         code__startswith=code, level=BNFCode.Level.PRODUCT
     ).order_by("code")
@@ -122,5 +122,5 @@ def bnf_browser_table(request, code):
 
     headers, rows = make_bnf_table(products, presentations)
 
-    ctx = {"chemical": chemical, "headers": headers, "rows": rows}
+    ctx = {"headers": headers, "rows": rows}
     return render(request, "bnf_browser_table.html", ctx)
