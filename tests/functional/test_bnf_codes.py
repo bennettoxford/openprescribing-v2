@@ -28,3 +28,13 @@ def test_bnf_codes(live_server, page: Page, sample_data):
         live_server.url
         + "/bnf_codes/?ntr_codes=1001030U0AA%0D%0A-1001030U0AAACAC%0D%0A&ntr_product_type=all&dtr_codes=&dtr_product_type=all"
     )
+
+    # Test if the org search works
+    page.get_by_role("searchbox", name="Highlight organisation (").click()
+    page.get_by_role("searchbox", name="Highlight organisation (").fill("ICB 1")
+    page.get_by_role("button", name="ICB 1 ICB01 - ICB").click()
+
+    expect(page).to_have_url(
+        live_server.url
+        + "/bnf_codes/?ntr_codes=1001030U0AA%0D%0A-1001030U0AAACAC%0D%0A&ntr_product_type=all&dtr_codes=&dtr_product_type=all&org_id=ICB01"
+    )
