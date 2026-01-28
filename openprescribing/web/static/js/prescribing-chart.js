@@ -1,19 +1,9 @@
-const setupSearch = () => {
+const setupBNFCodeSearch = () => {
     const bnfCodes = JSON.parse(document.getElementById('bnf-codes').textContent);
     const bnfLevels = Object.fromEntries(JSON.parse(document.getElementById('bnf-levels').textContent));
-    const orgs = JSON.parse(document.getElementById('orgs').textContent);
-    const orgTypes = Object.fromEntries(JSON.parse(document.getElementById('org-types').textContent));
 
     const bnfSearch = document.getElementById('bnf-search');
     const bnfResults = document.getElementById('bnf-results');
-    const orgSearch = document.getElementById('org-search');
-    const orgResults = document.getElementById('org-results');
-
-    const navigateWithParams = (updateFn) => {
-        const url = new URL(window.location.href);
-        updateFn(url.searchParams);
-        window.location.href = url.toString();
-    };
 
     createTypeahead({
         input: bnfSearch,
@@ -30,6 +20,14 @@ const setupSearch = () => {
             });
         },
     });
+}
+
+const setupOrgSearch = () => {
+    const orgs = JSON.parse(document.getElementById('orgs').textContent);
+    const orgTypes = Object.fromEntries(JSON.parse(document.getElementById('org-types').textContent));
+
+    const orgSearch = document.getElementById('org-search');
+    const orgResults = document.getElementById('org-results');
 
     createTypeahead({
         input: orgSearch,
@@ -52,6 +50,12 @@ const setupSearch = () => {
         },
     });
 }
+
+const navigateWithParams = (updateFn) => {
+    const url = new URL(window.location.href);
+    updateFn(url.searchParams);
+    window.location.href = url.toString();
+};
 
 const createTypeahead = ({ input, results, minChars, getMatches, renderItem, onSelect }) => {
     input.addEventListener('input', () => {
@@ -110,7 +114,10 @@ const updateChart = () => {
 document.addEventListener('DOMContentLoaded', () => {
     // Only initialise the Typeahead search on pages that use it
     if (document.getElementById('bnf-codes')) {
-      setupSearch();
+      setupBNFCodeSearch();
+    }
+    if (document.getElementById('orgs')) {
+      setupOrgSearch();
     }
     updateChart();
 });
