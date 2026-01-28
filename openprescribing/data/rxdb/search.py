@@ -23,10 +23,10 @@ def search(terms, product_type):
       BNF code are matched; or
 
     * a BNF chemical substance code (nine-characters), an underscore, and
-      a strength and formulation component (two-characters). The underscore is a
-      wild card that replaces the product component (two-characters). All
+      a strength and formulation part (two-characters). The underscore is a
+      wild card that replaces the product part (two-characters). All
       BNF presentation codes that are descendants of this BNF chemical substance code,
-      and have this strength and formulation component, are matched. For example,
+      and have this strength and formulation part, are matched. For example,
       "040702040_AM" matches "040702040AAAMAM", which is the BNF presentation code for
       "Tramadol 300mg modified-release tablets".
 
@@ -100,13 +100,13 @@ class StrengthAndFormulationFragment:
         self.negated = negated
 
         # A BNF strength and formulation code has 13 characters. However, we expect
-        # the product component (two characters) to be replaced by an underscore.
+        # the product part (two characters) to be replaced by an underscore.
         assert len(term) == 12
         assert term[9] == "_"
 
         self.prefix, self.suffix = term.split("_")
         assert len(self.prefix) == 9  # chemical substance code
-        assert len(self.suffix) == 2  # strength and formulation component
+        assert len(self.suffix) == 2  # strength and formulation part
 
     def build_q(self):
         return Q(code__startswith=self.prefix, code__endswith=self.suffix)

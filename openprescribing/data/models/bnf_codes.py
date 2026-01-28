@@ -22,7 +22,7 @@ class BNFCode(models.Model):
     name = models.TextField()
 
     @property
-    def slots(self):
+    def parts(self):
         pattern = r"""
             \A
             (?P<chapter>.{2})
@@ -36,11 +36,11 @@ class BNFCode(models.Model):
             \Z
         """
         match = re.match(pattern, self.code, re.VERBOSE)
-        return Slots(**match.groupdict())
+        return Parts(**match.groupdict())
 
     def is_generic(self):
         assert self.level in [BNFCode.Level.PRODUCT, BNFCode.Level.PRESENTATION]
-        return self.slots.product == "AA"
+        return self.parts.product == "AA"
 
     def is_ancestor_of(self, other):
         return other.code != self.code and other.code.startswith(self.code)
@@ -50,17 +50,17 @@ class BNFCode(models.Model):
         assert other.level == BNFCode.Level.PRESENTATION
         assert self.is_generic()
         return (
-            self.slots.chapter == other.slots.chapter
-            and self.slots.section == other.slots.section
-            and self.slots.paragraph == other.slots.paragraph
-            and self.slots.subparagraph == other.slots.subparagraph
-            and self.slots.chemical_substance == other.slots.chemical_substance
-            and self.slots.strength_and_formulation == other.slots.generic_equivalent
+            self.parts.chapter == other.parts.chapter
+            and self.parts.section == other.parts.section
+            and self.parts.paragraph == other.parts.paragraph
+            and self.parts.subparagraph == other.parts.subparagraph
+            and self.parts.chemical_substance == other.parts.chemical_substance
+            and self.parts.strength_and_formulation == other.parts.generic_equivalent
         )
 
 
 @dataclass
-class Slots:
+class Parts:
     chapter: str | None
     section: str | None
     paragraph: str | None
