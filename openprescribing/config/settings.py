@@ -82,14 +82,23 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "openprescribing.web.urls"
 
-STORAGES = {
-    "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
-    },
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
-}
+# pytest-django installs its own static handler, which conflicts with our whitenoise
+# setup, so don't use the production setup in tests.
+# Further discussion in https://github.com/bennettoxford/openprescribing-v2/pull/89
+# and linked slack threads.
+if "PYTEST_VERSION" in os.environ:  # pragma: no cover
+    WHITENOISE_USE_FINDERS = True
+else:  # pragma: no cover
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        },
+    }
+    STATIC_ROOT = "staticfiles/"
+
 
 TEMPLATES = [
     {
@@ -214,7 +223,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = "static/"
-STATIC_ROOT = "staticfiles/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
