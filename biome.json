@@ -6,7 +6,10 @@
 		"useIgnoreFile": true
 	},
 	"files": {
-		"ignoreUnknown": false
+		"ignoreUnknown": false,
+		"includes": [
+			"openprescribing/web/static/**/*.{css,js}"
+		]
 	},
 	"formatter": {
 		"enabled": true,
