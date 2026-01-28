@@ -4,7 +4,7 @@ from django.urls import reverse
 from openprescribing.data.models import BNFCode, Org
 from openprescribing.data.rxdb.search import describe_search
 
-from .presenters import make_bnf_table, make_bnf_tree
+from .presenters import make_bnf_table, make_bnf_tree, make_orgs
 
 
 def index(request):
@@ -29,11 +29,7 @@ def bnf_code(request):
             api_url += f"&org_id={org_id}"
 
     bnf_codes = list(BNFCode.objects.order_by("level", "name").values())
-    org_type_levels = [c[0] for c in Org.OrgType.choices]
-    orgs = sorted(
-        Org.objects.order_by("name").values("id", "name", "org_type"),
-        key=lambda o: org_type_levels.index(o["org_type"]),
-    )
+    orgs = make_orgs()
 
     ctx = {
         "bnf_code": bnf_code,
