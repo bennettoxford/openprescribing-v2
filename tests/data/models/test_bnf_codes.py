@@ -1,12 +1,12 @@
 import pytest
 
 from openprescribing.data.models import BNFCode
-from openprescribing.data.models.bnf_codes import Slots
+from openprescribing.data.models.bnf_codes import Parts
 
 
 @pytest.mark.django_db(databases=["data"])
-def test_slots(bnf_codes):
-    assert bnf_code("10").slots == Slots(
+def test_parts(bnf_codes):
+    assert bnf_code("10").parts == Parts(
         chapter="10",
         section=None,
         paragraph=None,
@@ -17,7 +17,7 @@ def test_slots(bnf_codes):
         generic_equivalent=None,
     )
 
-    assert bnf_code("1001030U0BDABAC").slots == Slots(
+    assert bnf_code("1001030U0BDABAC").parts == Parts(
         chapter="10",
         section="01",
         paragraph="03",
