@@ -90,12 +90,29 @@ We create objects from this data,
 but we don't update or delete these objects.
 Consequently, we don't need to enforce data integrity constraints.
 
+## 002: Using a single codebase for the project's two apps
+
+We have decided to use a single codebase for the project's two apps: data and web.
+
+The data app is responsible for fetching, ingesting, and querying prescribing data and all related metadata.
+The web app is responsible for representing and interacting with the data provided by the data app,
+as well as for providing services to users (e.g. sign-ups for alerts).
+
+It's important that large amounts of data can be moved quickly
+from SQLite and DuckDB to the rxdb module,
+and from the rxdb module to the view modules.
+This means running these components in the same process;
+and this means using a single codebase for the project's two apps.
+
+The "[Architecture][]" page on the wiki contains helpful process guidance.
+
 [1]: https://www.gov.uk/government/publications/architectural-decision-record-framework/architectural-decision-record-framework
 [2]: https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions
 [3]: https://en.wikipedia.org/wiki/Architecturally_significant_requirements
 [4]: https://researchrepository.ul.ie/entities/publication/a79ae7f9-449c-4bb9-8b0b-a33d25b5af7f
 [5]: https://docs.djangoproject.com/en/6.0/ref/contrib/contenttypes/#generic-relations
 [6]: https://lukeplant.me.uk/blog/posts/avoid-django-genericforeignkey/
+[Architecture]: https://github.com/bennettoxford/openprescribing-v2/wiki/Architecture
 [Azure Well-Architected Framework]: https://learn.microsoft.com/en-us/azure/well-architected/architect-role/architecture-decision-record
 [Data Search and Export Service]: https://www.odsdatasearchandexport.nhs.uk/
 [Documenting Software Architectures: Views and Beyond]: https://learning.oreilly.com/library/view/documenting-software-architectures/9780132488617/
