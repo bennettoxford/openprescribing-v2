@@ -1,5 +1,5 @@
+import collections
 import re
-from dataclasses import dataclass
 
 from django.db import models
 
@@ -36,6 +36,7 @@ class BNFCode(models.Model):
             \Z
         """
         match = re.match(pattern, self.code, re.VERBOSE)
+        Parts = collections.namedtuple("Parts", match.groupdict().keys())
         return Parts(**match.groupdict())
 
     def is_generic(self):
@@ -57,15 +58,3 @@ class BNFCode(models.Model):
             and self.parts.chemical_substance == other.parts.chemical_substance
             and self.parts.strength_and_formulation == other.parts.generic_equivalent
         )
-
-
-@dataclass
-class Parts:
-    chapter: str | None
-    section: str | None
-    paragraph: str | None
-    subparagraph: str | None
-    chemical_substance: str | None
-    product: str | None
-    strength_and_formulation: str | None
-    generic_equivalent: str | None
