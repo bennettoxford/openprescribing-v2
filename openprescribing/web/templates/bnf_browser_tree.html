@@ -7,30 +7,7 @@
 <p>For now, only chapters 1-19 are included.</p>
 <p>Clicking on a chemical substance will open a modal showing the related products and presentations.</p>
 
-<form id="search-form" class="input-group mb-4">
-  <button class="btn btn-primary" type="submit">Search</button>
-  <input
-    class="form-control"
-    placeholder="Search by name or code"
-  >
-</form>
-
-<div id="bnf-tree">
-{% include "_bnf_tree_nodes.html" with nodes=tree %}
-</div>
-
-<div class="modal fade" id="bnf-modal" tabindex="-1" role="dialog" >
-  <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="bnf-modal-title"></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body" id="bnf-modal-body">
-      </div>
-    </div>
-  </div>
-</div>
+{% include "_bnf_tree.html" %}
 {% endblock %}
 
 {% block extra_js %}
