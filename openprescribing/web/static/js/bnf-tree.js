@@ -6,9 +6,9 @@ const bnfModal = new bootstrap.Modal(modalElement);
 
 tree.addEventListener("click", (e) => {
   const li = e.target.closest("li");
-  const code = li.dataset["code"];
-  if (code.length == 9) {
-    modalTitle.innerHTML = `<code>${code}</code> ${li.dataset["name"]}`;
+  const code = li.dataset.code;
+  if (code.length === 9) {
+    modalTitle.innerHTML = `<code>${code}</code> ${li.dataset.name}`;
     modalBody.innerHTML = `
             <div class="text-center py-5">
                 <div class="spinner-border">
@@ -33,8 +33,8 @@ searchForm.addEventListener("submit", (e) => {
   const needle = searchInput.value.trim().toLowerCase();
   document.querySelectorAll("#bnf-tree li").forEach((li) => {
     if (
-      li.dataset["code"].toLowerCase() === needle ||
-      li.dataset["name"].toLowerCase().includes(needle)
+      li.dataset.code.toLowerCase() === needle ||
+      li.dataset.name.toLowerCase().includes(needle)
     ) {
       li.setAttribute("data-matches-search", "");
     } else {
