@@ -1,51 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block extra_css %}
-<style>
-@scope (#bnf-tree) {
-  ul ul {
-    display: none;
-  }
-  li[data-open] > ul {
-    display: block;
-  }
-  ul:has(li[data-matches-search]) {
-    display: block;
-  }
-  li[data-matches-search] > span {
-    background-color: #ffff0033;
-  }
-  span {
-    display: block;
-    cursor: pointer;
-    user-select: none;
-  }
-  ul {
-    list-style-type: none;
-  }
-  span:hover {
-    background-color: #f0f0f0;
-  }
-}
-
-@scope (#bnf-table) {
-  ul {
-    list-style-type: none;
-    padding-left: 0;
-    margin: 0;
-  }
-  li {
-    padding: 0;
-    border-bottom: 1px solid var(--bs-table-border-color);
-  }
-  li:last-child {
-    border-bottom: 0;
-  }
-}
-</style>
-{% endblock %}
-
 {% block content %}
 <h1>BNF Browser</h1>
 
