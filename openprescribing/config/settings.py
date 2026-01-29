@@ -97,7 +97,7 @@ else:  # pragma: no cover
             "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
         },
     }
-    STATIC_ROOT = "staticfiles/"
+    STATIC_ROOT = BASE_DIR / "staticfiles/"
 
 
 TEMPLATES = [
