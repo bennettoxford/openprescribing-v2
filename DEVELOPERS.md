@@ -22,6 +22,11 @@ just #  shortcut for just --list
 
 Follow installation instructions from the [uv documentation](https://docs.astral.sh/uv/getting-started/installation/) for your OS.
 
+### npm
+
+Follow installation instructions from the [npm documentation](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) for your OS.
+
+
 ## Local development environment
 
 

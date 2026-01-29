@@ -6,3 +6,4 @@ htmlcov
 .env
 .test.env
 staticfiles/
+node_modules/
