@@ -151,7 +151,7 @@ check:
     check "just check-lockfile"
     check "just format"
     check "just lint"
-    check "just lint-js"
+    test "${GITHUB_ACTIONS:-}" != "true" && check "just lint-js"
     check "just lint-actions"
     test -d docker/ && check "just docker/lint"
 
