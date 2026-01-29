@@ -1,32 +1,29 @@
 import pytest
 
 from openprescribing.data.models import BNFCode
-from openprescribing.data.models.bnf_codes import Parts
 
 
 @pytest.mark.django_db(databases=["data"])
 def test_parts(bnf_codes):
-    assert bnf_code("10").parts == Parts(
-        chapter="10",
-        section=None,
-        paragraph=None,
-        subparagraph=None,
-        chemical_substance=None,
-        product=None,
-        strength_and_formulation=None,
-        generic_equivalent=None,
-    )
+    parts_of_chapter = bnf_code("10").parts
+    assert parts_of_chapter.chapter == "10"
+    assert parts_of_chapter.section is None
+    assert parts_of_chapter.paragraph is None
+    assert parts_of_chapter.subparagraph is None
+    assert parts_of_chapter.chemical_substance is None
+    assert parts_of_chapter.product is None
+    assert parts_of_chapter.strength_and_formulation is None
+    assert parts_of_chapter.generic_equivalent is None
 
-    assert bnf_code("1001030U0BDABAC").parts == Parts(
-        chapter="10",
-        section="01",
-        paragraph="03",
-        subparagraph="0",
-        chemical_substance="U0",
-        product="BD",
-        strength_and_formulation="AB",
-        generic_equivalent="AC",
-    )
+    parts_of_presentation = bnf_code("1001030U0BDABAC").parts
+    assert parts_of_presentation.chapter == "10"
+    assert parts_of_presentation.section == "01"
+    assert parts_of_presentation.paragraph == "03"
+    assert parts_of_presentation.subparagraph == "0"
+    assert parts_of_presentation.chemical_substance == "U0"
+    assert parts_of_presentation.product == "BD"
+    assert parts_of_presentation.strength_and_formulation == "AB"
+    assert parts_of_presentation.generic_equivalent == "AC"
 
 
 @pytest.mark.django_db(databases=["data"])
