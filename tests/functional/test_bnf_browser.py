@@ -7,7 +7,7 @@ from openprescribing.data.models import BNFCode
 pytestmark = pytest.mark.functional
 
 
-@pytest.mark.django_db(databases=["data"])
+@pytest.mark.django_db(databases=["data"], transaction=True)
 def test_bnf_browser(live_server, page, sample_data):
     page.goto(live_server.url + "/bnf/")
 
