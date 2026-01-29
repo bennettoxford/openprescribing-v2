@@ -11,7 +11,7 @@
       integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
       crossorigin="anonymous"
     />
-    {% block extra_css %}{% endblock %}
+    <link href="{% static 'css/openprescribing.css' %}" rel="stylesheet" />
     <!-- See https://plausible.io/beta.openprescribing.net -->
     <script async src="https://plausible.io/js/pa-PR6R1vZrivivRLk6TSauW.js"></script>
     <script>
@@ -52,6 +52,7 @@
       integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
       crossorigin="anonymous"
     ></script>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     {% block extra_js %}{% endblock %}
   </body>
 </html>
