@@ -44,9 +44,15 @@ prodenv:
 
 # Install dev requirements into venv without removing extraneous packages
 devenv: _dotenv && install-precommit
+    #!/usr/bin/env bash
+    set -euo pipefail
+
     uv sync --inexact
     uv run python scripts/install_duckdb_extras.py
     uv run playwright install --with-deps chromium
+
+    npm clean-install
+
 
 # Ensure precommit is installed
 install-precommit:
