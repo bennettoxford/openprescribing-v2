@@ -3,7 +3,7 @@ export function setUpBNFTree() {
   const searchForm = document.getElementById("search-form");
   const modal = document.getElementById("bnf-modal");
 
-  const bnfModal = new bootstrap.Modal(modal);
+  const modalObj = new bootstrap.Modal(modal);
   const modalTitle = modal.querySelector(".modal-title");
   const modalBody = modal.querySelector(".modal-body");
 
@@ -18,7 +18,7 @@ export function setUpBNFTree() {
                 </div>
             </div>
         `;
-      bnfModal.show();
+      modalObj.show();
       htmx.ajax("GET", `/bnf/${code}/`, {
         target: "#bnf-modal-body",
         swap: "innerHTML",
