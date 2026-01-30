@@ -1,33 +1,18 @@
-export function setUpBNFTree(outerModalObj = null) {
+export function setUpBNFTree(outerModalObj = null, handleShiftClick = null) {
   const tree = document.getElementById("bnf-tree");
   const searchForm = document.getElementById("bnf-search-form");
   const modal = document.getElementById("bnf-table-modal");
 
-  const modalObj = new bootstrap.Modal(modal);
-  const modalTitle = modal.querySelector(".modal-title");
-  const modalBody = modal.querySelector(".modal-body");
-
   tree.addEventListener("click", (e) => {
     const li = e.target.closest("li");
     const code = li.dataset.code;
-    if (code.length === 9) {
-      modalTitle.innerHTML = `<code>${code}</code> ${li.dataset.name}`;
-      modalBody.innerHTML = `
-            <div class="text-center py-5">
-                <div class="spinner-border">
-                </div>
-            </div>
-        `;
-      if (outerModalObj !== null) {
-        outerModalObj.hide();
+
+    if (e.shiftKey) {
+      if (handleShiftClick !== null) {
+        handleShiftClick(li);
       }
-      modalObj.show();
-      htmx.ajax("GET", `/bnf/${code}/`, {
-        target: "#bnf-table-modal .modal-body",
-        swap: "innerHTML",
-      });
     } else {
-      li.toggleAttribute("data-open");
+      handleClick(li, code, modal, outerModalObj);
     }
   });
 
@@ -53,4 +38,32 @@ export function setUpBNFTree(outerModalObj = null) {
       }
     });
   });
+}
+
+function handleClick(li, code, modal, outerModalObj) {
+  // For objects down to the subparagaph level, toggle the `open` data attribute.
+  // For chemical substances, open the BNF table modal.
+
+  if (code.length === 9) {
+    const modalObj = new bootstrap.Modal(modal);
+    const modalTitle = modal.querySelector(".modal-title");
+    const modalBody = modal.querySelector(".modal-body");
+    modalTitle.innerHTML = `<code>${code}</code> ${li.dataset.name}`;
+    modalBody.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border">
+                </div>
+            </div>
+        `;
+    if (outerModalObj !== null) {
+      outerModalObj.hide();
+    }
+    modalObj.show();
+    htmx.ajax("GET", `/bnf/${code}/`, {
+      target: "#bnf-table-modal .modal-body",
+      swap: "innerHTML",
+    });
+  } else {
+    li.toggleAttribute("data-open");
+  }
 }

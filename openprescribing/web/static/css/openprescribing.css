@@ -22,6 +22,30 @@
   span:hover {
     background-color: #f0f0f0;
   }
+
+  /* included, directly */
+  li[data-included] > span {
+    background-color: #9fc5ff;
+  }
+  li[data-included] > span:hover {
+    background-color: #87b5f5;
+  }
+
+  /* included, indirectly */
+  li[data-included] li span {
+    background-color: #d7ecff;
+  }
+  li[data-included] li span:hover {
+    background-color: #c6e2ff;
+  }
+
+  /* excluded, directly or indirectly */
+  li[data-excluded] span {
+    background-color: #ffffff !important;
+  }
+  li[data-excluded] span:hover {
+    background-color: #ffffff !important;
+  }
 }
 
 @scope (#bnf-table) {
