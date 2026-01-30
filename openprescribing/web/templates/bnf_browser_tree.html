@@ -11,5 +11,8 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static "js/bnf-tree.js" %}"></script>
+<script type="module">
+  import { setUpBNFTree } from "{% static 'js/bnf-tree.js' %}";
+  setUpBNFTree();
+</script>
 {% endblock %}

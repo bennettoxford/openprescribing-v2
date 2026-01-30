@@ -11,8 +11,8 @@ pytestmark = pytest.mark.functional
 def test_bnf_browser(live_server, page, sample_data):
     page.goto(live_server.url + "/bnf/")
 
-    modal = page.locator("#bnf-modal")
-    modal_body = page.locator("#bnf-modal-body")
+    modal = page.locator("#bnf-table-modal")
+    modal_body = page.locator("#bnf-table-modal .modal-body")
 
     # Test that clicking on nodes expands them.
     expect(page.get_by_text("Drugs used in diabetes")).not_to_be_visible()
