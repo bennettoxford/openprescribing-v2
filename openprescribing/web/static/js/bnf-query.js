@@ -28,6 +28,14 @@ export function setUpBNFQuery() {
     });
   });
 
+  modal.addEventListener("hidden.bs.modal", () => {
+    // When the modal is closed, update the contents of the corresponding textarea.
+    document.querySelector(
+      `textarea[data-field="${state.modal.field}"]`,
+    ).value = queryToText(state.query[state.modal.field]);
+    state.modal.field = null;
+  });
+
   setUpBNFTree(modalObj, handleShiftClick);
 }
 
@@ -76,12 +84,25 @@ function handleShiftClick(li) {
     query.included.push(code);
     li.setAttribute("data-included", "");
   }
-
-  console.log("included:", query.included);
-  console.log("excluded:", query.excluded);
 }
 
 function removeItem(array, item) {
   const ix = array.indexOf(item);
   array.splice(ix, 1);
+}
+
+function queryToText(query) {
+  // Given a query, return a newline-separated string for the corresponding
+  // textarea.  The terms in the query are sorted by code.
+  //
+  // This is expected to be temporary: we'll want to plumb the query directly into
+  // the URL in future.
+  const terms = [
+    ...query.included.map((code) => ({ code, included: true })),
+    ...query.excluded.map((code) => ({ code, included: false })),
+  ];
+  const sortedTerms = terms.sort((a, b) => a.code > b.code);
+  return sortedTerms
+    .map(({ code, included }) => (included ? code : `-${code}`))
+    .join("\n");
 }
