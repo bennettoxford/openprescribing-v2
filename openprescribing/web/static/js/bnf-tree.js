@@ -16,7 +16,7 @@ tree.addEventListener("click", (e) => {
             </div>
         `;
     bnfModal.show();
-    htmx.ajax("GET", `${code}/`, {
+    htmx.ajax("GET", `/bnf/${code}/`, {
       target: "#bnf-modal-body",
       swap: "innerHTML",
     });
