@@ -1,44 +1,46 @@
-const tree = document.getElementById("bnf-tree");
-const modalElement = document.getElementById("bnf-modal");
-const modalTitle = document.getElementById("bnf-modal-title");
-const modalBody = document.getElementById("bnf-modal-body");
-const bnfModal = new bootstrap.Modal(modalElement);
+export function setUpBNFTree() {
+  const tree = document.getElementById("bnf-tree");
+  const modalElement = document.getElementById("bnf-modal");
+  const modalTitle = document.getElementById("bnf-modal-title");
+  const modalBody = document.getElementById("bnf-modal-body");
+  const bnfModal = new bootstrap.Modal(modalElement);
 
-tree.addEventListener("click", (e) => {
-  const li = e.target.closest("li");
-  const code = li.dataset.code;
-  if (code.length === 9) {
-    modalTitle.innerHTML = `<code>${code}</code> ${li.dataset.name}`;
-    modalBody.innerHTML = `
+  tree.addEventListener("click", (e) => {
+    const li = e.target.closest("li");
+    const code = li.dataset.code;
+    if (code.length === 9) {
+      modalTitle.innerHTML = `<code>${code}</code> ${li.dataset.name}`;
+      modalBody.innerHTML = `
             <div class="text-center py-5">
                 <div class="spinner-border">
                 </div>
             </div>
         `;
-    bnfModal.show();
-    htmx.ajax("GET", `/bnf/${code}/`, {
-      target: "#bnf-modal-body",
-      swap: "innerHTML",
-    });
-  } else {
-    li.toggleAttribute("data-open");
-  }
-});
-
-const searchForm = document.getElementById("search-form");
-const searchInput = searchForm.querySelector("input");
-
-searchForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const needle = searchInput.value.trim().toLowerCase();
-  document.querySelectorAll("#bnf-tree li").forEach((li) => {
-    if (
-      li.dataset.code.toLowerCase() === needle ||
-      li.dataset.name.toLowerCase().includes(needle)
-    ) {
-      li.setAttribute("data-matches-search", "");
+      bnfModal.show();
+      htmx.ajax("GET", `/bnf/${code}/`, {
+        target: "#bnf-modal-body",
+        swap: "innerHTML",
+      });
     } else {
-      li.removeAttribute("data-matches-search");
+      li.toggleAttribute("data-open");
     }
   });
-});
+
+  const searchForm = document.getElementById("search-form");
+  const searchInput = searchForm.querySelector("input");
+
+  searchForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const needle = searchInput.value.trim().toLowerCase();
+    document.querySelectorAll("#bnf-tree li").forEach((li) => {
+      if (
+        li.dataset.code.toLowerCase() === needle ||
+        li.dataset.name.toLowerCase().includes(needle)
+      ) {
+        li.setAttribute("data-matches-search", "");
+      } else {
+        li.removeAttribute("data-matches-search");
+      }
+    });
+  });
+}
