@@ -20,7 +20,7 @@ export function setUpBNFTree() {
         `;
       modalObj.show();
       htmx.ajax("GET", `/bnf/${code}/`, {
-        target: "#bnf-modal-body",
+        target: "#bnf-table-modal .modal-body",
         swap: "innerHTML",
       });
     } else {
