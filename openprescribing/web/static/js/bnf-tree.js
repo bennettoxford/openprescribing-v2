@@ -1,4 +1,4 @@
-export function setUpBNFTree() {
+export function setUpBNFTree(outerModalObj = null) {
   const tree = document.getElementById("bnf-tree");
   const searchForm = document.getElementById("bnf-search-form");
   const modal = document.getElementById("bnf-table-modal");
@@ -18,6 +18,9 @@ export function setUpBNFTree() {
                 </div>
             </div>
         `;
+      if (outerModalObj !== null) {
+        outerModalObj.hide();
+      }
       modalObj.show();
       htmx.ajax("GET", `/bnf/${code}/`, {
         target: "#bnf-table-modal .modal-body",
@@ -27,6 +30,12 @@ export function setUpBNFTree() {
       li.toggleAttribute("data-open");
     }
   });
+
+  if (outerModalObj !== null) {
+    modal.addEventListener("hidden.bs.modal", () => {
+      outerModalObj.show();
+    });
+  }
 
   const searchInput = searchForm.querySelector("input");
 

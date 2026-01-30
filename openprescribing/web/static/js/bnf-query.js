@@ -14,5 +14,5 @@ export function setUpBNFQuery() {
     });
   });
 
-  setUpBNFTree();
+  setUpBNFTree(modalObj);
 }
