@@ -1,7 +1,7 @@
 export function setUpBNFTree() {
   const tree = document.getElementById("bnf-tree");
   const searchForm = document.getElementById("bnf-search-form");
-  const modal = document.getElementById("bnf-modal");
+  const modal = document.getElementById("bnf-table-modal");
 
   const modalObj = new bootstrap.Modal(modal);
   const modalTitle = modal.querySelector(".modal-title");

@@ -11,7 +11,7 @@ pytestmark = pytest.mark.functional
 def test_bnf_browser(live_server, page, sample_data):
     page.goto(live_server.url + "/bnf/")
 
-    modal = page.locator("#bnf-modal")
+    modal = page.locator("#bnf-table-modal")
     modal_body = page.locator("#bnf-modal-body")
 
     # Test that clicking on nodes expands them.
