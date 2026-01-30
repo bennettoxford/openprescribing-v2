@@ -1,5 +1,6 @@
 import dataclasses
 import functools
+import reprlib
 from collections.abc import Hashable
 
 import numpy as np
@@ -52,6 +53,15 @@ class LabelledMatrix:
         new_values = np.divide(self.values, other.values, where=(other.values != 0))
         new_values[other.values == 0] = np.nan
         return self.__class__(new_values, self.row_labels, self.col_labels)
+
+    def __repr__(self):
+        args = ", ".join(f"{k}={reprlib.repr(v)}" for k, v in self.__dict__.items())
+        # The following removes most indentation added by numpy. Removing all
+        # indentation would require us to write a formatter, which seems like
+        # over-engineering. For more information, see:
+        # https://numpy.org/doc/stable/reference/generated/numpy.set_printoptions.html
+        args = " ".join(args.split())
+        return f"{self.__class__.__name__}({args})"
 
     def group_rows(self, row_label_map: tuple[tuple[Label, LabelGroup], ...]):
         """

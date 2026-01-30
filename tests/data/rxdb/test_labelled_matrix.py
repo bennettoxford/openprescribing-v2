@@ -37,6 +37,18 @@ def test_truediv():
     )
 
 
+def test_repr():
+    matrix = LabelledMatrix(
+        np.array([range(100), range(100)]),
+        ("r1", "r2"),
+        tuple(f"c{x}" for x in range(100)),
+    )
+    assert (
+        repr(matrix)
+        == "LabelledMatrix(values=array([[ 0, ... 97, 98, 99]]), row_labels=('r1', 'r2'), col_labels=('c0', 'c1', 'c2', 'c3', 'c4', 'c5', ...))"
+    )
+
+
 def test_group_rows_by_label():
     matrix = LabelledMatrix(
         col_labels=(1, 2, 3),
