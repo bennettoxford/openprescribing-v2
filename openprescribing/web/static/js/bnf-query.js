@@ -1,5 +1,19 @@
 import { setUpBNFTree } from "./bnf-tree.js";
 
+const state = {
+  query: {
+    // Records which codes have been included/excluded for the numerator and denominator
+    // respectively.
+    ntr: { included: [], excluded: [] },
+    dtr: { included: [], excluded: [] },
+  },
+  modal: {
+    // Indicates which field the tree modal is open for ("ntr" or "dtr"), or null if no
+    // modal is open.
+    field: null,
+  },
+};
+
 export function setUpBNFQuery() {
   const modal = document.getElementById("bnf-tree-modal");
   const modalObj = new bootstrap.Modal(modal);
@@ -7,8 +21,8 @@ export function setUpBNFQuery() {
   document.querySelectorAll("textarea").forEach((textarea) => {
     textarea.addEventListener("focus", (e) => {
       e.preventDefault();
-      const field = e.target.dataset.field;
-      const title = `Select codes for ${field === "ntr" ? "numerator" : "denominator"}`;
+      state.modal.field = e.target.dataset.field;
+      const title = `Select codes for ${state.modal.field === "ntr" ? "numerator" : "denominator"}`;
       modal.querySelector(".modal-title").innerHTML = title;
       modalObj.show();
     });
@@ -24,17 +38,23 @@ function handleShiftClick(li) {
   // descendant of the excluded code.  This is a significant simplifaction over
   // similar functionality in OpenCodelists.
 
+  const query = state.query[state.modal.field];
+  const code = li.dataset.code;
+
   if (li.hasAttribute("data-included")) {
     // This item is included:
     // * Don't include it
     // * Remove descendant exclusions
+    removeItem(query.included, code);
     li.removeAttribute("data-included");
     li.querySelectorAll("li[data-excluded]").forEach((n) => {
+      removeItem(query.excluded, n.dataset.code);
       n.removeAttribute("data-excluded");
     });
   } else if (li.hasAttribute("data-excluded")) {
     // This item is excluded:
     // * Don't exclude it
+    removeItem(query.excluded, code);
     li.removeAttribute("data-excluded");
   } else if (li.parentElement.closest("li[data-excluded]")) {
     // An ancestor is excluded: do nothing
@@ -44,13 +64,24 @@ function handleShiftClick(li) {
     // An ancestor is included:
     // * Exclude this one
     // * Remove descendant exclusions
+    query.excluded.push(code);
     li.setAttribute("data-excluded", "");
     li.querySelectorAll("li[data-excluded]").forEach((n) => {
+      removeItem(query.excluded, n.dataset.code);
       n.removeAttribute("data-excluded");
     });
   } else {
     // No ancestors are included:
     // * Include this one
+    query.included.push(code);
     li.setAttribute("data-included", "");
   }
+
+  console.log("included:", query.included);
+  console.log("excluded:", query.excluded);
+}
+
+function removeItem(array, item) {
+  const ix = array.indexOf(item);
+  array.splice(ix, 1);
 }
