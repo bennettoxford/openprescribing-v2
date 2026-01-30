@@ -1,9 +1,11 @@
 export function setUpBNFTree() {
   const tree = document.getElementById("bnf-tree");
-  const modalElement = document.getElementById("bnf-modal");
-  const modalTitle = document.getElementById("bnf-modal-title");
-  const modalBody = document.getElementById("bnf-modal-body");
-  const bnfModal = new bootstrap.Modal(modalElement);
+  const searchForm = document.getElementById("search-form");
+  const modal = document.getElementById("bnf-modal");
+
+  const bnfModal = new bootstrap.Modal(modal);
+  const modalTitle = modal.querySelector(".modal-title");
+  const modalBody = modal.querySelector(".modal-body");
 
   tree.addEventListener("click", (e) => {
     const li = e.target.closest("li");
@@ -26,13 +28,12 @@ export function setUpBNFTree() {
     }
   });
 
-  const searchForm = document.getElementById("search-form");
   const searchInput = searchForm.querySelector("input");
 
   searchForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const needle = searchInput.value.trim().toLowerCase();
-    document.querySelectorAll("#bnf-tree li").forEach((li) => {
+    tree.querySelectorAll("li").forEach((li) => {
       if (
         li.dataset.code.toLowerCase() === needle ||
         li.dataset.name.toLowerCase().includes(needle)
