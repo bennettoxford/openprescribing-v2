@@ -30,8 +30,12 @@ def test_bnf_codes(live_server, page: Page, sample_data):
     )
 
     # Test if the org search works
-    page.get_by_role("searchbox", name="Highlight organisation (").click()
-    page.get_by_role("searchbox", name="Highlight organisation (").fill("ICB 1")
+    page.get_by_role(
+        "searchbox", name="Name or code of organisation to highlight"
+    ).click()
+    page.get_by_role(
+        "searchbox", name="Name or code of organisation to highlight"
+    ).fill("ICB 1")
     page.get_by_role("button", name="ICB 1 ICB01 - ICB").click()
 
     expect(page).to_have_url(

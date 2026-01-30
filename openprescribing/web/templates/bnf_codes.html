@@ -4,7 +4,7 @@
 {% block content %}
 <div class="row">
     <div class="col-lg-5">
-        <div class="card h-100">
+        <div class="card">
             <div class="card-body">
                 <h1 class="h3">Search for BNF codes</h1>
                 <form>
@@ -14,8 +14,13 @@
                     {% include "./_bnf_codes_form_controls.html" with prefix="dtr" codes=dtr_codes product_type=dtr_product_type placeholder="BNF codes for denominator, or leave blank to use list size" %}
                     <button type="submit" class="btn btn-primary">Submit</button>
           		</form>
-                <div class="mt-4 mb-3 position-relative">
-                    <label class="form-label" for="org-search">Highlight organisation (optional)</label>
+            </div>
+        </div>
+        <div class="card mt-3">
+            <div class="card-body">
+                <h2 class="h5">Highlight organisation</h2>
+                <div class="position-relative mb-2">
+                    <label class="form-label" for="org-search">Name or code of organisation to highlight</label>
                     <input
                         id="org-search"
                         type="search"
