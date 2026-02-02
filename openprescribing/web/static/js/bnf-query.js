@@ -29,4 +29,28 @@ export function setUpBNFQuery() {
       modalObj.show();
     });
   });
+
+  modal.addEventListener("hidden.bs.modal", () => {
+    // When the modal is closed, update the contents of the corresponding textarea.
+    document.querySelector(
+      `textarea[data-field="${state.modal.field}"]`,
+    ).value = queryToText(state.query[state.modal.field]);
+    state.modal.field = null;
+  });
+}
+
+function queryToText(query) {
+  // Given a query, return a newline-separated string for the corresponding
+  // textarea.  The terms in the query are sorted by code.
+  //
+  // This is expected to be temporary: we'll want to plumb the query directly into
+  // the URL in future.
+  const terms = [
+    ...query.included.map((code) => ({ code, included: true })),
+    ...query.excluded.map((code) => ({ code, included: false })),
+  ];
+  const sortedTerms = terms.sort((a, b) => a.code > b.code);
+  return sortedTerms
+    .map(({ code, included }) => (included ? code : `-${code}`))
+    .join("\n");
 }

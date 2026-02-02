@@ -162,9 +162,6 @@ function handleShiftClick(li, query) {
     query.included.push(code);
     li.setAttribute("data-included", "");
   }
-
-  console.log("included:", query.included);
-  console.log("excluded:", query.excluded);
 }
 
 function isAncestor(code1, code2) {
