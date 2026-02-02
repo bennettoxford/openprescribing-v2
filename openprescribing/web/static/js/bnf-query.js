@@ -19,6 +19,8 @@ export function setUpBNFQuery() {
   const modalObj = new bootstrap.Modal(modal);
   const { setState } = setUpBNFTree(modalObj);
 
+  hydrateState();
+
   document.querySelectorAll("textarea").forEach((textarea) => {
     textarea.addEventListener("focus", (e) => {
       e.preventDefault();
@@ -37,6 +39,30 @@ export function setUpBNFQuery() {
     ).value = queryToText(state.query[state.modal.field]);
     state.modal.field = null;
   });
+}
+
+function hydrateState() {
+  // Populate state.query based on contents of textareas.
+  document.querySelectorAll("textarea[data-field]").forEach((textarea) => {
+    const field = textarea.dataset.field;
+    state.query[field] = parseQueryText(textarea.value);
+  });
+}
+
+function parseQueryText(text) {
+  const included = [];
+  const excluded = [];
+  const terms = text.split(/\s+/);
+
+  terms.forEach((term) => {
+    if (term.startsWith("-")) {
+      excluded.push(term.slice(1));
+    } else {
+      included.push(term);
+    }
+  });
+
+  return { included, excluded };
 }
 
 function queryToText(query) {
