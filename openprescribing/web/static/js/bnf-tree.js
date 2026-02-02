@@ -26,8 +26,29 @@ export function setUpBNFTree(outerModalObj = null) {
   const modal = document.getElementById("bnf-table-modal");
 
   function setState(query) {
-    // Set the active query.  (We'll do more here soon!)
+    // Set the tree state to show the nodes included and excluded by the query.
     activeQuery = query;
+
+    tree.querySelectorAll("li").forEach((li) => {
+      li.removeAttribute("data-open");
+      li.removeAttribute("data-matches-search");
+      li.removeAttribute("data-included");
+      li.removeAttribute("data-excluded");
+      if (query?.included?.includes(li.dataset.code)) {
+        li.setAttribute("data-included", "");
+      }
+      if (query?.excluded?.includes(li.dataset.code)) {
+        li.setAttribute("data-excluded", "");
+      }
+      if (query?.included?.some((code) => isAncestor(code, li.dataset.code))) {
+        li.setAttribute("data-open", "");
+      }
+      if (query?.excluded?.some((code) => isAncestor(code, li.dataset.code))) {
+        li.setAttribute("data-open", "");
+      }
+    });
+
+    searchForm.querySelector("input").value = "";
   }
 
   tree.addEventListener("click", (e) => {
@@ -144,6 +165,10 @@ function handleShiftClick(li, query) {
 
   console.log("included:", query.included);
   console.log("excluded:", query.excluded);
+}
+
+function isAncestor(code1, code2) {
+  return code1.startsWith(code2) && code1 !== code2;
 }
 
 function removeItem(array, item) {
