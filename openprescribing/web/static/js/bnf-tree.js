@@ -1,4 +1,14 @@
 export function setUpBNFTree() {
+  // Set up an interactive BNF browser, with BNF objects arranged in a tree.
+  //
+  // Initially the browser shows a list of BNF chapters, with all other objects hidden.
+  // When the user clicks on an object (down to the chemical substance level), its
+  // children are shown.  When the user clicks on a chemical substance, a modal is opened
+  // that shows the corresponding products and presentations in a table.
+  //
+  // There is also a search box that lets users search for BNF objects by name or
+  // code.
+
   const tree = document.getElementById("bnf-tree");
   const searchForm = document.getElementById("bnf-search-form");
   const modal = document.getElementById("bnf-table-modal");
