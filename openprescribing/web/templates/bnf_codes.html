@@ -37,7 +37,6 @@
                     ></ul>
                 </div>
                 <div class="form-text">Start typing an organisation name or code to highlight a single organisation.</div>
-
             </div>
         </div>
     </div>
@@ -46,6 +45,7 @@
             <div class="card-body">
                 {% if ntr_codes %}
                 <h1 class="h4">Prescribing data</h1>
+                <div id="prescribing-chart" class="py-3">Loading chart...</div>
                 <div class="row">
                     <div class="col-6">
                         <h2 class="h5">Numerator</h2>
@@ -66,7 +66,6 @@
                     </div>
                 </div>
                 {% endif %}
-                <div id="prescribing-chart" class="py-3">Loading chart...</div>
                 {% else %}
                 <div class="text-center text-muted py-5">
                     <p>Search for BNF codes to see prescribing data.</p>
