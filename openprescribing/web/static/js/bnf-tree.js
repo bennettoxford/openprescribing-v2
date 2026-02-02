@@ -1,4 +1,4 @@
-export function setUpBNFTree() {
+export function setUpBNFTree(outerModalObj = null) {
   // Set up an interactive BNF browser, with BNF objects arranged in a tree.
   //
   // Initially the browser shows a list of BNF chapters, with all other objects hidden.
@@ -8,6 +8,10 @@ export function setUpBNFTree() {
   //
   // There is also a search box that lets users search for BNF objects by name or
   // code.
+  //
+  // Parameters:
+  //  * outerModalObj: if the tree is shown in a modal, this is a reference to the
+  //    Bootstrap object for that modal.
 
   const tree = document.getElementById("bnf-tree");
   const searchForm = document.getElementById("bnf-search-form");
@@ -28,6 +32,9 @@ export function setUpBNFTree() {
                 </div>
             </div>
         `;
+      if (outerModalObj !== null) {
+        outerModalObj.hide();
+      }
       modalObj.show();
       htmx.ajax("GET", `/bnf/${code}/`, {
         target: "#bnf-table-modal .modal-body",
@@ -37,6 +44,12 @@ export function setUpBNFTree() {
       li.toggleAttribute("data-open");
     }
   });
+
+  if (outerModalObj !== null) {
+    modal.addEventListener("hidden.bs.modal", () => {
+      outerModalObj.show();
+    });
+  }
 
   const searchInput = searchForm.querySelector("input");
 
