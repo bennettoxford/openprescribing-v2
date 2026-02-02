@@ -1,4 +1,4 @@
-export function setUpBNFTree(outerModalObj = null, buildingQuery = false) {
+export function setUpBNFTree(outerModalObj = null) {
   // Set up an interactive BNF browser, with BNF objects arranged in a tree.
   //
   // Initially the browser shows a list of BNF chapters, with all other objects hidden.
@@ -12,20 +12,31 @@ export function setUpBNFTree(outerModalObj = null, buildingQuery = false) {
   // Parameters:
   //  * outerModalObj: if the tree is shown in a modal, this is a reference to the
   //    Bootstrap object for that modal.
-  //  * buildingQuery: boolean indicating whether we are using the tree to build a
-  //  query.
+  //
+  // The function returns a setState function, which can be used to set the active
+  // query, allowing one tree to be used for multiple queries on the same page, eg for
+  // numerator and denominator queries.
+
+  // An object with properties `included` and `excluded`, each of which is a list of
+  // codes.
+  let activeQuery = null;
 
   const tree = document.getElementById("bnf-tree");
   const searchForm = document.getElementById("bnf-search-form");
   const modal = document.getElementById("bnf-table-modal");
+
+  function setState(query) {
+    // Set the active query.  (We'll do more here soon!)
+    activeQuery = query;
+  }
 
   tree.addEventListener("click", (e) => {
     const li = e.target.closest("li");
     const code = li.dataset.code;
 
     if (e.shiftKey) {
-      if (buildingQuery) {
-        handleShiftClick(li);
+      if (activeQuery) {
+        handleShiftClick(li, activeQuery);
       }
     } else {
       handleClick(li, code, modal, outerModalObj);
@@ -54,6 +65,8 @@ export function setUpBNFTree(outerModalObj = null, buildingQuery = false) {
       }
     });
   });
+
+  return { setState };
 }
 
 function handleClick(li, code, modal, outerModalObj) {
@@ -84,24 +97,29 @@ function handleClick(li, code, modal, outerModalObj) {
   }
 }
 
-function handleShiftClick(li) {
-  // Adds the `included` or `excluded` data attributes to an item in the BNF tree to
-  // indicate inclusion or exclusion.  There can be at most one level of exclusion:
-  // users cannot include one code, exclude a descendant, and then reinclude a
-  // descendant of the excluded code.  This is a significant simplifaction over
-  // similar functionality in OpenCodelists.
+function handleShiftClick(li, query) {
+  // Updates the query, and adds the `included` or `excluded` data attributes to an item
+  // in the BNF tree to indicate inclusion or exclusion.  There can be at most one level
+  // of exclusion: users cannot include one code, exclude a descendant, and then reinclude
+  // a descendant of the excluded code.  This is a significant simplifaction over similar
+  // functionality in OpenCodelists.
+
+  const code = li.dataset.code;
 
   if (li.hasAttribute("data-included")) {
     // This item is included:
     // * Don't include it
     // * Remove descendant exclusions
+    removeItem(query.included, code);
     li.removeAttribute("data-included");
     li.querySelectorAll("li[data-excluded]").forEach((n) => {
+      removeItem(query.excluded, n.dataset.code);
       n.removeAttribute("data-excluded");
     });
   } else if (li.hasAttribute("data-excluded")) {
     // This item is excluded:
     // * Don't exclude it
+    removeItem(query.excluded, code);
     li.removeAttribute("data-excluded");
   } else if (li.parentElement.closest("li[data-excluded]")) {
     // An ancestor is excluded: do nothing
@@ -111,13 +129,24 @@ function handleShiftClick(li) {
     // An ancestor is included:
     // * Exclude this one
     // * Remove descendant exclusions
+    query.excluded.push(code);
     li.setAttribute("data-excluded", "");
     li.querySelectorAll("li[data-excluded]").forEach((n) => {
+      removeItem(query.excluded, n.dataset.code);
       n.removeAttribute("data-excluded");
     });
   } else {
     // No ancestors are included:
     // * Include this one
+    query.included.push(code);
     li.setAttribute("data-included", "");
   }
+
+  console.log("included:", query.included);
+  console.log("excluded:", query.excluded);
+}
+
+function removeItem(array, item) {
+  const ix = array.indexOf(item);
+  array.splice(ix, 1);
 }
