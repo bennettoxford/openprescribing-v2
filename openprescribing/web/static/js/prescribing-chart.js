@@ -102,11 +102,8 @@ const createTypeahead = ({
   });
 };
 
-const updateChart = () => {
+const updateChart = (prescribingApiUrl) => {
   const chartContainer = document.querySelector("#prescribing-chart");
-  const prescribingApiUrl = JSON.parse(
-    document.getElementById("prescribing-api-url").textContent,
-  );
 
   fetch(prescribingApiUrl)
     .then((response) => {
@@ -134,5 +131,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("orgs")) {
     setupOrgSearch();
   }
-  updateChart();
+  const prescribingApiUrl = JSON.parse(
+    document.getElementById("prescribing-api-url").textContent,
+  );
+  if (prescribingApiUrl) {
+    updateChart(prescribingApiUrl);
+  }
 });
