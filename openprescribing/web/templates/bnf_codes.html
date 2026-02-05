@@ -67,10 +67,22 @@
                 </div>
                 {% endif %}
                 {% if ntr_dtr_intersection_table %}
-                <h1 class="h4">
-                    Full list of presentations included / excluded
-                </h1>
-                {% include "./_bnf_codes_intersection_table.html" with intersection_table=ntr_dtr_intersection_table %}
+                <p>
+                    <button
+                        class="btn btn-secondary"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#collapsePresentations"
+                        aria-expanded="false"
+                        aria-controls="collapsePresentations">
+                    Presentations
+                    </button>
+                </p>
+                <div class="collapse" id="collapsePresentations">
+                    <div class="card card-body">
+                    {% include "./_bnf_codes_intersection_table.html" with intersection_table=ntr_dtr_intersection_table %}
+                    </div>
+                </div>
                 {% endif %}
                 {% else %}
                 <div class="text-center text-muted py-5">
