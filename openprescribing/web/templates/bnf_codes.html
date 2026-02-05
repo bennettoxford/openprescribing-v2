@@ -75,6 +75,22 @@
         </div>
     </div>
 </div>
+
+<div class="modal" id="bnf-tree-modal" tabindex="-1" role="dialog" >
+  <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="bnf-tree-modal-title"></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        {% include "_bnf_tree.html" %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include "_bnf_table_modal.html" with include_footer=True %}
 {% endblock %}
 
 {% block extra_js %}
@@ -85,4 +101,5 @@
 <script src="https://cdn.jsdelivr.net/npm/vega-lite@6.4.1"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-embed@7.0.2"></script>
 <script src="{% static 'js/prescribing-chart.js' %}"></script>
+<script src="{% static 'js/prescribing-query.js' %}"></script>
 {% endblock %}
