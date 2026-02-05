@@ -1,3 +1,19 @@
+// This module defines the behaviour of an interactive BNF browser, with BNF objects
+// arranged in a tree.
+//
+// Initially the browser shows a list of BNF chapters, with all other objects hidden.
+// When the user clicks on an object (down to the chemical substance level), its
+// children are shown.  When the user clicks on a chemical substance, a modal is opened
+// that shows the corresponding products and presentations in a table.
+//
+// There is also a search box that lets users search for BNF objects by name or
+// code.
+//
+// Note that a similar component is defined in prescribing-query.js, which uses the same
+// HTML.  However, the two components are sufficiently different in behaviour that it
+// does not make sense to combine implementations.  When making changes here, consider
+// also making changes there.
+
 export function setUpBNFTree() {
   const tree = document.getElementById("bnf-tree");
   const searchForm = document.getElementById("bnf-search-form");
