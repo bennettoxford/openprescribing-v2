@@ -1,5 +1,6 @@
 import collections
 import re
+from functools import cached_property
 
 from django.db import models
 
@@ -21,7 +22,7 @@ class BNFCode(models.Model):
     level = models.IntegerField(choices=Level)
     name = models.TextField()
 
-    @property
+    @cached_property
     def parts(self):
         pattern = r"""
             \A
