@@ -50,7 +50,9 @@ class LabelledMatrix:
         assert self.col_labels == other.col_labels
         # NumPy's default behaviour is for 0/0 to give np.nan and x/0 to give np.inf.
         # We always want np.nan, since we might be displaying the result on a chart.
-        new_values = np.divide(self.values, other.values, where=(other.values != 0))
+        new_values = np.divide(
+            self.values, other.values, where=(other.values != 0), out=None
+        )
         new_values[other.values == 0] = np.nan
         return self.__class__(new_values, self.row_labels, self.col_labels)
 
