@@ -1,7 +1,11 @@
 import pytest
 
 from openprescribing.data.models import BNFCode
-from openprescribing.web.presenters import make_bnf_table, make_bnf_tree
+from openprescribing.web.presenters import (
+    make_bnf_table,
+    make_bnf_tree,
+    make_ntr_dtr_intersection_table,
+)
 
 
 @pytest.mark.django_db(databases=["data"])
@@ -125,3 +129,94 @@ def test_make_bnf_table_with_no_generic_products(bnf_codes):
             ],
         ],
     ]
+
+
+@pytest.mark.parametrize(
+    "ntr_codes, ntr_product_type, dtr_codes, dtr_product_type, expected",
+    [
+        (
+            ["1001030U0AAABAB"],
+            "all",
+            ["1001030U0AAABAB", "1001030U0BDAAAB"],
+            "all",
+            {
+                "has_denominators": True,
+                "data": [
+                    ("1001030U0AAABAB", "Methotrexate 2.5mg tablets", True, True),
+                    ("1001030U0BDAAAB", "Maxtrex 2.5mg tablets", False, True),
+                ],
+            },
+        ),
+        (
+            ["1001030U0AAABAB"],
+            "all",
+            None,
+            None,
+            {
+                "has_denominators": False,
+                "data": [
+                    ("1001030U0AAABAB", "Methotrexate 2.5mg tablets", True, None),
+                ],
+            },
+        ),
+        (
+            ["1001030U0AAABAB", "1001030U0BDAAAB"],
+            "all",
+            ["1001030U0AA", "-1001030U0AAACAC"],
+            "all",
+            {
+                "has_denominators": True,
+                "data": [
+                    ("1001030U0AAABAB", "Methotrexate 2.5mg tablets", True, True),
+                    ("1001030U0BDAAAB", "Maxtrex 2.5mg tablets", True, False),
+                ],
+            },
+        ),
+        (
+            ["1001030U0AAABAB"],
+            "all",
+            ["1001030U0"],
+            "generic",
+            {
+                "has_denominators": True,
+                "data": [
+                    ("1001030U0AAABAB", "Methotrexate 2.5mg tablets", True, True),
+                    ("1001030U0AAACAC", "Methotrexate 10mg tablets", False, True),
+                ],
+            },
+        ),
+        (
+            ["1001030U0"],
+            "generic",
+            ["1001030U0"],
+            "all",
+            {
+                "has_denominators": True,
+                "data": [
+                    ("1001030U0AAABAB", "Methotrexate 2.5mg tablets", True, True),
+                    ("1001030U0AAACAC", "Methotrexate 10mg tablets", True, True),
+                    ("1001030U0BDAAAB", "Maxtrex 2.5mg tablets", False, True),
+                    ("1001030U0BDABAC", "Maxtrex 10mg tablets", False, True),
+                ],
+            },
+        ),
+    ],
+)
+@pytest.mark.django_db(databases=["data"])
+def test_make_ntr_dtr_intersection_table(
+    bnf_codes, ntr_codes, ntr_product_type, dtr_codes, dtr_product_type, expected
+):
+    actual = make_ntr_dtr_intersection_table(
+        ntr_codes, ntr_product_type, dtr_codes, dtr_product_type
+    )
+
+    # verify expected namedtuple keys exist
+    assert actual["data"][0].code == expected["data"][0][0]
+    assert actual["data"][0].name == expected["data"][0][1]
+    assert actual["data"][0].ntr == expected["data"][0][2]
+    assert actual["data"][0].dtr == expected["data"][0][3]
+
+    # verify all contents
+    assert actual["data"] == expected["data"]
+
+    assert actual["has_denominators"] is expected["has_denominators"]

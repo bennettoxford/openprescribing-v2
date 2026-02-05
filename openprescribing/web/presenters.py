@@ -1,4 +1,7 @@
+from collections import namedtuple
+
 from openprescribing.data.models import BNFCode, Org
+from openprescribing.data.rxdb.search import bnf_code_names, search
 
 
 def make_bnf_tree(codes):
@@ -83,3 +86,39 @@ def make_orgs():
         key=lambda o: org_type_levels.index(o["org_type"]),
     )
     return orgs
+
+
+def make_ntr_dtr_intersection_table(
+    ntr_codes, ntr_product_type, dtr_codes=None, dtr_product_type=None
+):
+    # This is going to double-up on some work done by the `/api` call that will
+    # typically happen on the same page, but I don't think there's much we can do about
+    # that with the current architecture.
+    # If this function is problematically slow, we could look at optimising
+    # it by pushing this logic out of `web` & into `data` & doing more in the
+    # database server (rather than in Python).
+    ntr_codes_full = search(ntr_codes, ntr_product_type)
+    all_codes = set(ntr_codes_full)
+
+    has_denominators = bool(dtr_codes and dtr_product_type)
+    if has_denominators:
+        dtr_codes_full = search(dtr_codes, dtr_product_type)
+        all_codes = all_codes | set(dtr_codes_full)
+
+    # I think it's very appropriate to sort by code here, as the BNF code
+    # hierarchy implicitly means that presentations are sorted together usefully.
+    # This is in contrast to the codes seen in OpenPrescribing Hospitals.
+    all_codes = sorted(all_codes)
+    relevant_bnf_code_names = bnf_code_names(all_codes)
+
+    Presentation = namedtuple("Presentation", "code, name, ntr, dtr")
+    data = [
+        Presentation(
+            code,
+            relevant_bnf_code_names[code],
+            code in ntr_codes_full,
+            code in dtr_codes_full if has_denominators else None,
+        )
+        for code in all_codes
+    ]
+    return {"has_denominators": has_denominators, "data": data}
