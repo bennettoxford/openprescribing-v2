@@ -1,6 +1,11 @@
 import pytest
 
-from openprescribing.data.rxdb.search import ProductType, describe_search, search
+from openprescribing.data.rxdb.search import (
+    ProductType,
+    bnf_code_names,
+    describe_search,
+    search,
+)
 
 
 @pytest.mark.django_db(databases=["data"])
@@ -96,3 +101,18 @@ def test_describe_search_for_generic_products(bnf_codes):
             }
         ],
     }
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_bnf_code_names(bnf_codes):
+    expected = {
+        "1001030U0AAABAB": "Methotrexate 2.5mg tablets",
+        "1001030U0AAACAC": "Methotrexate 10mg tablets",
+        "1001030U0BDAAAB": "Maxtrex 2.5mg tablets",
+        "1001030U0BDABAC": "Maxtrex 10mg tablets",
+    }
+
+    actual = bnf_code_names(
+        ["1001030U0AAABAB", "1001030U0AAACAC", "1001030U0BDAAAB", "1001030U0BDABAC"]
+    )
+    assert actual == expected
