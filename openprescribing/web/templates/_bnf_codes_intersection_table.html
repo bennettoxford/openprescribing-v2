@@ -1,0 +1,23 @@
+<table id="bnf_code_full_list">
+    <tr>
+        <th>Code</th>
+        <th>Presentation</th>
+        <th>Numerator</th>
+        {% if intersection_table.has_denominators %}
+        <th>Denominator</th>
+        {% endif %}
+    </tr>
+
+    {% for code in intersection_table.data %}
+    <tr>
+        <td>{{ code.code }}</td>
+        <td>{{ code.name }}</td>
+        <td>{% if code.ntr %} included {% endif %}</td>
+        {% if code.dtr %}
+        <td>included</td>
+        {% else %}
+        <td></td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+</table>

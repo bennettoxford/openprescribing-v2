@@ -66,6 +66,12 @@
                     </div>
                 </div>
                 {% endif %}
+                {% if ntr_dtr_intersection_table %}
+                <h1 class="h4">
+                    Full list of presentations included / excluded
+                </h1>
+                {% include "./_bnf_codes_intersection_table.html" with intersection_table=ntr_dtr_intersection_table %}
+                {% endif %}
                 {% else %}
                 <div class="text-center text-muted py-5">
                     <p>Search for BNF codes to see prescribing data.</p>
