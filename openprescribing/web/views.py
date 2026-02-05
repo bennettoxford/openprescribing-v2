@@ -4,7 +4,12 @@ from django.urls import reverse
 from openprescribing.data.models import BNFCode, Org
 from openprescribing.data.rxdb.search import describe_search
 
-from .presenters import make_bnf_table, make_bnf_tree, make_orgs
+from .presenters import (
+    make_bnf_table,
+    make_bnf_tree,
+    make_ntr_dtr_intersection_table,
+    make_orgs,
+)
 
 
 def index(request):
@@ -55,6 +60,7 @@ def bnf_codes(request):
     ntr_description = None
     dtr_description = None
     org = None
+    ntr_dtr_intersection_table = None
 
     if org_id:
         org = get_object_or_404(Org, id=org_id)
@@ -70,8 +76,14 @@ def bnf_codes(request):
                 f"&dtr_codes={','.join(dtr_codes)}&dtr_product_type={dtr_product_type}"
             )
             dtr_description = describe_search(dtr_codes, dtr_product_type)
+            ntr_dtr_intersection_table = make_ntr_dtr_intersection_table(
+                ntr_codes, ntr_product_type, dtr_codes, dtr_product_type
+            )
         else:
             dtr_description = {"text": "1000 patients"}
+            ntr_dtr_intersection_table = make_ntr_dtr_intersection_table(
+                ntr_codes, ntr_product_type
+            )
 
         if org_id:
             api_url += f"&org_id={org_id}"
@@ -85,6 +97,7 @@ def bnf_codes(request):
         "dtr_codes": dtr_codes_raw,
         "dtr_product_type": dtr_product_type,
         "dtr_description": dtr_description,
+        "ntr_dtr_intersection_table": ntr_dtr_intersection_table,
         "org": org,
         "orgs": orgs,
         "org_types": Org.OrgType.choices,
