@@ -69,6 +69,15 @@ def describe_search(terms, product_type):
     }
 
 
+def bnf_code_names(terms):
+    """Return a dictionary of the names for a list of BNF Codes"""
+    return dict(
+        BNFCode.objects.filter(code__in=terms)
+        .order_by("code")
+        .values_list("code", "name")
+    )
+
+
 def build_fragment(term):
     if term[0] == "-":
         negated = True
