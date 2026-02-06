@@ -1,9 +1,14 @@
 :root {
+  /* colours for the BNF browser */
+  --hover: #f0f0f0;
+  --search-match: #ffff0033;
+
   /* colours for the BNF code picker */
   --included-directly: #9fc5ff;
   --included-directly-hover: #87b5f5;
   --included-indirectly: #d7ecff;
   --included-indirectly-hover: #c6e2ff;
+  --excluded: #ffffff;
 }
 
 @scope (#bnf-tree) {
@@ -17,7 +22,7 @@
     display: block;
   }
   li[data-matches-search] > span {
-    background-color: #ffff0033;
+    background-color: var(--search-match);
   }
   span {
     display: block;
@@ -28,7 +33,7 @@
     list-style-type: none;
   }
   span:hover {
-    background-color: #f0f0f0;
+    background-color: var(--hover);
   }
 }
 
@@ -51,10 +56,10 @@
 
   /* excluded, directly or indirectly */
   li[data-included] li[data-excluded] span {
-    background-color: #ffffff;
+    background-color: var(--excluded);
   }
   li[data-included] li[data-excluded] span:hover {
-    background-color: #ffffff;
+    background-color: var(--excluded);
   }
 
   /* chemical substance included directly, with some descendants excluded */
@@ -64,8 +69,8 @@
       90deg,
       var(--included-directly) 0,
       var(--included-directly) 36px,
-      #ffffff 36px,
-      #ffffff 72px
+      var(--excluded) 36px,
+      var(--excluded) 72px
     );
   }
   li[data-partially-included] > span:hover {
@@ -73,8 +78,8 @@
       90deg,
       var(--included-directly-hover) 0,
       var(--included-directly-hover) 36px,
-      #ffffff 36px,
-      #ffffff 72px
+      var(--excluded) 36px,
+      var(--excluded) 72px
     );
   }
 
@@ -85,8 +90,8 @@
       90deg,
       var(--included-indirectly) 0,
       var(--included-indirectly) 36px,
-      #ffffff 36px,
-      #ffffff 72px
+      var(--excluded) 36px,
+      var(--excluded) 72px
     );
   }
   li[data-included] li[data-partially-included] > span:hover {
@@ -94,8 +99,8 @@
       90deg,
       var(--included-indirectly-hover) 0,
       var(--included-indirectly-hover) 36px,
-      #ffffff 36px,
-      #ffffff 72px
+      var(--excluded) 36px,
+      var(--excluded) 72px
     );
   }
 }
