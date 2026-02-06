@@ -119,7 +119,30 @@ treeModal.addEventListener("show.bs.modal", () => {
 
 tableModalBody.addEventListener("htmx:afterSwap", () => {
   // The table modal has opened and the modals' contents have been swapped in by HTMX.
-  // We'll add code here soon.
+
+  const query = getCurrentQuery();
+
+  if (isExcluded(query, state.chemicalCode)) {
+    // We don't want allow inclusions of descendants of excluded codes.
+    return;
+  }
+
+  const container = document.getElementById("bnf-table");
+  const table = container.querySelector("table");
+
+  // Activate the CSS selectors that indicate whether a row is included or not.
+  container.setAttribute("data-selectable", "");
+
+  setTableState(table);
+
+  table.addEventListener("click", (e) => {
+    if (e.ctrlKey) {
+      const td = e.target.closest("td");
+      if (td) {
+        handleTableCtrlClick(td);
+      }
+    }
+  });
 });
 
 tableModal.addEventListener("hidden.bs.modal", () => {
@@ -163,18 +186,21 @@ function setTreeState() {
     // First, remove all data attributes.
     li.removeAttribute("data-open");
     li.removeAttribute("data-matches-search");
+    li.removeAttribute("data-partially-included");
     li.removeAttribute("data-included");
     li.removeAttribute("data-excluded");
 
     // Then set any that are necessary.
-    if (descendantIsIncluded(query, code)) {
+    if (descendantIsDirectlyIncluded(query, code)) {
       li.setAttribute("data-open", "");
     }
-    if (descendantIsExcluded(query, code)) {
+    if (descendantIsDirectlyExcluded(query, code)) {
       li.setAttribute("data-open", "");
     }
 
-    if (isDirectlyIncluded(query, code)) {
+    if (isPartiallyIncludedChemical(query, code)) {
+      li.setAttribute("data-partially-included", "");
+    } else if (isDirectlyIncluded(query, code)) {
       li.setAttribute("data-included", "");
     } else if (isDirectlyExcluded(query, code)) {
       li.setAttribute("data-excluded", "");
@@ -182,6 +208,29 @@ function setTreeState() {
   });
 
   searchForm.querySelector("input").value = "";
+}
+
+function setTableState(table) {
+  // Set the data attributes required to show the current query in the table.
+  //
+  // Note that unlike setTreeState, we don't have to clear any existing data
+  // attributes because the table has been loaded from the server and so the HTML
+  // is fresh.
+
+  const query = getCurrentQuery();
+
+  if (isIncluded(query, state.chemicalCode)) {
+    table.setAttribute("data-included", "");
+  }
+
+  table.querySelectorAll("tr").forEach((tr) => {
+    const code = tr.dataset.code;
+    if (isDirectlyIncluded(query, code)) {
+      tr.setAttribute("data-included", "");
+    } else if (isDirectlyExcluded(query, code)) {
+      tr.setAttribute("data-excluded", "");
+    }
+  });
 }
 
 function handleTreeClick(li) {
@@ -232,11 +281,11 @@ function handleTreeCtrlClick(li) {
     // * Don't exclude it
     removeItem(query.excluded, code);
     li.removeAttribute("data-excluded");
-  } else if (ancestorIsExcluded(query, code)) {
+  } else if (ancestorIsDirectlyExcluded(query, code)) {
     // An ancestor is excluded: do nothing
-  } else if (descendantIsIncluded(query, code)) {
+  } else if (descendantIsDirectlyIncluded(query, code)) {
     // A descendant is included: do nothing
-  } else if (ancestorIsIncluded(query, code)) {
+  } else if (ancestorIsDirectlyIncluded(query, code)) {
     // An ancestor is included:
     // * Exclude this one
     // * Remove descendant exclusions
@@ -251,6 +300,36 @@ function handleTreeCtrlClick(li) {
     // * Include this one
     query.included.push(code);
     li.setAttribute("data-included", "");
+  }
+}
+
+function handleTableCtrlClick(td) {
+  // Respond to user clicking a table cell while holding control.
+
+  const tr = td.closest("tr");
+  const code = tr.dataset.code;
+  const query = getCurrentQuery();
+
+  if (isDirectlyIncluded(query, code)) {
+    // This item is directly included:
+    // * Don't include it
+    removeItem(query.included, code);
+    tr.removeAttribute("data-included");
+  } else if (isDirectlyExcluded(query, code)) {
+    // This item is directly excluded:
+    // * Don't exclude it
+    removeItem(query.excluded, code);
+    tr.removeAttribute("data-excluded");
+  } else if (isIncluded(query, state.chemicalCode)) {
+    // An ancestor is included:
+    // * Exclude this one
+    query.excluded.push(code);
+    tr.setAttribute("data-excluded", "");
+  } else {
+    // No ancestors or descendants are included:
+    // * Include this one
+    query.included.push(code);
+    tr.setAttribute("data-included", "");
   }
 }
 
@@ -304,24 +383,53 @@ function isDirectlyExcluded(query, code) {
   return query.excluded.includes(code);
 }
 
-function descendantIsIncluded(query, code) {
-  // Indicates whether any of code's descendants are included by query.
+function isIncluded(query, code) {
+  // Indicates whether code is directly or indirectly included by query.
+  return query.included.some((c) => code.startsWith(c));
+}
+
+function isExcluded(query, code) {
+  // Indicates whether code is directly or indirectly excluded by query.
+  return query.excluded.some((c) => code.startsWith(c));
+}
+
+function descendantIsDirectlyIncluded(query, code) {
+  // Indicates whether any of code's descendants are directly included by query.
   return query.included.some((c) => isAncestor(code, c));
 }
 
-function descendantIsExcluded(query, code) {
-  // Indicates whether any of code's descendants are excluded by query.
+function descendantIsDirectlyExcluded(query, code) {
+  // Indicates whether any of code's descendants are directly excluded by query.
   return query.excluded.some((c) => isAncestor(code, c));
 }
 
-function ancestorIsIncluded(query, code) {
-  // Indicates whether any of code's ancestors are included by query.
+function ancestorIsDirectlyIncluded(query, code) {
+  // Indicates whether any of code's ancestors are directly included by query.
   return query.included.some((c) => isAncestor(c, code));
 }
 
-function ancestorIsExcluded(query, code) {
-  // Indicates whether any of code's ancestors are excluded by query.
+function ancestorIsDirectlyExcluded(query, code) {
+  // Indicates whether any of code's ancestors are directly excluded by query.
   return query.excluded.some((c) => isAncestor(c, code));
+}
+
+function isPartiallyIncludedChemical(query, code) {
+  // Indicates whether code is for a chemical substance, and if so, whether it is
+  // partially included.  That is, whether either:
+  //   * the chemical substance is directly or indirectly included but one of its
+  //     descendants is excluded, or
+  //   * the chemical substance is not included but one of its descendants is.
+  //
+  // We only need to check whether any descendants are directly included or excluded:
+  //   * if a descendant is directly excluded, then it implies the chemical substance is
+  //     included;
+  //   * if a descendant is directly included, then it implies the chemical substance is
+  //     not included.
+  return (
+    isChemical(code) &&
+    (descendantIsDirectlyIncluded(query, code) ||
+      descendantIsDirectlyExcluded(query, code))
+  );
 }
 
 function removeItem(array, item) {

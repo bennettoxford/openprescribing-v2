@@ -6,8 +6,8 @@
             {% endfor %}
         </tr>
         {% for row in rows %}
-        <tr>
-            {% for cell in row %}
+        <tr{% if row.code %} data-code="{{ row.code }}"{% endif %}>
+            {% for cell in row.cells %}
             <td>
                 {% if cell|length > 0 %}
                 <ul>
