@@ -284,7 +284,15 @@ function handleTreeCtrlClick(li) {
   } else if (ancestorIsDirectlyExcluded(query, code)) {
     // An ancestor is excluded: do nothing
   } else if (descendantIsDirectlyIncluded(query, code)) {
-    // A descendant is included: do nothing
+    // A descendant is included:
+    // * Include this one
+    // * Remove descendant inclusions
+    query.included.push(code);
+    li.setAttribute("data-included", "");
+    li.querySelectorAll("li[data-included]").forEach((n) => {
+      removeItem(query.included, n.dataset.code);
+      n.removeAttribute("data-included");
+    });
   } else if (ancestorIsDirectlyIncluded(query, code)) {
     // An ancestor is included:
     // * Exclude this one
