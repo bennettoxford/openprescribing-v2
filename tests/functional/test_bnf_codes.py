@@ -34,24 +34,6 @@ def test_bnf_codes(live_server, page: Page, sample_data):
         + "/bnf_codes/?ntr_codes=1001030U0_AC&ntr_product_type=all&dtr_codes=1001030U0&dtr_product_type=all"
     )
 
-    # Test that we can select by column
-    page.get_by_role("textbox", name="BNF codes for numerator").click()
-    page.get_by_role("textbox", name="Search by name or code").click()
-    page.get_by_role("textbox", name="Search by name or code").fill("metho")
-    page.get_by_role("button", name="Search").click()
-    page.get_by_text("1001030U0 Methotrexate").click()
-    # Deselect row
-    page.get_by_text("1001030U0AAACAC").click(modifiers=["ControlOrMeta"])
-    page.get_by_text("1001030U0BD", exact=True).click(modifiers=["ControlOrMeta"])
-    page.locator("#bnf-table-modal").get_by_role("button", name="Update Query").click()
-    page.locator("#bnf-tree-modal").get_by_role("button", name="Update Query").click()
-    page.get_by_role("button", name="Submit").click()
-
-    expect(page).to_have_url(
-        live_server.url
-        + "/bnf_codes/?ntr_codes=1001030U0BD&ntr_product_type=all&dtr_codes=1001030U0&dtr_product_type=all"
-    )
-
     # Test org search
     page.get_by_role(
         "searchbox", name="Name or code of organisation to highlight"
@@ -63,5 +45,5 @@ def test_bnf_codes(live_server, page: Page, sample_data):
 
     expect(page).to_have_url(
         live_server.url
-        + "/bnf_codes/?ntr_codes=1001030U0BD&ntr_product_type=all&dtr_codes=1001030U0&dtr_product_type=all&org_id=ICB01"
+        + "/bnf_codes/?ntr_codes=1001030U0_AC&ntr_product_type=all&dtr_codes=1001030U0&dtr_product_type=all&org_id=ICB01"
     )

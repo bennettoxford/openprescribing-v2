@@ -137,14 +137,9 @@ tableModalBody.addEventListener("htmx:afterSwap", () => {
 
   table.addEventListener("click", (e) => {
     if (e.ctrlKey) {
-      const th = e.target.closest("th");
-      if (th) {
-        handleTableCtrlClick(th);
-      }
       const td = e.target.closest("td");
       if (td) {
-        const tr = td.closest("tr");
-        handleTableCtrlClick(tr);
+        handleTableCtrlClick(td);
       }
     }
   });
@@ -228,12 +223,12 @@ function setTableState(table) {
     table.setAttribute("data-included", "");
   }
 
-  table.querySelectorAll("th, tr").forEach((e) => {
-    const code = e.dataset.code;
+  table.querySelectorAll("tr").forEach((tr) => {
+    const code = tr.dataset.code;
     if (isDirectlyIncluded(query, code)) {
-      e.setAttribute("data-included", "");
+      tr.setAttribute("data-included", "");
     } else if (isDirectlyExcluded(query, code)) {
-      e.setAttribute("data-excluded", "");
+      tr.setAttribute("data-excluded", "");
     }
   });
 }
@@ -316,32 +311,33 @@ function handleTreeCtrlClick(li) {
   }
 }
 
-function handleTableCtrlClick(cell) {
+function handleTableCtrlClick(td) {
   // Respond to user clicking a table cell while holding control.
 
-  const code = cell.dataset.code;
+  const tr = td.closest("tr");
+  const code = tr.dataset.code;
   const query = getCurrentQuery();
 
   if (isDirectlyIncluded(query, code)) {
     // This item is directly included:
     // * Don't include it
     removeItem(query.included, code);
-    cell.removeAttribute("data-included");
+    tr.removeAttribute("data-included");
   } else if (isDirectlyExcluded(query, code)) {
     // This item is directly excluded:
     // * Don't exclude it
     removeItem(query.excluded, code);
-    cell.removeAttribute("data-excluded");
+    tr.removeAttribute("data-excluded");
   } else if (isIncluded(query, state.chemicalCode)) {
     // An ancestor is included:
     // * Exclude this one
     query.excluded.push(code);
-    cell.setAttribute("data-excluded", "");
+    tr.setAttribute("data-excluded", "");
   } else {
     // No ancestors or descendants are included:
     // * Include this one
     query.included.push(code);
-    cell.setAttribute("data-included", "");
+    tr.setAttribute("data-included", "");
   }
 }
 

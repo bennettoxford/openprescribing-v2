@@ -2,7 +2,7 @@
     <table class="table table-sm">
         <tr>
             {% for header in headers %}
-            <th data-code="{{ header.code }}"><code>{{ header.code }}</code><br />{{ header.name }}</th>
+            <th><code>{{ header.code }}</code><br />{{ header.name }}</th>
             {% endfor %}
         </tr>
         {% for row in rows %}
