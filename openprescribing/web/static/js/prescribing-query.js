@@ -154,10 +154,10 @@ function setTreeState() {
     li.removeAttribute("data-excluded");
 
     // Then set any that are necessary.
-    if (query.included.some((c) => isAncestor(code, c))) {
+    if (descendantIsIncluded(query, code)) {
       li.setAttribute("data-open", "");
     }
-    if (query.excluded.some((c) => isAncestor(code, c))) {
+    if (descendantIsExcluded(query, code)) {
       li.setAttribute("data-open", "");
     }
 
@@ -266,6 +266,11 @@ function isDirectlyExcluded(query, code) {
 function descendantIsIncluded(query, code) {
   // Indicates whether any of code's descendants are included by query.
   return query.included.some((c) => isAncestor(code, c));
+}
+
+function descendantIsExcluded(query, code) {
+  // Indicates whether any of code's descendants are excluded by query.
+  return query.excluded.some((c) => isAncestor(code, c));
 }
 
 function ancestorIsIncluded(query, code) {
