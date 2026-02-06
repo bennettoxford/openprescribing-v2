@@ -1,3 +1,11 @@
+:root {
+  /* colours for the BNF code picker */
+  --included-directly: #9fc5ff;
+  --included-directly-hover: #87b5f5;
+  --included-indirectly: #d7ecff;
+  --included-indirectly-hover: #c6e2ff;
+}
+
 @scope (#bnf-tree) {
   ul ul {
     display: none;
@@ -24,6 +32,74 @@
   }
 }
 
+@scope (#bnf-tree[data-selectable]) {
+  /* included, directly */
+  li[data-included] > span {
+    background-color: var(--included-directly);
+  }
+  li[data-included] > span:hover {
+    background-color: var(--included-directly-hover);
+  }
+
+  /* included, indirectly */
+  li[data-included] li span {
+    background-color: var(--included-indirectly);
+  }
+  li[data-included] li span:hover {
+    background-color: var(--included-indirectly-hover);
+  }
+
+  /* excluded, directly or indirectly */
+  li[data-included] li[data-excluded] span {
+    background-color: #ffffff;
+  }
+  li[data-included] li[data-excluded] span:hover {
+    background-color: #ffffff;
+  }
+
+  /* chemical substance included directly, with some descendants excluded */
+  /* revolting vertical stripes */
+  li[data-partially-included] > span {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--included-directly) 0,
+      var(--included-directly) 36px,
+      #ffffff 36px,
+      #ffffff 72px
+    );
+  }
+  li[data-partially-included] > span:hover {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--included-directly-hover) 0,
+      var(--included-directly-hover) 36px,
+      #ffffff 36px,
+      #ffffff 72px
+    );
+  }
+
+  /* chemical substance included indirectly, with some descendants excluded */
+  /* more revolting vertical stripes */
+  li[data-included] li[data-partially-included] > span {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--included-indirectly) 0,
+      var(--included-indirectly) 36px,
+      #ffffff 36px,
+      #ffffff 72px
+    );
+  }
+  li[data-included] li[data-partially-included] > span:hover {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--included-indirectly-hover) 0,
+      var(--included-indirectly-hover) 36px,
+      #ffffff 36px,
+      #ffffff 72px
+    );
+  }
+}
+
 @scope (#bnf-table) {
   ul {
     list-style-type: none;
@@ -36,5 +112,27 @@
   }
   li:last-child {
     border-bottom: 0;
+  }
+}
+
+@scope (#bnf-table[data-selectable]) {
+  td {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* included, indirectly */
+  table[data-included] td {
+    background-color: var(--included-indirectly);
+  }
+
+  /* included, directly */
+  tr[data-included] td {
+    background-color: var(--included-directly);
+  }
+
+  /* excluded */
+  table[data-included] tr[data-excluded] td {
+    background-color: #ffffff;
   }
 }

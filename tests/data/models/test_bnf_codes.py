@@ -53,5 +53,10 @@ def test_is_generic_equivalent_of(bnf_codes):
     )
 
 
+@pytest.mark.django_db(databases=["data"])
+def test_strength_and_formulation_code(bnf_codes):
+    assert bnf_code("1001030U0AAABAB").strength_and_formulation_code == "1001030U0_AB"
+
+
 def bnf_code(code):
     return BNFCode.objects.get(code=code)

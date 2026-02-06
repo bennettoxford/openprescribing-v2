@@ -88,6 +88,13 @@ def bnf_codes(request):
         if org_id:
             api_url += f"&org_id={org_id}"
 
+    codes = (
+        BNFCode.objects.filter(level__lte=BNFCode.Level.CHEMICAL_SUBSTANCE)
+        .exclude(code__startswith="2")
+        .order_by("code")
+    )
+    tree = make_bnf_tree(codes)
+
     orgs = make_orgs()
 
     ctx = {
@@ -102,6 +109,7 @@ def bnf_codes(request):
         "orgs": orgs,
         "org_types": Org.OrgType.choices,
         "prescribing_api_url": api_url,
+        "tree": tree,
     }
 
     return render(request, "bnf_codes.html", ctx)

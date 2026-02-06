@@ -93,14 +93,20 @@ def test_make_bnf_table_with_generic_products(bnf_codes):
         {"code": "1001030U0BD", "name": "Maxtrex (Rheumatism)"},
     ]
     assert rows == [
-        [
-            [{"code": "1001030U0AAABAB", "name": "Methotrexate 2.5mg tablets"}],
-            [{"code": "1001030U0BDAAAB", "name": "Maxtrex 2.5mg tablets"}],
-        ],
-        [
-            [{"code": "1001030U0AAACAC", "name": "Methotrexate 10mg tablets"}],
-            [{"code": "1001030U0BDABAC", "name": "Maxtrex 10mg tablets"}],
-        ],
+        {
+            "code": "1001030U0_AB",
+            "cells": [
+                [{"code": "1001030U0AAABAB", "name": "Methotrexate 2.5mg tablets"}],
+                [{"code": "1001030U0BDAAAB", "name": "Maxtrex 2.5mg tablets"}],
+            ],
+        },
+        {
+            "code": "1001030U0_AC",
+            "cells": [
+                [{"code": "1001030U0AAACAC", "name": "Methotrexate 10mg tablets"}],
+                [{"code": "1001030U0BDABAC", "name": "Maxtrex 10mg tablets"}],
+            ],
+        },
     ]
 
 
@@ -120,14 +126,17 @@ def test_make_bnf_table_with_no_generic_products(bnf_codes):
         {"code": "0601060D0BS", "name": "Prestige"},
     ]
     assert rows == [
-        [
-            [
-                {
-                    "code": "0601060D0BSAAA0",
-                    "name": "Prestige Smart System testing strips",
-                }
+        {
+            "code": None,
+            "cells": [
+                [
+                    {
+                        "code": "0601060D0BSAAA0",
+                        "name": "Prestige Smart System testing strips",
+                    }
+                ],
             ],
-        ],
+        }
     ]
 
 

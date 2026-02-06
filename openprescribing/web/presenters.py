@@ -35,6 +35,10 @@ def make_bnf_table(products, presentations):
     There is one header per product and one row per generic presentation.  (Or, for the
     chemical substances without generic presentations, one single row.)
 
+    Each row is represented as a dictionary with the keys "code" and "cells", where the
+    code is the strength and formulation code of the generic presentation.  (Or None,
+    for the chemical substances without generic presentations.)
+
     Each cell may contain any number of presentations.
 
     Products and presentations are represented as dictionaries with the keys "code" and
@@ -45,7 +49,10 @@ def make_bnf_table(products, presentations):
     generic_equivalents = [p for p in presentations if p.is_generic()]
 
     if generic_equivalents:
-        rows = [[[] for _ in products] for _ in generic_equivalents]
+        rows = [
+            {"code": ge.strength_and_formulation_code, "cells": [[] for _ in products]}
+            for ge in generic_equivalents
+        ]
         for p in presentations:
             row_ix = get_index(
                 generic_equivalents,
@@ -55,15 +62,15 @@ def make_bnf_table(products, presentations):
                 products,
                 lambda product: product.is_ancestor_of(p),
             )
-            rows[row_ix][col_ix].append(to_dict(p))
+            rows[row_ix]["cells"][col_ix].append(to_dict(p))
     else:
-        rows = [[[] for _ in products]]
+        rows = [{"code": None, "cells": [[] for _ in products]}]
         for p in presentations:
             col_ix = get_index(
                 products,
                 lambda product: product.is_ancestor_of(p),
             )
-            rows[0][col_ix].append(to_dict(p))
+            rows[0]["cells"][col_ix].append(to_dict(p))
 
     return headers, rows
 
