@@ -66,6 +66,9 @@ const tableModalBody = tableModal.querySelector(".modal-body");
 tree.setAttribute("data-selectable", "");
 
 textareas.forEach((textarea) => {
+  // Populate the state from the textarea.
+  state.query[textarea.dataset.field] = textToQuery(textarea.value);
+
   textarea.addEventListener("focus", (e) => {
     // The user has clicked on the textarea.
     e.preventDefault();
@@ -249,6 +252,23 @@ function handleTreeCtrlClick(li) {
     query.included.push(code);
     li.setAttribute("data-included", "");
   }
+}
+
+function textToQuery(text) {
+  // Given text from a textarea, return a query object.
+  const included = [];
+  const excluded = [];
+  const terms = text.split(/\s+/);
+
+  terms.forEach((term) => {
+    if (term.startsWith("-")) {
+      excluded.push(term.slice(1));
+    } else if (term !== "") {
+      included.push(term);
+    }
+  });
+
+  return { included, excluded };
 }
 
 function queryToText(query) {
