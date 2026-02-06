@@ -160,10 +160,6 @@ treeModal.addEventListener("hidden.bs.modal", () => {
     return;
   }
 
-  if (state.chemicalCode) {
-    // The table modal has been opened, so there is nothing to do.
-    return;
-  }
   // Otherwise, we update the corresponding textarea with a text representation of the
   // current query.
   const textarea = document.querySelector(
