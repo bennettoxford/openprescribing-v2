@@ -110,7 +110,8 @@ searchForm.addEventListener("submit", (e) => {
 
 treeModal.addEventListener("show.bs.modal", () => {
   // The tree modal has opened.
-  // We'll add code here soon.
+
+  setTreeState();
 });
 
 tableModalBody.addEventListener("htmx:afterSwap", () => {
@@ -137,6 +138,38 @@ treeModal.addEventListener("hidden.bs.modal", () => {
 });
 
 // }
+
+function setTreeState() {
+  // Set the data attributes required to show the current query in the tree.
+
+  const query = getCurrentQuery();
+
+  tree.querySelectorAll("li").forEach((li) => {
+    const code = li.dataset.code;
+
+    // First, remove all data attributes.
+    li.removeAttribute("data-open");
+    li.removeAttribute("data-matches-search");
+    li.removeAttribute("data-included");
+    li.removeAttribute("data-excluded");
+
+    // Then set any that are necessary.
+    if (query.included.some((c) => isAncestor(code, c))) {
+      li.setAttribute("data-open", "");
+    }
+    if (query.excluded.some((c) => isAncestor(code, c))) {
+      li.setAttribute("data-open", "");
+    }
+
+    if (isDirectlyIncluded(query, code)) {
+      li.setAttribute("data-included", "");
+    } else if (isDirectlyExcluded(query, code)) {
+      li.setAttribute("data-excluded", "");
+    }
+  });
+
+  searchForm.querySelector("input").value = "";
+}
 
 function handleTreeClick(li) {
   // Respond to user clicking a tree node.
@@ -213,6 +246,21 @@ function handleTreeCtrlClick(li) {
 function isChemical(code) {
   // Indicate whether code is for a chemical substance.
   return code.length === 9;
+}
+
+function isAncestor(code1, code2) {
+  // Indicates whether code1 is an ancestor of code2.
+  return code2.startsWith(code1) && code1 !== code2;
+}
+
+function isDirectlyIncluded(query, code) {
+  // Indicates whether code is directly included by query.
+  return query.included.includes(code);
+}
+
+function isDirectlyExcluded(query, code) {
+  // Indicates whether code is directly excluded by query.
+  return query.excluded.includes(code);
 }
 
 function removeItem(array, item) {
