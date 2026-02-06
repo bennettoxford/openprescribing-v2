@@ -126,14 +126,24 @@
     user-select: none;
   }
 
+  tr:hover td {
+    background-color: var(--hover);
+  }
+
   /* included, indirectly */
   table[data-included] td {
     background-color: var(--included-indirectly);
+  }
+  table[data-included] tr:hover td {
+    background-color: var(--included-indirectly-hover);
   }
 
   /* included, directly */
   tr[data-included] td {
     background-color: var(--included-directly);
+  }
+  tr[data-included]:hover td {
+    background-color: var(--included-directly-hover);
   }
 
   /* excluded */
