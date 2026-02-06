@@ -134,7 +134,17 @@ treeModal.addEventListener("hidden.bs.modal", () => {
     return;
   }
 
-  // We'll add code here soon.
+  if (state.chemicalCode) {
+    // The table modal has been opened, so there is nothing to do.
+    return;
+  }
+  // Otherwise, we update the corresponding textarea with a text representation of the
+  // current query.
+  const textarea = document.querySelector(
+    `textarea[data-field="${state.field}"]`,
+  );
+  textarea.value = queryToText(getCurrentQuery());
+  state.field = null;
 });
 
 // }
@@ -239,8 +249,19 @@ function handleTreeCtrlClick(li) {
     query.included.push(code);
     li.setAttribute("data-included", "");
   }
+}
 
-  console.log(query);
+function queryToText(query) {
+  // Given a query, return a newline-separated string for the corresponding
+  // textarea.  The terms in the query are sorted by code.
+  const terms = [
+    ...query.included.map((code) => ({ code, included: true })),
+    ...query.excluded.map((code) => ({ code, included: false })),
+  ];
+  const sortedTerms = terms.sort((a, b) => a.code > b.code);
+  return sortedTerms
+    .map(({ code, included }) => (included ? code : `-${code}`))
+    .join("\n");
 }
 
 function isChemical(code) {
