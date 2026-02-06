@@ -300,6 +300,17 @@ function handleTreeCtrlClick(li) {
       removeItem(query.included, n.dataset.code);
       n.removeAttribute("data-included");
     });
+
+    // descendant inclusions which are part of the table aren't
+    // found by the li selector, so remove them directly
+    query.included.forEach((n) => {
+      if (isAncestor(code, n)) {
+        removeItem(query.included, n);
+      }
+    });
+    li.querySelectorAll("li[data-partially-included]").forEach((n) => {
+      n.removeAttribute("data-partially-included");
+    });
   } else if (ancestorIsDirectlyIncluded(query, code)) {
     // An ancestor is included:
     // * Exclude this one
