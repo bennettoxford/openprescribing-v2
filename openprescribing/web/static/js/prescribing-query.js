@@ -119,7 +119,30 @@ treeModal.addEventListener("show.bs.modal", () => {
 
 tableModalBody.addEventListener("htmx:afterSwap", () => {
   // The table modal has opened and the modals' contents have been swapped in by HTMX.
-  // We'll add code here soon.
+
+  const query = getCurrentQuery();
+
+  if (isExcluded(query, state.chemicalCode)) {
+    // We don't want allow inclusions of descendants of excluded codes.
+    return;
+  }
+
+  const container = document.getElementById("bnf-table");
+  const table = container.querySelector("table");
+
+  // Activate the CSS selectors that indicate whether a row is included or not.
+  container.setAttribute("data-selectable", "");
+
+  setTableState(table);
+
+  table.addEventListener("click", (e) => {
+    if (e.ctrlKey) {
+      const td = e.target.closest("td");
+      if (td) {
+        handleTableCtrlClick(td);
+      }
+    }
+  });
 });
 
 tableModal.addEventListener("hidden.bs.modal", () => {
@@ -182,6 +205,29 @@ function setTreeState() {
   });
 
   searchForm.querySelector("input").value = "";
+}
+
+function setTableState(table) {
+  // Set the data attributes required to show the current query in the table.
+  //
+  // Note that unlike setTreeState, we don't have to clear any existing data
+  // attributes because the table has been loaded from the server and so the HTML
+  // is fresh.
+
+  const query = getCurrentQuery();
+
+  if (isIncluded(query, state.chemicalCode)) {
+    table.setAttribute("data-included", "");
+  }
+
+  table.querySelectorAll("tr").forEach((tr) => {
+    const code = tr.dataset.code;
+    if (isDirectlyIncluded(query, code)) {
+      tr.setAttribute("data-included", "");
+    } else if (isDirectlyExcluded(query, code)) {
+      tr.setAttribute("data-excluded", "");
+    }
+  });
 }
 
 function handleTreeClick(li) {
@@ -254,6 +300,36 @@ function handleTreeCtrlClick(li) {
   }
 }
 
+function handleTableCtrlClick(td) {
+  // Respond to user clicking a table cell while holding control.
+
+  const tr = td.closest("tr");
+  const code = tr.dataset.code;
+  const query = getCurrentQuery();
+
+  if (isDirectlyIncluded(query, code)) {
+    // This item is directly included:
+    // * Don't include it
+    removeItem(query.included, code);
+    tr.removeAttribute("data-included");
+  } else if (isDirectlyExcluded(query, code)) {
+    // This item is directly excluded:
+    // * Don't exclude it
+    removeItem(query.excluded, code);
+    tr.removeAttribute("data-excluded");
+  } else if (isIncluded(query, state.chemicalCode)) {
+    // An ancestor is included:
+    // * Exclude this one
+    query.excluded.push(code);
+    tr.setAttribute("data-excluded", "");
+  } else {
+    // No ancestors or descendants are included:
+    // * Include this one
+    query.included.push(code);
+    tr.setAttribute("data-included", "");
+  }
+}
+
 function textToQuery(text) {
   // Given text from a textarea, return a query object.
   const included = [];
@@ -302,6 +378,16 @@ function isDirectlyIncluded(query, code) {
 function isDirectlyExcluded(query, code) {
   // Indicates whether code is directly excluded by query.
   return query.excluded.includes(code);
+}
+
+function isIncluded(query, code) {
+  // Indicates whether code is directly or indirectly included by query.
+  return query.included.some((c) => code.startsWith(c));
+}
+
+function isExcluded(query, code) {
+  // Indicates whether code is directly or indirectly excluded by query.
+  return query.excluded.some((c) => code.startsWith(c));
 }
 
 function descendantIsIncluded(query, code) {

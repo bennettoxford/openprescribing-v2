@@ -72,3 +72,25 @@
     border-bottom: 0;
   }
 }
+
+@scope (#bnf-table[data-selectable]) {
+  td {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  /* included, indirectly */
+  table[data-included] td {
+    background-color: var(--included-indirectly);
+  }
+
+  /* included, directly */
+  tr[data-included] td {
+    background-color: var(--included-directly);
+  }
+
+  /* excluded */
+  table[data-included] tr[data-excluded] td {
+    background-color: #ffffff;
+  }
+}
