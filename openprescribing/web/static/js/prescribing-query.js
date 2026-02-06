@@ -190,10 +190,10 @@ function setTreeState() {
     li.removeAttribute("data-excluded");
 
     // Then set any that are necessary.
-    if (descendantIsIncluded(query, code)) {
+    if (descendantIsDirectlyIncluded(query, code)) {
       li.setAttribute("data-open", "");
     }
-    if (descendantIsExcluded(query, code)) {
+    if (descendantIsDirectlyExcluded(query, code)) {
       li.setAttribute("data-open", "");
     }
 
@@ -278,11 +278,11 @@ function handleTreeCtrlClick(li) {
     // * Don't exclude it
     removeItem(query.excluded, code);
     li.removeAttribute("data-excluded");
-  } else if (ancestorIsExcluded(query, code)) {
+  } else if (ancestorIsDirectlyExcluded(query, code)) {
     // An ancestor is excluded: do nothing
-  } else if (descendantIsIncluded(query, code)) {
+  } else if (descendantIsDirectlyIncluded(query, code)) {
     // A descendant is included: do nothing
-  } else if (ancestorIsIncluded(query, code)) {
+  } else if (ancestorIsDirectlyIncluded(query, code)) {
     // An ancestor is included:
     // * Exclude this one
     // * Remove descendant exclusions
@@ -390,23 +390,23 @@ function isExcluded(query, code) {
   return query.excluded.some((c) => code.startsWith(c));
 }
 
-function descendantIsIncluded(query, code) {
-  // Indicates whether any of code's descendants are included by query.
+function descendantIsDirectlyIncluded(query, code) {
+  // Indicates whether any of code's descendants are directly included by query.
   return query.included.some((c) => isAncestor(code, c));
 }
 
-function descendantIsExcluded(query, code) {
-  // Indicates whether any of code's descendants are excluded by query.
+function descendantIsDirectlyExcluded(query, code) {
+  // Indicates whether any of code's descendants are directly excluded by query.
   return query.excluded.some((c) => isAncestor(code, c));
 }
 
-function ancestorIsIncluded(query, code) {
-  // Indicates whether any of code's ancestors are included by query.
+function ancestorIsDirectlyIncluded(query, code) {
+  // Indicates whether any of code's ancestors are directly included by query.
   return query.included.some((c) => isAncestor(c, code));
 }
 
-function ancestorIsExcluded(query, code) {
-  // Indicates whether any of code's ancestors are excluded by query.
+function ancestorIsDirectlyExcluded(query, code) {
+  // Indicates whether any of code's ancestors are directly excluded by query.
   return query.excluded.some((c) => isAncestor(c, code));
 }
 
