@@ -2,13 +2,28 @@
 // used to pick presentations by BNF code for the numerator and denominator of a
 // prescribing query.
 //
-// For now, when the user clicks on one of the BNF code textareas, a BNF browser is
-// opened in a modal.
-//
 // Note that a similar component is defined in bnf-tree.js, which uses the same HTML.
 // However, the two components are sufficiently different in behaviour that it does not
 // make sense to combine implementations.  When making changes here, consider also
 // making changes there.
+//
+// The component has two modals:
+//
+// * The tree modal: this shows the BNF hierarchy in an expandable/collapsable tree,
+//   down to the chemical substance level.
+// * The table modal: this shows the products and presentations that belong to a single
+//   chemical substance.
+//
+// The tree modal is opened by clicking on one of the two textarea elements.  (This will
+// change!)  The table modal is opened by clicking on a chemical substance in the tree.
+// When the table modal opens, the tree modal closes, and when the table modal closes,
+// the tree modal is reopened.
+
+const state = {
+  // Records the code of the chemical substance that is currently being shown in the
+  // table modal.  If it is not null, we infer that the table modal is open.
+  chemicalCode: null,
+};
 
 // The various elements that we'll be interacting with.  {
 
@@ -61,6 +76,38 @@ searchForm.addEventListener("submit", (e) => {
   });
 });
 
+// These events handle the transition between the two modals.  {
+
+treeModal.addEventListener("show.bs.modal", () => {
+  // The tree modal has opened.
+  // We'll add code here soon.
+});
+
+tableModalBody.addEventListener("htmx:afterSwap", () => {
+  // The table modal has opened and the modals' contents have been swapped in by HTMX.
+  // We'll add code here soon.
+});
+
+tableModal.addEventListener("hidden.bs.modal", () => {
+  // The table modal has closed.
+
+  state.chemicalCode = null;
+  treeModalObj.show();
+});
+
+treeModal.addEventListener("hidden.bs.modal", () => {
+  // The tree modal has closed.
+
+  if (state.chemicalCode) {
+    // The table modal has been opened, so there is nothing to do.
+    return;
+  }
+
+  // We'll add code here soon.
+});
+
+// }
+
 function handleTreeClick(li) {
   // Respond to user clicking a tree node.
 
@@ -68,6 +115,7 @@ function handleTreeClick(li) {
   if (isChemical(code)) {
     // Open the table modal, show a spinner, and send the request for its contents
     // to the backend.
+    state.chemicalCode = code;
     tableModalTitle.innerHTML = `<code>${code}</code> ${li.dataset.name}`;
     tableModalBody.innerHTML = `
     <div class="text-center py-5">
