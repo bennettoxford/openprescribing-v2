@@ -59,3 +59,9 @@ class BNFCode(models.Model):
             and self.parts.chemical_substance == other.parts.chemical_substance
             and self.parts.strength_and_formulation == other.parts.generic_equivalent
         )
+
+    @property
+    def strength_and_formulation_code(self):
+        assert self.level == BNFCode.Level.PRESENTATION
+        assert self.is_generic()
+        return self.code[:9] + "_" + self.code[-2:]
