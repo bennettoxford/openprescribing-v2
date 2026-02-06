@@ -30,10 +30,23 @@
 // and significantly simplifies the implementation relative to OpenCodelists.
 
 const state = {
+  query: {
+    // Records which codes have been included/excluded for the numerator and denominator
+    // respectively.
+    ntr: { included: [], excluded: [] },
+    dtr: { included: [], excluded: [] },
+  },
+  // Indicates which field the tree modal is open for ("ntr" or "dtr"), or null if no
+  // modal is open.
+  field: null,
   // Records the code of the chemical substance that is currently being shown in the
   // table modal.  If it is not null, we infer that the table modal is open.
   chemicalCode: null,
 };
+
+function getCurrentQuery() {
+  return state.query[state.field];
+}
 
 // The various elements that we'll be interacting with.  {
 
@@ -56,8 +69,8 @@ textareas.forEach((textarea) => {
   textarea.addEventListener("focus", (e) => {
     // The user has clicked on the textarea.
     e.preventDefault();
-    const field = e.target.dataset.field;
-    const title = `Select codes for ${field === "ntr" ? "numerator" : "denominator"}`;
+    state.field = e.target.dataset.field;
+    const title = `Select codes for ${state.field === "ntr" ? "numerator" : "denominator"}`;
     treeModal.querySelector(".modal-title").innerHTML = title;
     treeModalObj.show();
   });
@@ -155,17 +168,23 @@ function handleTreeClick(li) {
 function handleTreeCtrlClick(li) {
   // Respond to user clicking a tree node while holding control.
 
+  const code = li.dataset.code;
+  const query = getCurrentQuery();
+
   if (li.hasAttribute("data-included")) {
     // This item is included:
     // * Don't include it
     // * Remove descendant exclusions
+    removeItem(query.included, code);
     li.removeAttribute("data-included");
     li.querySelectorAll("li[data-excluded]").forEach((n) => {
+      removeItem(query.excluded, n.dataset.code);
       n.removeAttribute("data-excluded");
     });
   } else if (li.hasAttribute("data-excluded")) {
     // This item is excluded:
     // * Don't exclude it
+    removeItem(query.excluded, code);
     li.removeAttribute("data-excluded");
   } else if (li.parentElement.closest("li[data-excluded]")) {
     // An ancestor is excluded: do nothing
@@ -175,18 +194,29 @@ function handleTreeCtrlClick(li) {
     // An ancestor is included:
     // * Exclude this one
     // * Remove descendant exclusions
+    query.excluded.push(code);
     li.setAttribute("data-excluded", "");
     li.querySelectorAll("li[data-excluded]").forEach((n) => {
+      removeItem(query.excluded, n.dataset.code);
       n.removeAttribute("data-excluded");
     });
   } else {
     // No ancestors or descendants are included:
     // * Include this one
+    query.included.push(code);
     li.setAttribute("data-included", "");
   }
+
+  console.log(query);
 }
 
 function isChemical(code) {
   // Indicate whether code is for a chemical substance.
   return code.length === 9;
+}
+
+function removeItem(array, item) {
+  // Removes the first occurrence of the item from the array.
+  const ix = array.indexOf(item);
+  array.splice(ix, 1);
 }
