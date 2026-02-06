@@ -204,8 +204,8 @@ function handleTreeCtrlClick(li) {
   const code = li.dataset.code;
   const query = getCurrentQuery();
 
-  if (li.hasAttribute("data-included")) {
-    // This item is included:
+  if (isDirectlyIncluded(query, code)) {
+    // This item is directly included:
     // * Don't include it
     // * Remove descendant exclusions
     removeItem(query.included, code);
@@ -214,16 +214,16 @@ function handleTreeCtrlClick(li) {
       removeItem(query.excluded, n.dataset.code);
       n.removeAttribute("data-excluded");
     });
-  } else if (li.hasAttribute("data-excluded")) {
-    // This item is excluded:
+  } else if (isDirectlyExcluded(query, code)) {
+    // This item is directly excluded:
     // * Don't exclude it
     removeItem(query.excluded, code);
     li.removeAttribute("data-excluded");
-  } else if (li.parentElement.closest("li[data-excluded]")) {
+  } else if (ancestorIsExcluded(query, code)) {
     // An ancestor is excluded: do nothing
-  } else if (li.querySelector("li[data-included]")) {
+  } else if (descendantIsIncluded(query, code)) {
     // A descendant is included: do nothing
-  } else if (li.parentElement.closest("li[data-included]")) {
+  } else if (ancestorIsIncluded(query, code)) {
     // An ancestor is included:
     // * Exclude this one
     // * Remove descendant exclusions
@@ -261,6 +261,21 @@ function isDirectlyIncluded(query, code) {
 function isDirectlyExcluded(query, code) {
   // Indicates whether code is directly excluded by query.
   return query.excluded.includes(code);
+}
+
+function descendantIsIncluded(query, code) {
+  // Indicates whether any of code's descendants are included by query.
+  return query.included.some((c) => isAncestor(code, c));
+}
+
+function ancestorIsIncluded(query, code) {
+  // Indicates whether any of code's ancestors are included by query.
+  return query.included.some((c) => isAncestor(c, code));
+}
+
+function ancestorIsExcluded(query, code) {
+  // Indicates whether any of code's ancestors are excluded by query.
+  return query.excluded.some((c) => isAncestor(c, code));
 }
 
 function removeItem(array, item) {
