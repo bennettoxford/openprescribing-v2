@@ -186,6 +186,7 @@ function setTreeState() {
     // First, remove all data attributes.
     li.removeAttribute("data-open");
     li.removeAttribute("data-matches-search");
+    li.removeAttribute("data-partially-included");
     li.removeAttribute("data-included");
     li.removeAttribute("data-excluded");
 
@@ -197,7 +198,9 @@ function setTreeState() {
       li.setAttribute("data-open", "");
     }
 
-    if (isDirectlyIncluded(query, code)) {
+    if (isPartiallyIncludedChemical(query, code)) {
+      li.setAttribute("data-partially-included", "");
+    } else if (isDirectlyIncluded(query, code)) {
       li.setAttribute("data-included", "");
     } else if (isDirectlyExcluded(query, code)) {
       li.setAttribute("data-excluded", "");
@@ -408,6 +411,25 @@ function ancestorIsDirectlyIncluded(query, code) {
 function ancestorIsDirectlyExcluded(query, code) {
   // Indicates whether any of code's ancestors are directly excluded by query.
   return query.excluded.some((c) => isAncestor(c, code));
+}
+
+function isPartiallyIncludedChemical(query, code) {
+  // Indicates whether code is for a chemical substance, and if so, whether it is
+  // partially included.  That is, whether either:
+  //   * the chemical substance is directly or indirectly included but one of its
+  //     descendants is excluded, or
+  //   * the chemical substance is not included but one of its descendants is.
+  //
+  // We only need to check whether any descendants are directly included or excluded:
+  //   * if a descendant is directly excluded, then it implies the chemical substance is
+  //     included;
+  //   * if a descendant is directly included, then it implies the chemical substance is
+  //     not included.
+  return (
+    isChemical(code) &&
+    (descendantIsDirectlyIncluded(query, code) ||
+      descendantIsDirectlyExcluded(query, code))
+  );
 }
 
 function removeItem(array, item) {

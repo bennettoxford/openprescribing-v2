@@ -56,6 +56,48 @@
   li[data-included] li[data-excluded] span:hover {
     background-color: #ffffff;
   }
+
+  /* chemical substance included directly, with some descendants excluded */
+  /* revolting vertical stripes */
+  li[data-partially-included] > span {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--included-directly) 0,
+      var(--included-directly) 36px,
+      #ffffff 36px,
+      #ffffff 72px
+    );
+  }
+  li[data-partially-included] > span:hover {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--included-directly-hover) 0,
+      var(--included-directly-hover) 36px,
+      #ffffff 36px,
+      #ffffff 72px
+    );
+  }
+
+  /* chemical substance included indirectly, with some descendants excluded */
+  /* more revolting vertical stripes */
+  li[data-included] li[data-partially-included] > span {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--included-indirectly) 0,
+      var(--included-indirectly) 36px,
+      #ffffff 36px,
+      #ffffff 72px
+    );
+  }
+  li[data-included] li[data-partially-included] > span:hover {
+    background: repeating-linear-gradient(
+      90deg,
+      var(--included-indirectly-hover) 0,
+      var(--included-indirectly-hover) 36px,
+      #ffffff 36px,
+      #ffffff 72px
+    );
+  }
 }
 
 @scope (#bnf-table) {
