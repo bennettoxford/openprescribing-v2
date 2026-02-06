@@ -1,3 +1,11 @@
+:root {
+  /* colours for the BNF code picker */
+  --included-directly: #9fc5ff;
+  --included-directly-hover: #87b5f5;
+  --included-indirectly: #d7ecff;
+  --included-indirectly-hover: #c6e2ff;
+}
+
 @scope (#bnf-tree) {
   ul ul {
     display: none;
@@ -21,6 +29,32 @@
   }
   span:hover {
     background-color: #f0f0f0;
+  }
+}
+
+@scope (#bnf-tree[data-selectable]) {
+  /* included, directly */
+  li[data-included] > span {
+    background-color: var(--included-directly);
+  }
+  li[data-included] > span:hover {
+    background-color: var(--included-directly-hover);
+  }
+
+  /* included, indirectly */
+  li[data-included] li span {
+    background-color: var(--included-indirectly);
+  }
+  li[data-included] li span:hover {
+    background-color: var(--included-indirectly-hover);
+  }
+
+  /* excluded, directly or indirectly */
+  li[data-included] li[data-excluded] span {
+    background-color: #ffffff;
+  }
+  li[data-included] li[data-excluded] span:hover {
+    background-color: #ffffff;
   }
 }
 

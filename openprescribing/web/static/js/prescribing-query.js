@@ -18,6 +18,16 @@
 // change!)  The table modal is opened by clicking on a chemical substance in the tree.
 // When the table modal opens, the tree modal closes, and when the table modal closes,
 // the tree modal is reopened.
+//
+// In the tree modal, users can choose to include a BNF code in a query by clicking
+// while the control key is held down.  This will include the BNF code and all its
+// descendants.  By ctrl-clicking on a descendant of an included code, that descendant
+// and all its descendants are excluded from the query.
+//
+// Unlike in OpenCodelists, there can be at most one level exclusion: users cannot
+// include one code, exclude a descendant, and then reinclude a descendant of the
+// excluded code.  This is not required by any of OpenPresecribing's existing measures,
+// and significantly simplifies the implementation relative to OpenCodelists.
 
 const state = {
   // Records the code of the chemical substance that is currently being shown in the
@@ -39,6 +49,9 @@ const tableModalBody = tableModal.querySelector(".modal-body");
 
 // }
 
+// Activate the CSS selectors that indicate whether a node is included or not.
+tree.setAttribute("data-selectable", "");
+
 textareas.forEach((textarea) => {
   textarea.addEventListener("focus", (e) => {
     // The user has clicked on the textarea.
@@ -55,7 +68,11 @@ tree.addEventListener("click", (e) => {
 
   const li = e.target.closest("li");
   if (li) {
-    handleTreeClick(li);
+    if (e.ctrlKey) {
+      handleTreeCtrlClick(li);
+    } else {
+      handleTreeClick(li);
+    }
   }
 });
 
@@ -132,6 +149,40 @@ function handleTreeClick(li) {
   } else {
     // Toggle whether the node is visible.
     li.toggleAttribute("data-open");
+  }
+}
+
+function handleTreeCtrlClick(li) {
+  // Respond to user clicking a tree node while holding control.
+
+  if (li.hasAttribute("data-included")) {
+    // This item is included:
+    // * Don't include it
+    // * Remove descendant exclusions
+    li.removeAttribute("data-included");
+    li.querySelectorAll("li[data-excluded]").forEach((n) => {
+      n.removeAttribute("data-excluded");
+    });
+  } else if (li.hasAttribute("data-excluded")) {
+    // This item is excluded:
+    // * Don't exclude it
+    li.removeAttribute("data-excluded");
+  } else if (li.parentElement.closest("li[data-excluded]")) {
+    // An ancestor is excluded: do nothing
+  } else if (li.querySelector("li[data-included]")) {
+    // A descendant is included: do nothing
+  } else if (li.parentElement.closest("li[data-included]")) {
+    // An ancestor is included:
+    // * Exclude this one
+    // * Remove descendant exclusions
+    li.setAttribute("data-excluded", "");
+    li.querySelectorAll("li[data-excluded]").forEach((n) => {
+      n.removeAttribute("data-excluded");
+    });
+  } else {
+    // No ancestors or descendants are included:
+    // * Include this one
+    li.setAttribute("data-included", "");
   }
 }
 
