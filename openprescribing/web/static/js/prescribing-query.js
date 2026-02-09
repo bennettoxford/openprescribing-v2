@@ -84,7 +84,7 @@ tree.addEventListener("click", (e) => {
 
   const li = e.target.closest("li");
   if (li) {
-    if (e.ctrlKey) {
+    if (e.ctrlKey || e.metaKey) {
       handleTreeCtrlClick(li);
     } else {
       handleTreeClick(li);
