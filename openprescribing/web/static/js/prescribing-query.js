@@ -136,7 +136,7 @@ tableModalBody.addEventListener("htmx:afterSwap", () => {
   setTableState(table);
 
   table.addEventListener("click", (e) => {
-    if (e.ctrlKey) {
+    if (e.ctrlKey || e.metaKey) {
       const td = e.target.closest("td");
       if (td) {
         handleTableCtrlClick(td);
