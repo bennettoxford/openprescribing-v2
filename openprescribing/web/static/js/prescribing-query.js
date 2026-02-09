@@ -272,6 +272,17 @@ function handleTreeCtrlClick(li) {
       removeItem(query.excluded, n.dataset.code);
       n.removeAttribute("data-excluded");
     });
+    // descendant exclusions which are part of the table aren't
+    // found by the li selector, so remove them directly
+    query.excluded.forEach((n) => {
+      if (isAncestor(code, n)) {
+        removeItem(query.excluded, n);
+      }
+    });
+    li.removeAttribute("data-partially-included");
+    li.querySelectorAll("li[data-partially-included]").forEach((n) => {
+      n.removeAttribute("data-partially-included");
+    });
   } else if (isDirectlyExcluded(query, code)) {
     // This item is directly excluded:
     // * Don't exclude it
@@ -289,6 +300,17 @@ function handleTreeCtrlClick(li) {
       removeItem(query.included, n.dataset.code);
       n.removeAttribute("data-included");
     });
+
+    // descendant inclusions which are part of the table aren't
+    // found by the li selector, so remove them directly
+    query.included.forEach((n) => {
+      if (isAncestor(code, n)) {
+        removeItem(query.included, n);
+      }
+    });
+    li.querySelectorAll("li[data-partially-included]").forEach((n) => {
+      n.removeAttribute("data-partially-included");
+    });
   } else if (ancestorIsDirectlyIncluded(query, code)) {
     // An ancestor is included:
     // * Exclude this one
@@ -298,6 +320,18 @@ function handleTreeCtrlClick(li) {
     li.querySelectorAll("li[data-excluded]").forEach((n) => {
       removeItem(query.excluded, n.dataset.code);
       n.removeAttribute("data-excluded");
+    });
+
+    // descendant exclusions which are part of the table aren't
+    // found by the li selector, so remove them directly
+    query.excluded.forEach((n) => {
+      if (isAncestor(code, n)) {
+        removeItem(query.excluded, n);
+      }
+    });
+    li.removeAttribute("data-partially-included");
+    li.querySelectorAll("li[data-partially-included]").forEach((n) => {
+      n.removeAttribute("data-partially-included");
     });
   } else {
     // No ancestors or descendants are included:
