@@ -13,12 +13,12 @@ def make_bnf_tree(codes):
     See tests.web.test_presenters.test_make_bnf_tree for an example of the output.
     """
 
-    assert all(code.level <= BNFCode.Level.CHEMICAL_SUBSTANCE for code in codes)
-
     root = []
     stack = [(0, root)]  # tuples of (level, list of child nodes)
 
     for code in sorted(codes, key=lambda code: code.code):
+        if code.level > BNFCode.Level.CHEMICAL_SUBSTANCE:
+            continue
         node = {"code": code.code, "name": code.name, "children": []}
         while stack and stack[-1][0] >= code.level:
             stack.pop()

@@ -10,9 +10,7 @@ from openprescribing.web.presenters import (
 
 @pytest.mark.django_db(databases=["data"])
 def test_make_bnf_tree(bnf_codes):
-    codes = BNFCode.objects.filter(
-        level__lte=BNFCode.Level.CHEMICAL_SUBSTANCE
-    ).order_by("code")
+    codes = BNFCode.objects.all()
 
     assert make_bnf_tree(codes) == [
         {

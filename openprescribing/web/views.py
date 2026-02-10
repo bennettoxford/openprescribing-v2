@@ -51,11 +51,7 @@ def query(request):
         if org_id:
             api_url += f"&org_id={org_id}"
 
-    codes = (
-        BNFCode.objects.filter(level__lte=BNFCode.Level.CHEMICAL_SUBSTANCE)
-        .exclude(code__startswith="2")
-        .order_by("code")
-    )
+    codes = BNFCode.objects.exclude(code__startswith="2")
     tree = make_bnf_tree(codes)
 
     orgs = make_orgs()
