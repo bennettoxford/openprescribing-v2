@@ -12,10 +12,6 @@ from .presenters import (
 )
 
 
-def index(request):
-    return render(request, "index.html")
-
-
 def query(request):
     ntr_codes_raw = request.GET.get("ntr_codes")
     ntr_product_type = request.GET.get("ntr_product_type", "all")

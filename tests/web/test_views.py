@@ -1,11 +1,6 @@
 import pytest
 
 
-def test_index(client):
-    rsp = client.get("/")
-    assert rsp.status_code == 200
-
-
 @pytest.mark.django_db(databases=["data"])
 def test_query(client, sample_data):
     rsp = client.get("/bnf_codes/")

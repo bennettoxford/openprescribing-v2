@@ -4,7 +4,6 @@ from . import api, views
 
 
 urlpatterns = [
-    path("", views.index),
     path("bnf_codes/", views.query),
     path(
         "api/prescribing-deciles/",
