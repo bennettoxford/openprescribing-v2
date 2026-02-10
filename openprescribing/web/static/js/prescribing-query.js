@@ -114,7 +114,7 @@ searchForm.addEventListener("submit", (e) => {
 treeModal.addEventListener("show.bs.modal", () => {
   // The tree modal has opened.
 
-  setTreeState();
+  setTreeState(true);
 });
 
 tableModalBody.addEventListener("htmx:afterSwap", () => {
@@ -171,7 +171,7 @@ treeModal.addEventListener("hidden.bs.modal", () => {
 
 // }
 
-function setTreeState() {
+function setTreeState(newlyOpened) {
   // Set the data attributes required to show the current query in the tree.
 
   const query = getCurrentQuery();
@@ -180,8 +180,10 @@ function setTreeState() {
     const code = li.dataset.code;
 
     // First, remove all data attributes.
-    setBoolAttr(li, "open", false);
-    setBoolAttr(li, "matches-search", false);
+    if (newlyOpened) {
+      setBoolAttr(li, "open", false);
+      setBoolAttr(li, "matches-search", false);
+    }
     setBoolAttr(li, "partially-included", false);
     setBoolAttr(li, "included", false);
     setBoolAttr(li, "excluded", false);
@@ -298,7 +300,7 @@ function handleTreeCtrlClick(li) {
     query.included.push(code);
   }
 
-  setTreeState();
+  setTreeState(false);
 }
 
 function handleTableCtrlClick(td) {
