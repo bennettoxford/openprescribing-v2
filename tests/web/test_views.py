@@ -7,7 +7,7 @@ def test_index(client):
 
 
 @pytest.mark.django_db(databases=["data"])
-def test_multiple_bnf_search(client, sample_data):
+def test_query(client, sample_data):
     rsp = client.get("/bnf_codes/")
     assert rsp.status_code == 200
 

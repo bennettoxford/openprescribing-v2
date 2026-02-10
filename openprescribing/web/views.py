@@ -16,7 +16,7 @@ def index(request):
     return render(request, "index.html")
 
 
-def bnf_codes(request):
+def query(request):
     ntr_codes_raw = request.GET.get("ntr_codes")
     ntr_product_type = request.GET.get("ntr_product_type", "all")
     dtr_codes_raw = request.GET.get("dtr_codes")
@@ -79,7 +79,7 @@ def bnf_codes(request):
         "tree": tree,
     }
 
-    return render(request, "bnf_codes.html", ctx)
+    return render(request, "query.html", ctx)
 
 
 def bnf_browser_tree(request):

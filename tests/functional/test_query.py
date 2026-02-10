@@ -6,7 +6,7 @@ pytestmark = pytest.mark.functional
 
 
 @pytest.mark.django_db(databases=["data"], transaction=True)
-def test_bnf_codes(live_server, page: Page, sample_data):
+def test_query(live_server, page: Page, sample_data):
     # This is a limited smoke test that checks that codes can be selected from the table
     # (numerator) and the tree (denominator), and that on form submission we're directed
     # to the expected URL.
