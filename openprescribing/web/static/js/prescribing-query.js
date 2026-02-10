@@ -63,7 +63,7 @@ const tableModalBody = tableModal.querySelector(".modal-body");
 // }
 
 // Activate the CSS selectors that indicate whether a node is included or not.
-tree.setAttribute("data-selectable", "");
+setBoolAttr(tree, "selectable", true);
 
 textareas.forEach((textarea) => {
   // Populate the state from the textarea.
@@ -102,9 +102,9 @@ searchForm.addEventListener("submit", (e) => {
       li.dataset.code.toLowerCase() === needle ||
       li.dataset.name.toLowerCase().includes(needle)
     ) {
-      li.setAttribute("data-matches-search", "");
+      setBoolAttr(li, "matches-search", true);
     } else {
-      li.removeAttribute("data-matches-search");
+      setBoolAttr(li, "matches-search", false);
     }
   });
 });
@@ -131,7 +131,7 @@ tableModalBody.addEventListener("htmx:afterSwap", () => {
   const table = container.querySelector("table");
 
   // Activate the CSS selectors that indicate whether a row is included or not.
-  container.setAttribute("data-selectable", "");
+  setBoolAttr(container, "selectable", true);
 
   setTableState(table);
 
@@ -180,26 +180,26 @@ function setTreeState() {
     const code = li.dataset.code;
 
     // First, remove all data attributes.
-    li.removeAttribute("data-open");
-    li.removeAttribute("data-matches-search");
-    li.removeAttribute("data-partially-included");
-    li.removeAttribute("data-included");
-    li.removeAttribute("data-excluded");
+    setBoolAttr(li, "open", false);
+    setBoolAttr(li, "matches-search", false);
+    setBoolAttr(li, "partially-included", false);
+    setBoolAttr(li, "included", false);
+    setBoolAttr(li, "excluded", false);
 
     // Then set any that are necessary.
     if (descendantIsDirectlyIncluded(query, code)) {
-      li.setAttribute("data-open", "");
+      setBoolAttr(li, "open", true);
     }
     if (descendantIsDirectlyExcluded(query, code)) {
-      li.setAttribute("data-open", "");
+      setBoolAttr(li, "open", true);
     }
 
     if (isPartiallyIncludedChemical(query, code)) {
-      li.setAttribute("data-partially-included", "");
+      setBoolAttr(li, "partially-included", true);
     } else if (isDirectlyIncluded(query, code)) {
-      li.setAttribute("data-included", "");
+      setBoolAttr(li, "included", true);
     } else if (isDirectlyExcluded(query, code)) {
-      li.setAttribute("data-excluded", "");
+      setBoolAttr(li, "excluded", true);
     }
   });
 
@@ -216,15 +216,15 @@ function setTableState(table) {
   const query = getCurrentQuery();
 
   if (isIncluded(query, state.chemicalCode)) {
-    table.setAttribute("data-included", "");
+    setBoolAttr(table, "included", true);
   }
 
   table.querySelectorAll("tr").forEach((tr) => {
     const code = tr.dataset.code;
     if (isDirectlyIncluded(query, code)) {
-      tr.setAttribute("data-included", "");
+      setBoolAttr(tr, "included", true);
     } else if (isDirectlyExcluded(query, code)) {
-      tr.setAttribute("data-excluded", "");
+      setBoolAttr(tr, "excluded", true);
     }
   });
 }
@@ -267,10 +267,10 @@ function handleTreeCtrlClick(li) {
     // * Don't include it
     // * Remove descendant exclusions
     removeItem(query.included, code);
-    li.removeAttribute("data-included");
+    setBoolAttr(li, "included", false);
     li.querySelectorAll("li[data-excluded]").forEach((n) => {
       removeItem(query.excluded, n.dataset.code);
-      n.removeAttribute("data-excluded");
+      setBoolAttr(n, "excluded", false);
     });
     // descendant exclusions which are part of the table aren't
     // found by the li selector, so remove them directly
@@ -279,15 +279,15 @@ function handleTreeCtrlClick(li) {
         removeItem(query.excluded, n);
       }
     });
-    li.removeAttribute("data-partially-included");
+    setBoolAttr(li, "partially-included", false);
     li.querySelectorAll("li[data-partially-included]").forEach((n) => {
-      n.removeAttribute("data-partially-included");
+      setBoolAttr(n, "partially-included", false);
     });
   } else if (isDirectlyExcluded(query, code)) {
     // This item is directly excluded:
     // * Don't exclude it
     removeItem(query.excluded, code);
-    li.removeAttribute("data-excluded");
+    setBoolAttr(li, "excluded", false);
   } else if (ancestorIsDirectlyExcluded(query, code)) {
     // An ancestor is excluded: do nothing
   } else if (descendantIsDirectlyIncluded(query, code)) {
@@ -295,10 +295,10 @@ function handleTreeCtrlClick(li) {
     // * Include this one
     // * Remove descendant inclusions
     query.included.push(code);
-    li.setAttribute("data-included", "");
+    setBoolAttr(li, "included", true);
     li.querySelectorAll("li[data-included]").forEach((n) => {
       removeItem(query.included, n.dataset.code);
-      n.removeAttribute("data-included");
+      setBoolAttr(n, "included", false);
     });
 
     // descendant inclusions which are part of the table aren't
@@ -309,17 +309,17 @@ function handleTreeCtrlClick(li) {
       }
     });
     li.querySelectorAll("li[data-partially-included]").forEach((n) => {
-      n.removeAttribute("data-partially-included");
+      setBoolAttr(n, "partially-included", false);
     });
   } else if (ancestorIsDirectlyIncluded(query, code)) {
     // An ancestor is included:
     // * Exclude this one
     // * Remove descendant exclusions
     query.excluded.push(code);
-    li.setAttribute("data-excluded", "");
+    setBoolAttr(li, "excluded", true);
     li.querySelectorAll("li[data-excluded]").forEach((n) => {
       removeItem(query.excluded, n.dataset.code);
-      n.removeAttribute("data-excluded");
+      setBoolAttr(n, "excluded", false);
     });
 
     // descendant exclusions which are part of the table aren't
@@ -329,15 +329,15 @@ function handleTreeCtrlClick(li) {
         removeItem(query.excluded, n);
       }
     });
-    li.removeAttribute("data-partially-included");
+    setBoolAttr(li, "partially-included", false);
     li.querySelectorAll("li[data-partially-included]").forEach((n) => {
-      n.removeAttribute("data-partially-included");
+      setBoolAttr(n, "partially-included", false);
     });
   } else {
     // No ancestors or descendants are included:
     // * Include this one
     query.included.push(code);
-    li.setAttribute("data-included", "");
+    setBoolAttr(li, "included", true);
   }
 }
 
@@ -352,22 +352,22 @@ function handleTableCtrlClick(td) {
     // This item is directly included:
     // * Don't include it
     removeItem(query.included, code);
-    tr.removeAttribute("data-included");
+    setBoolAttr(tr, "included", false);
   } else if (isDirectlyExcluded(query, code)) {
     // This item is directly excluded:
     // * Don't exclude it
     removeItem(query.excluded, code);
-    tr.removeAttribute("data-excluded");
+    setBoolAttr(tr, "excluded", false);
   } else if (isIncluded(query, state.chemicalCode)) {
     // An ancestor is included:
     // * Exclude this one
     query.excluded.push(code);
-    tr.setAttribute("data-excluded", "");
+    setBoolAttr(tr, "excluded", true);
   } else {
     // No ancestors or descendants are included:
     // * Include this one
     query.included.push(code);
-    tr.setAttribute("data-included", "");
+    setBoolAttr(tr, "included", true);
   }
 }
 
@@ -474,4 +474,12 @@ function removeItem(array, item) {
   // Removes the first occurrence of the item from the array.
   const ix = array.indexOf(item);
   array.splice(ix, 1);
+}
+
+function setBoolAttr(el, attrName, val) {
+  if (val) {
+    el.setAttribute(`data-${attrName}`, "");
+  } else {
+    el.removeAttribute(`data-${attrName}`);
+  }
 }
