@@ -63,7 +63,7 @@ const tableModalBody = tableModal.querySelector(".modal-body");
 // }
 
 // Activate the CSS selectors that indicate whether a node is included or not.
-tree.setAttribute("data-selectable", "");
+setBoolAttr(tree, "selectable", true);
 
 textareas.forEach((textarea) => {
   // Populate the state from the textarea.
@@ -102,9 +102,9 @@ searchForm.addEventListener("submit", (e) => {
       li.dataset.code.toLowerCase() === needle ||
       li.dataset.name.toLowerCase().includes(needle)
     ) {
-      li.setAttribute("data-matches-search", "");
+      setBoolAttr(li, "matches-search", true);
     } else {
-      li.removeAttribute("data-matches-search");
+      setBoolAttr(li, "matches-search", false);
     }
   });
 });
@@ -114,7 +114,7 @@ searchForm.addEventListener("submit", (e) => {
 treeModal.addEventListener("show.bs.modal", () => {
   // The tree modal has opened.
 
-  setTreeState();
+  setTreeState(true);
 });
 
 tableModalBody.addEventListener("htmx:afterSwap", () => {
@@ -131,7 +131,7 @@ tableModalBody.addEventListener("htmx:afterSwap", () => {
   const table = container.querySelector("table");
 
   // Activate the CSS selectors that indicate whether a row is included or not.
-  container.setAttribute("data-selectable", "");
+  setBoolAttr(container, "selectable", true);
 
   setTableState(table);
 
@@ -171,7 +171,7 @@ treeModal.addEventListener("hidden.bs.modal", () => {
 
 // }
 
-function setTreeState() {
+function setTreeState(newlyOpened) {
   // Set the data attributes required to show the current query in the tree.
 
   const query = getCurrentQuery();
@@ -180,26 +180,28 @@ function setTreeState() {
     const code = li.dataset.code;
 
     // First, remove all data attributes.
-    li.removeAttribute("data-open");
-    li.removeAttribute("data-matches-search");
-    li.removeAttribute("data-partially-included");
-    li.removeAttribute("data-included");
-    li.removeAttribute("data-excluded");
+    if (newlyOpened) {
+      setBoolAttr(li, "open", false);
+      setBoolAttr(li, "matches-search", false);
+    }
+    setBoolAttr(li, "partially-included", false);
+    setBoolAttr(li, "included", false);
+    setBoolAttr(li, "excluded", false);
 
     // Then set any that are necessary.
     if (descendantIsDirectlyIncluded(query, code)) {
-      li.setAttribute("data-open", "");
+      setBoolAttr(li, "open", true);
     }
     if (descendantIsDirectlyExcluded(query, code)) {
-      li.setAttribute("data-open", "");
+      setBoolAttr(li, "open", true);
     }
 
     if (isPartiallyIncludedChemical(query, code)) {
-      li.setAttribute("data-partially-included", "");
+      setBoolAttr(li, "partially-included", true);
     } else if (isDirectlyIncluded(query, code)) {
-      li.setAttribute("data-included", "");
+      setBoolAttr(li, "included", true);
     } else if (isDirectlyExcluded(query, code)) {
-      li.setAttribute("data-excluded", "");
+      setBoolAttr(li, "excluded", true);
     }
   });
 
@@ -216,15 +218,15 @@ function setTableState(table) {
   const query = getCurrentQuery();
 
   if (isIncluded(query, state.chemicalCode)) {
-    table.setAttribute("data-included", "");
+    setBoolAttr(table, "included", true);
   }
 
   table.querySelectorAll("tr").forEach((tr) => {
     const code = tr.dataset.code;
     if (isDirectlyIncluded(query, code)) {
-      tr.setAttribute("data-included", "");
+      setBoolAttr(tr, "included", true);
     } else if (isDirectlyExcluded(query, code)) {
-      tr.setAttribute("data-excluded", "");
+      setBoolAttr(tr, "excluded", true);
     }
   });
 }
@@ -267,27 +269,13 @@ function handleTreeCtrlClick(li) {
     // * Don't include it
     // * Remove descendant exclusions
     removeItem(query.included, code);
-    li.removeAttribute("data-included");
-    li.querySelectorAll("li[data-excluded]").forEach((n) => {
-      removeItem(query.excluded, n.dataset.code);
-      n.removeAttribute("data-excluded");
-    });
-    // descendant exclusions which are part of the table aren't
-    // found by the li selector, so remove them directly
-    query.excluded.forEach((n) => {
-      if (isAncestor(code, n)) {
-        removeItem(query.excluded, n);
-      }
-    });
-    li.removeAttribute("data-partially-included");
-    li.querySelectorAll("li[data-partially-included]").forEach((n) => {
-      n.removeAttribute("data-partially-included");
+    descendants(code, query.excluded).forEach((c) => {
+      removeItem(query.excluded, c);
     });
   } else if (isDirectlyExcluded(query, code)) {
     // This item is directly excluded:
     // * Don't exclude it
     removeItem(query.excluded, code);
-    li.removeAttribute("data-excluded");
   } else if (ancestorIsDirectlyExcluded(query, code)) {
     // An ancestor is excluded: do nothing
   } else if (descendantIsDirectlyIncluded(query, code)) {
@@ -295,50 +283,24 @@ function handleTreeCtrlClick(li) {
     // * Include this one
     // * Remove descendant inclusions
     query.included.push(code);
-    li.setAttribute("data-included", "");
-    li.querySelectorAll("li[data-included]").forEach((n) => {
-      removeItem(query.included, n.dataset.code);
-      n.removeAttribute("data-included");
-    });
-
-    // descendant inclusions which are part of the table aren't
-    // found by the li selector, so remove them directly
-    query.included.forEach((n) => {
-      if (isAncestor(code, n)) {
-        removeItem(query.included, n);
-      }
-    });
-    li.querySelectorAll("li[data-partially-included]").forEach((n) => {
-      n.removeAttribute("data-partially-included");
+    descendants(code, query.included).forEach((c) => {
+      removeItem(query.included, c);
     });
   } else if (ancestorIsDirectlyIncluded(query, code)) {
     // An ancestor is included:
     // * Exclude this one
     // * Remove descendant exclusions
     query.excluded.push(code);
-    li.setAttribute("data-excluded", "");
-    li.querySelectorAll("li[data-excluded]").forEach((n) => {
-      removeItem(query.excluded, n.dataset.code);
-      n.removeAttribute("data-excluded");
-    });
-
-    // descendant exclusions which are part of the table aren't
-    // found by the li selector, so remove them directly
-    query.excluded.forEach((n) => {
-      if (isAncestor(code, n)) {
-        removeItem(query.excluded, n);
-      }
-    });
-    li.removeAttribute("data-partially-included");
-    li.querySelectorAll("li[data-partially-included]").forEach((n) => {
-      n.removeAttribute("data-partially-included");
+    descendants(code, query.excluded).forEach((c) => {
+      removeItem(query.excluded, c);
     });
   } else {
     // No ancestors or descendants are included:
     // * Include this one
     query.included.push(code);
-    li.setAttribute("data-included", "");
   }
+
+  setTreeState(false);
 }
 
 function handleTableCtrlClick(td) {
@@ -352,22 +314,22 @@ function handleTableCtrlClick(td) {
     // This item is directly included:
     // * Don't include it
     removeItem(query.included, code);
-    tr.removeAttribute("data-included");
+    setBoolAttr(tr, "included", false);
   } else if (isDirectlyExcluded(query, code)) {
     // This item is directly excluded:
     // * Don't exclude it
     removeItem(query.excluded, code);
-    tr.removeAttribute("data-excluded");
+    setBoolAttr(tr, "excluded", false);
   } else if (isIncluded(query, state.chemicalCode)) {
     // An ancestor is included:
     // * Exclude this one
     query.excluded.push(code);
-    tr.setAttribute("data-excluded", "");
+    setBoolAttr(tr, "excluded", true);
   } else {
     // No ancestors or descendants are included:
     // * Include this one
     query.included.push(code);
-    tr.setAttribute("data-included", "");
+    setBoolAttr(tr, "included", true);
   }
 }
 
@@ -409,6 +371,10 @@ function isChemical(code) {
 function isAncestor(code1, code2) {
   // Indicates whether code1 is an ancestor of code2.
   return code2.startsWith(code1) && code1 !== code2;
+}
+
+function descendants(code, codes) {
+  return codes.filter((c) => isAncestor(code, c));
 }
 
 function isDirectlyIncluded(query, code) {
@@ -474,4 +440,12 @@ function removeItem(array, item) {
   // Removes the first occurrence of the item from the array.
   const ix = array.indexOf(item);
   array.splice(ix, 1);
+}
+
+function setBoolAttr(el, attrName, val) {
+  if (val) {
+    el.setAttribute(`data-${attrName}`, "");
+  } else {
+    el.removeAttribute(`data-${attrName}`);
+  }
 }
