@@ -267,27 +267,13 @@ function handleTreeCtrlClick(li) {
     // * Don't include it
     // * Remove descendant exclusions
     removeItem(query.included, code);
-    setBoolAttr(li, "included", false);
-    li.querySelectorAll("li[data-excluded]").forEach((n) => {
-      removeItem(query.excluded, n.dataset.code);
-      setBoolAttr(n, "excluded", false);
-    });
-    // descendant exclusions which are part of the table aren't
-    // found by the li selector, so remove them directly
-    query.excluded.forEach((n) => {
-      if (isAncestor(code, n)) {
-        removeItem(query.excluded, n);
-      }
-    });
-    setBoolAttr(li, "partially-included", false);
-    li.querySelectorAll("li[data-partially-included]").forEach((n) => {
-      setBoolAttr(n, "partially-included", false);
+    descendants(code, query.excluded).forEach((c) => {
+      removeItem(query.excluded, c);
     });
   } else if (isDirectlyExcluded(query, code)) {
     // This item is directly excluded:
     // * Don't exclude it
     removeItem(query.excluded, code);
-    setBoolAttr(li, "excluded", false);
   } else if (ancestorIsDirectlyExcluded(query, code)) {
     // An ancestor is excluded: do nothing
   } else if (descendantIsDirectlyIncluded(query, code)) {
@@ -295,50 +281,24 @@ function handleTreeCtrlClick(li) {
     // * Include this one
     // * Remove descendant inclusions
     query.included.push(code);
-    setBoolAttr(li, "included", true);
-    li.querySelectorAll("li[data-included]").forEach((n) => {
-      removeItem(query.included, n.dataset.code);
-      setBoolAttr(n, "included", false);
-    });
-
-    // descendant inclusions which are part of the table aren't
-    // found by the li selector, so remove them directly
-    query.included.forEach((n) => {
-      if (isAncestor(code, n)) {
-        removeItem(query.included, n);
-      }
-    });
-    li.querySelectorAll("li[data-partially-included]").forEach((n) => {
-      setBoolAttr(n, "partially-included", false);
+    descendants(code, query.included).forEach((c) => {
+      removeItem(query.included, c);
     });
   } else if (ancestorIsDirectlyIncluded(query, code)) {
     // An ancestor is included:
     // * Exclude this one
     // * Remove descendant exclusions
     query.excluded.push(code);
-    setBoolAttr(li, "excluded", true);
-    li.querySelectorAll("li[data-excluded]").forEach((n) => {
-      removeItem(query.excluded, n.dataset.code);
-      setBoolAttr(n, "excluded", false);
-    });
-
-    // descendant exclusions which are part of the table aren't
-    // found by the li selector, so remove them directly
-    query.excluded.forEach((n) => {
-      if (isAncestor(code, n)) {
-        removeItem(query.excluded, n);
-      }
-    });
-    setBoolAttr(li, "partially-included", false);
-    li.querySelectorAll("li[data-partially-included]").forEach((n) => {
-      setBoolAttr(n, "partially-included", false);
+    descendants(code, query.excluded).forEach((c) => {
+      removeItem(query.excluded, c);
     });
   } else {
     // No ancestors or descendants are included:
     // * Include this one
     query.included.push(code);
-    setBoolAttr(li, "included", true);
   }
+
+  setTreeState();
 }
 
 function handleTableCtrlClick(td) {
@@ -409,6 +369,10 @@ function isChemical(code) {
 function isAncestor(code1, code2) {
   // Indicates whether code1 is an ancestor of code2.
   return code2.startsWith(code1) && code1 !== code2;
+}
+
+function descendants(code, codes) {
+  return codes.filter((c) => isAncestor(code, c));
 }
 
 function isDirectlyIncluded(query, code) {
