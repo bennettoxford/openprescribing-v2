@@ -6,11 +6,11 @@ pytestmark = pytest.mark.functional
 
 
 @pytest.mark.django_db(databases=["data"], transaction=True)
-def test_bnf_codes(live_server, page: Page, sample_data):
+def test_query(live_server, page: Page, sample_data):
     # This is a limited smoke test that checks that codes can be selected from the table
     # (numerator) and the tree (denominator), and that on form submission we're directed
     # to the expected URL.
-    page.goto(live_server.url + "/bnf_codes/")
+    page.goto(live_server.url)
     page.get_by_role("textbox", name="BNF codes for numerator").click()
     page.get_by_role("textbox", name="Search by name or code").click()
     page.get_by_role("textbox", name="Search by name or code").fill("metho")
@@ -31,7 +31,7 @@ def test_bnf_codes(live_server, page: Page, sample_data):
 
     expect(page).to_have_url(
         live_server.url
-        + "/bnf_codes/?ntr_codes=1001030U0_AC&ntr_product_type=all&dtr_codes=1001030U0&dtr_product_type=all"
+        + "/?ntr_codes=1001030U0_AC&ntr_product_type=all&dtr_codes=1001030U0&dtr_product_type=all"
     )
 
     # Test org search
@@ -45,5 +45,5 @@ def test_bnf_codes(live_server, page: Page, sample_data):
 
     expect(page).to_have_url(
         live_server.url
-        + "/bnf_codes/?ntr_codes=1001030U0_AC&ntr_product_type=all&dtr_codes=1001030U0&dtr_product_type=all&org_id=ICB01"
+        + "/?ntr_codes=1001030U0_AC&ntr_product_type=all&dtr_codes=1001030U0&dtr_product_type=all&org_id=ICB01"
     )
