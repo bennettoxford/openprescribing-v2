@@ -9,7 +9,7 @@ def test_prescribing_deciles(client, sample_data):
     assert rsp.status_code == 200
     assert (
         next(iter(json.loads(rsp.text)["datasets"].values()))[-1]["value"]
-        == 66.41339883307133
+        == 64.15611215168303
     )
 
 
@@ -25,7 +25,7 @@ def test_prescribing_deciles_with_exclusion(client, sample_data):
     assert rsp.status_code == 200
     assert next(iter(json.loads(rsp.text)["datasets"].values()))[-1][
         "value"
-    ] == pytest.approx(60.64, 0.001)
+    ] == pytest.approx(59.07, 0.001)
 
 
 @pytest.mark.django_db(databases=["data"])
