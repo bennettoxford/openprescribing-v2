@@ -129,3 +129,22 @@ def make_ntr_dtr_intersection_table(
         for code in all_codes
     ]
     return {"has_denominators": has_denominators, "data": data}
+
+
+def make_code_to_name(codes):
+    """Return mapping from BNF code to BNF name.
+
+    For now, users can only select BNF objects down to the chemical substance level, or
+    all presentations that are clinically equivalent.  As such, we ignore all other
+    codes.
+    """
+
+    code_to_name = {}
+    for c in codes:
+        if c.level <= BNFCode.Level.CHEMICAL_SUBSTANCE:
+            code_to_name[c.code] = c.name
+        if c.level == BNFCode.Level.PRESENTATION and c.is_generic():
+            code_to_name[c.strength_and_formulation_code] = (
+                c.strength_and_formulation_name
+            )
+    return code_to_name

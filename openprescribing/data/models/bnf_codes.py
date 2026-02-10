@@ -65,3 +65,9 @@ class BNFCode(models.Model):
         assert self.level == BNFCode.Level.PRESENTATION
         assert self.is_generic()
         return self.code[:9] + "_" + self.code[-2:]
+
+    @property
+    def strength_and_formulation_name(self):
+        assert self.level == BNFCode.Level.PRESENTATION
+        assert self.is_generic()
+        return f"{self.name} (branded and generic)"

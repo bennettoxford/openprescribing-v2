@@ -4,6 +4,7 @@ from openprescribing.data.models import BNFCode
 from openprescribing.web.presenters import (
     make_bnf_table,
     make_bnf_tree,
+    make_code_to_name,
     make_ntr_dtr_intersection_table,
 )
 
@@ -227,3 +228,17 @@ def test_make_ntr_dtr_intersection_table(
     assert actual["data"] == expected["data"]
 
     assert actual["has_denominators"] is expected["has_denominators"]
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_make_code_to_name(bnf_codes):
+    codes = BNFCode.objects.filter(code__startswith="10")
+    assert make_code_to_name(codes) == {
+        "10": "Musculoskeletal and Joint Diseases",
+        "1001": "Drugs used in rheumatic diseases and gout",
+        "100103": "Rheumatic disease suppressant drugs",
+        "1001030": "Rheumatic disease suppressant drugs",
+        "1001030U0": "Methotrexate",
+        "1001030U0_AB": "Methotrexate 2.5mg tablets (branded and generic)",
+        "1001030U0_AC": "Methotrexate 10mg tablets (branded and generic)",
+    }
