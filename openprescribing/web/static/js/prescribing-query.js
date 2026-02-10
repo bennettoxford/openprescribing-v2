@@ -1,6 +1,5 @@
-// This module defines the behaviour of a component that can (in a few commits' time) be
-// used to pick presentations by BNF code for the numerator and denominator of a
-// prescribing query.
+// This module defines the behaviour of a component that can be used to pick
+// presentations by BNF code for the numerator and denominator of a prescribing query.
 //
 // Note that a similar component is defined in bnf-tree.js, which uses the same HTML.
 // However, the two components are sufficiently different in behaviour that it does not
@@ -14,10 +13,9 @@
 // * The table modal: this shows the products and presentations that belong to a single
 //   chemical substance.
 //
-// The tree modal is opened by clicking on one of the two textarea elements.  (This will
-// change!)  The table modal is opened by clicking on a chemical substance in the tree.
-// When the table modal opens, the tree modal closes, and when the table modal closes,
-// the tree modal is reopened.
+// The tree modal is opened by clicking on one of the two buttons.  The table modal is
+// opened by clicking on a chemical substance in the tree.  When the table modal opens,
+// the tree modal closes, and when the table modal closes, the tree modal is reopened.
 //
 // In the tree modal, users can choose to include a BNF code in a query by clicking
 // while the control key is held down.  This will include the BNF code and all its
@@ -50,7 +48,8 @@ function getCurrentQuery() {
 
 // The various elements that we'll be interacting with.  {
 
-const textareas = document.querySelectorAll("textarea");
+const selectorButtons = document.querySelectorAll("[data-bnf-selector]");
+const codeInputs = document.querySelectorAll("[data-bnf-codes-input]");
 const treeModal = document.getElementById("bnf-tree-modal");
 const treeModalObj = new bootstrap.Modal(treeModal);
 const tree = document.getElementById("bnf-tree");
@@ -65,12 +64,16 @@ const tableModalBody = tableModal.querySelector(".modal-body");
 // Activate the CSS selectors that indicate whether a node is included or not.
 setBoolAttr(tree, "selectable", true);
 
-textareas.forEach((textarea) => {
-  // Populate the state from the textarea.
-  state.query[textarea.dataset.field] = textToQuery(textarea.value);
+codeInputs.forEach((input) => {
+  // Populate the state from the hidden input.
+  state.query[input.dataset.field] = textToQuery(input.value);
+  // Update the list of selected codes.
+  renderSelectedCodes(input.dataset.field);
+});
 
-  textarea.addEventListener("focus", (e) => {
-    // The user has clicked on the textarea.
+selectorButtons.forEach((button) => {
+  button.addEventListener("click", (e) => {
+    // The user has clicked on the button.
     e.preventDefault();
     state.field = e.target.dataset.field;
     const title = `Select codes for ${state.field === "ntr" ? "numerator" : "denominator"}`;
@@ -160,12 +163,9 @@ treeModal.addEventListener("hidden.bs.modal", () => {
     return;
   }
 
-  // Otherwise, we update the corresponding textarea with a text representation of the
-  // current query.
-  const textarea = document.querySelector(
-    `textarea[data-field="${state.field}"]`,
-  );
-  textarea.value = queryToText(getCurrentQuery());
+  // Otherwise, we update the corresponding list and hidden input with a text
+  // representation of the current query.
+  renderSelectedCodes(state.field);
   state.field = null;
 });
 
@@ -334,7 +334,7 @@ function handleTableCtrlClick(td) {
 }
 
 function textToQuery(text) {
-  // Given text from a textarea, return a query object.
+  // Given text from a hidden input, return a query object.
   const included = [];
   const excluded = [];
   const terms = text.split(/\s+/);
@@ -350,17 +350,42 @@ function textToQuery(text) {
   return { included, excluded };
 }
 
-function queryToText(query) {
-  // Given a query, return a newline-separated string for the corresponding
-  // textarea.  The terms in the query are sorted by code.
+function renderSelectedCodes(field) {
+  // Update the list of codes and the hidden input.
+  const query = state.query[field];
+  const terms = queryToSortedTerms(query);
+
+  const input = document.querySelector(
+    `[data-bnf-codes-input][data-field="${field}"]`,
+  );
+  input.value = terms
+    .map(({ code, included }) => (included ? code : `-${code}`))
+    .join("\n");
+
+  const list = document.querySelector(
+    `[data-bnf-codes-list][data-field="${field}"]`,
+  );
+
+  if (terms.length === 0) {
+    list.innerHTML = `<li class="list-group-item text-muted">No presentations selected.</li>`;
+  } else {
+    list.innerHTML = terms
+      .map(
+        ({ code, included }) =>
+          `<li class="list-group-item"><code>${included ? code : `-${code}`}</code></li>`,
+      )
+      .join("");
+  }
+}
+
+function queryToSortedTerms(query) {
+  // Given a query, return an array of terms (objects with properties `code` and
+  // `included`), sorted by code.
   const terms = [
     ...query.included.map((code) => ({ code, included: true })),
     ...query.excluded.map((code) => ({ code, included: false })),
   ];
-  const sortedTerms = terms.sort((a, b) => a.code > b.code);
-  return sortedTerms
-    .map(({ code, included }) => (included ? code : `-${code}`))
-    .join("\n");
+  return terms.sort((a, b) => (a.code > b.code ? 1 : -1));
 }
 
 function isChemical(code) {

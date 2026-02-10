@@ -11,7 +11,7 @@ def test_query(live_server, page: Page, sample_data):
     # (numerator) and the tree (denominator), and that on form submission we're directed
     # to the expected URL.
     page.goto(live_server.url)
-    page.get_by_role("textbox", name="BNF codes for numerator").click()
+    page.get_by_role("button", name="Select BNF codes for numerator").click()
     page.get_by_role("textbox", name="Search by name or code").click()
     page.get_by_role("textbox", name="Search by name or code").fill("metho")
     page.get_by_role("button", name="Search").click()
@@ -19,7 +19,7 @@ def test_query(live_server, page: Page, sample_data):
     page.get_by_text("1001030U0AAACAC").click(modifiers=["ControlOrMeta"])
     page.locator("#bnf-table-modal").get_by_role("button", name="Update Query").click()
     page.locator("#bnf-tree-modal").get_by_role("button", name="Update Query").click()
-    page.get_by_role("textbox", name="BNF codes for denominator").click()
+    page.get_by_role("button", name="Select BNF codes for denominator").click()
     page.get_by_role("textbox", name="Search by name or code").click()
     page.get_by_role("textbox", name="Search by name or code").fill("metho")
     page.get_by_role("button", name="Search").click()
