@@ -7,6 +7,7 @@ from openprescribing.data.rxdb.search import describe_search
 from .presenters import (
     make_bnf_table,
     make_bnf_tree,
+    make_code_to_name,
     make_ntr_dtr_intersection_table,
     make_orgs,
 )
@@ -53,10 +54,12 @@ def query(request):
 
     codes = BNFCode.objects.exclude(code__startswith="2")
     tree = make_bnf_tree(codes)
+    code_to_name = make_code_to_name(codes)
 
     orgs = make_orgs()
 
     ctx = {
+        "code_to_name": code_to_name,
         "ntr_codes": ntr_codes_raw,
         "ntr_product_type": ntr_product_type,
         "ntr_description": ntr_description,
