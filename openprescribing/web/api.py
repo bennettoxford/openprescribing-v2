@@ -47,7 +47,7 @@ def prescribing_deciles(request):
         org_type = org.org_type
     else:
         org = None
-        org_type = Org.OrgType.PRACTICE
+        org_type = Org.OrgType.ICB
 
     org_to_practice_ids = Org.objects.filter(org_type=org_type).with_practice_ids()
 
