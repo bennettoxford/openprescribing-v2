@@ -9,5 +9,6 @@ export function isAncestor(code1, code2) {
 }
 
 export function descendants(code, codes) {
+  // Returns codes that are a descendant of code.
   return codes.filter((c) => isAncestor(code, c));
 }
