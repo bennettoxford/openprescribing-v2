@@ -116,6 +116,9 @@ test-py *args:
 test-functional *args:
     uv run pytest -m 'functional' "$@"
 
+test-js *args:
+    npm run test "$@"
+
 format *args:
     uv run ruff format --diff --quiet "$@" .
 

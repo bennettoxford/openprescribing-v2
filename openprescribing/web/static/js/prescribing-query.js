@@ -27,6 +27,8 @@
 // excluded code.  This is not required by any of OpenPresecribing's existing measures,
 // and significantly simplifies the implementation relative to OpenCodelists.
 
+import { isChemical } from "./bnf-utils.js";
+
 const state = {
   query: {
     // Records which codes have been included/excluded for the numerator and denominator
@@ -386,11 +388,6 @@ function queryToSortedTerms(query) {
     ...query.excluded.map((code) => ({ code, included: false })),
   ];
   return terms.sort((a, b) => (a.code > b.code ? 1 : -1));
-}
-
-function isChemical(code) {
-  // Indicate whether code is for a chemical substance.
-  return code.length === 9;
 }
 
 function isAncestor(code1, code2) {
