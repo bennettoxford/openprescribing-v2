@@ -29,10 +29,10 @@
 
 import { descendants, isChemical } from "./bnf-utils.js";
 import {
-  ancestorIsDirectlyExcluded,
-  ancestorIsDirectlyIncluded,
-  descendantIsDirectlyExcluded,
-  descendantIsDirectlyIncluded,
+  hasDirectlyExcludedAncestor,
+  hasDirectlyExcludedDescendant,
+  hasDirectlyIncludedAncestor,
+  hasDirectlyIncludedDescendant,
   isDirectlyExcluded,
   isDirectlyIncluded,
   isExcluded,
@@ -202,10 +202,10 @@ function setTreeState(newlyOpened) {
     setBoolAttr(li, "excluded", false);
 
     // Then set any that are necessary.
-    if (descendantIsDirectlyIncluded(query, code)) {
+    if (hasDirectlyIncludedDescendant(query, code)) {
       setBoolAttr(li, "open", true);
     }
-    if (descendantIsDirectlyExcluded(query, code)) {
+    if (hasDirectlyExcludedDescendant(query, code)) {
       setBoolAttr(li, "open", true);
     }
 
@@ -289,9 +289,9 @@ function handleTreeCtrlClick(li) {
     // This item is directly excluded:
     // * Don't exclude it
     removeItem(query.excluded, code);
-  } else if (ancestorIsDirectlyExcluded(query, code)) {
+  } else if (hasDirectlyExcludedAncestor(query, code)) {
     // An ancestor is excluded: do nothing
-  } else if (descendantIsDirectlyIncluded(query, code)) {
+  } else if (hasDirectlyIncludedDescendant(query, code)) {
     // A descendant is included:
     // * Include this one
     // * Remove descendant inclusions
@@ -299,7 +299,7 @@ function handleTreeCtrlClick(li) {
     descendants(code, query.included).forEach((c) => {
       removeItem(query.included, c);
     });
-  } else if (ancestorIsDirectlyIncluded(query, code)) {
+  } else if (hasDirectlyIncludedAncestor(query, code)) {
     // An ancestor is included:
     // * Exclude this one
     // * Remove descendant exclusions

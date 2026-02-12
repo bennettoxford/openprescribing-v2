@@ -1,8 +1,8 @@
 import {
-  ancestorIsDirectlyExcluded,
-  ancestorIsDirectlyIncluded,
-  descendantIsDirectlyExcluded,
-  descendantIsDirectlyIncluded,
+  hasDirectlyExcludedAncestor,
+  hasDirectlyExcludedDescendant,
+  hasDirectlyIncludedAncestor,
+  hasDirectlyIncludedDescendant,
   isDirectlyExcluded,
   isDirectlyIncluded,
   isExcluded,
@@ -74,71 +74,71 @@ describe("isExcluded", () => {
   });
 });
 
-describe("descendantIsDirectlyIncluded", () => {
+describe("hasDirectlyIncludedDescendant", () => {
   it("returns true when code only has directly included descendants", () => {
     const query = { included: [SECTION], excluded: [] };
-    expect(descendantIsDirectlyIncluded(query, CHAPTER)).toBe(true);
+    expect(hasDirectlyIncludedDescendant(query, CHAPTER)).toBe(true);
   });
 
   it("returns true when code has directly included and directly excluded descendants", () => {
     const query = { included: [SECTION], excluded: [CHEMICAL] };
-    expect(descendantIsDirectlyIncluded(query, CHAPTER)).toBe(true);
+    expect(hasDirectlyIncludedDescendant(query, CHAPTER)).toBe(true);
   });
 
   it("returns false when code only has directly excluded descendants", () => {
     const query = { included: [], excluded: [SECTION] };
-    expect(descendantIsDirectlyIncluded(query, CHAPTER)).toBe(false);
+    expect(hasDirectlyIncludedDescendant(query, CHAPTER)).toBe(false);
   });
 });
 
-describe("descendantIsDirectlyExcluded", () => {
+describe("hasDirectlyExcludedDescendant", () => {
   it("returns true when code only has directly excluded descendants", () => {
     const query = { included: [], excluded: [SECTION] };
-    expect(descendantIsDirectlyExcluded(query, CHAPTER)).toBe(true);
+    expect(hasDirectlyExcludedDescendant(query, CHAPTER)).toBe(true);
   });
 
   it("returns true when code has directly included and directly excluded descendants", () => {
     const query = { included: [SECTION], excluded: [CHEMICAL] };
-    expect(descendantIsDirectlyExcluded(query, CHAPTER)).toBe(true);
+    expect(hasDirectlyExcludedDescendant(query, CHAPTER)).toBe(true);
   });
 
   it("returns false when code only has directly included descendants", () => {
     const query = { included: [SECTION], excluded: [] };
-    expect(descendantIsDirectlyExcluded(query, CHAPTER)).toBe(false);
+    expect(hasDirectlyExcludedDescendant(query, CHAPTER)).toBe(false);
   });
 });
 
-describe("ancestorIsDirectlyIncluded", () => {
+describe("hasDirectlyIncludedAncestor", () => {
   it("returns true when code only has directly included ancestors", () => {
     const query = { included: [CHAPTER], excluded: [] };
-    expect(ancestorIsDirectlyIncluded(query, CHEMICAL)).toBe(true);
+    expect(hasDirectlyIncludedAncestor(query, CHEMICAL)).toBe(true);
   });
 
   it("returns true when code has directly included and directly excluded ancestors", () => {
     const query = { included: [CHAPTER], excluded: [SECTION] };
-    expect(ancestorIsDirectlyIncluded(query, CHEMICAL)).toBe(true);
+    expect(hasDirectlyIncludedAncestor(query, CHEMICAL)).toBe(true);
   });
 
   it("returns false when code only has directly excluded ancestors", () => {
     const query = { included: [], excluded: [CHAPTER] };
-    expect(ancestorIsDirectlyIncluded(query, CHEMICAL)).toBe(false);
+    expect(hasDirectlyIncludedAncestor(query, CHEMICAL)).toBe(false);
   });
 });
 
-describe("ancestorIsDirectlyExcluded", () => {
+describe("hasDirectlyExcludedAncestor", () => {
   it("returns true when code only has directly excluded ancestors", () => {
     const query = { included: [], excluded: [CHAPTER] };
-    expect(ancestorIsDirectlyExcluded(query, CHEMICAL)).toBe(true);
+    expect(hasDirectlyExcludedAncestor(query, CHEMICAL)).toBe(true);
   });
 
   it("returns true when code has directly included and directly excluded ancestors", () => {
     const query = { included: [CHAPTER], excluded: [SECTION] };
-    expect(ancestorIsDirectlyExcluded(query, CHEMICAL)).toBe(true);
+    expect(hasDirectlyExcludedAncestor(query, CHEMICAL)).toBe(true);
   });
 
   it("returns false when code only has directly included ancestors", () => {
     const query = { included: [CHAPTER], excluded: [] };
-    expect(ancestorIsDirectlyExcluded(query, CHEMICAL)).toBe(false);
+    expect(hasDirectlyExcludedAncestor(query, CHEMICAL)).toBe(false);
   });
 });
 

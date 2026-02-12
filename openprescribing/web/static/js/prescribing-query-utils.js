@@ -20,22 +20,22 @@ export function isExcluded(query, code) {
   return query.excluded.some((c) => code.startsWith(c));
 }
 
-export function descendantIsDirectlyIncluded(query, code) {
+export function hasDirectlyIncludedDescendant(query, code) {
   // Indicates whether any of code's descendants are directly included by query.
   return query.included.some((c) => isAncestor(code, c));
 }
 
-export function descendantIsDirectlyExcluded(query, code) {
+export function hasDirectlyExcludedDescendant(query, code) {
   // Indicates whether any of code's descendants are directly excluded by query.
   return query.excluded.some((c) => isAncestor(code, c));
 }
 
-export function ancestorIsDirectlyIncluded(query, code) {
+export function hasDirectlyIncludedAncestor(query, code) {
   // Indicates whether any of code's ancestors are directly included by query.
   return query.included.some((c) => isAncestor(c, code));
 }
 
-export function ancestorIsDirectlyExcluded(query, code) {
+export function hasDirectlyExcludedAncestor(query, code) {
   // Indicates whether any of code's ancestors are directly excluded by query.
   return query.excluded.some((c) => isAncestor(c, code));
 }
@@ -54,7 +54,7 @@ export function isPartiallyIncludedChemical(query, code) {
   //     not included.
   return (
     isChemical(code) &&
-    (descendantIsDirectlyIncluded(query, code) ||
-      descendantIsDirectlyExcluded(query, code))
+    (hasDirectlyIncludedDescendant(query, code) ||
+      hasDirectlyExcludedDescendant(query, code))
   );
 }
