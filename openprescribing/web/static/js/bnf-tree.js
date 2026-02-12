@@ -14,6 +14,8 @@
 // does not make sense to combine implementations.  When making changes here, consider
 // also making changes there.
 
+import { isChemical } from "./bnf-utils.js";
+
 const tree = document.getElementById("bnf-tree");
 const searchForm = document.getElementById("bnf-search-form");
 const modal = document.getElementById("bnf-table-modal");
@@ -24,7 +26,7 @@ const modalBody = modal.querySelector(".modal-body");
 tree.addEventListener("click", (e) => {
   const li = e.target.closest("li");
   const code = li.dataset.code;
-  if (code.length === 9) {
+  if (isChemical(code)) {
     modalTitle.innerHTML = `<code>${code}</code> ${li.dataset.name}`;
     modalBody.innerHTML = `
     <div class="text-center py-5">
