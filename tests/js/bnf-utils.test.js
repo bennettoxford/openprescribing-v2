@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
 import { isChemical } from "@js/bnf-utils.js";
+import { describe, expect, it } from "vitest";
 
 describe("isChemical", () => {
   it("returns true for 9-character codes", () => {
