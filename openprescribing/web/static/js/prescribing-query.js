@@ -58,6 +58,10 @@ function getCurrentQuery() {
   return state.query[state.field];
 }
 
+const codeToName = JSON.parse(
+  document.getElementById("code-to-name").textContent,
+);
+
 // The various elements that we'll be interacting with.  {
 
 const selectorButtons = document.querySelectorAll("[data-bnf-selector]");
@@ -324,15 +328,26 @@ function renderSelectedCodes(field) {
     `[data-bnf-codes-list][data-field="${field}"]`,
   );
 
-  if (terms.length === 0) {
-    list.innerHTML = `<li class="list-group-item text-muted">No presentations selected.</li>`;
+  if (query.included.length === 0) {
+    list.innerHTML = `<li class="text-muted">No presentations selected.</li>`;
   } else {
-    list.innerHTML = terms
-      .map(
-        ({ code, included }) =>
-          `<li class="list-group-item"><code>${included ? code : `-${code}`}</code></li>`,
-      )
+    const groups = queryToGroups(query);
+    list.innerHTML = groups.map((g) => renderGroup(g)).join("");
+  }
+}
+
+function renderGroup(group) {
+  // Renders a single group.
+  if (group.excluded.length === 0) {
+    return `<li>${codeToName[group.code]}</li>`;
+  } else {
+    const excludedList = group.excluded
+      .map((c) => `<li>${codeToName[c]}</li>`)
       .join("");
+    return `
+      <li>${codeToName[group.code]}, except:
+        <ul>${excludedList}</ul>
+      </li>`;
   }
 }
 
@@ -346,10 +361,20 @@ function queryToSortedTerms(query) {
   return terms.sort((a, b) => (a.code > b.code ? 1 : -1));
 }
 
-function setBoolAttr(el, attrName, val) {
-  if (val) {
-    el.setAttribute(`data-${attrName}`, "");
-  } else {
-    el.removeAttribute(`data-${attrName}`);
-  }
+function queryToGroups(query) {
+  // Given a query, return an array of groups (objects with properties `code` and
+  // `excluded`.  Each group corresponds to a single code that's been included in
+  // the query.  This works, because each excluded code belongs to exactly one
+  // included code.
+
+  const groups = query.included.map((c) => ({ code: c, excluded: [] }));
+  query.excluded.forEach((c) => {
+    groups.forEach((g) => {
+      if (isAncestor(g.code, c)) {
+        g.excluded.push(c);
+      }
+    });
+  });
+
+  return groups;
 }

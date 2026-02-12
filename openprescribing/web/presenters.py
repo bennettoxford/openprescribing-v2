@@ -13,12 +13,12 @@ def make_bnf_tree(codes):
     See tests.web.test_presenters.test_make_bnf_tree for an example of the output.
     """
 
-    assert all(code.level <= BNFCode.Level.CHEMICAL_SUBSTANCE for code in codes)
-
     root = []
     stack = [(0, root)]  # tuples of (level, list of child nodes)
 
     for code in sorted(codes, key=lambda code: code.code):
+        if code.level > BNFCode.Level.CHEMICAL_SUBSTANCE:
+            continue
         node = {"code": code.code, "name": code.name, "children": []}
         while stack and stack[-1][0] >= code.level:
             stack.pop()
@@ -129,3 +129,22 @@ def make_ntr_dtr_intersection_table(
         for code in all_codes
     ]
     return {"has_denominators": has_denominators, "data": data}
+
+
+def make_code_to_name(codes):
+    """Return mapping from BNF code to BNF name.
+
+    For now, users can only select BNF objects down to the chemical substance level, or
+    all presentations that are clinically equivalent.  As such, we ignore all other
+    codes.
+    """
+
+    code_to_name = {}
+    for c in codes:
+        if c.level <= BNFCode.Level.CHEMICAL_SUBSTANCE:
+            code_to_name[c.code] = c.name
+        if c.level == BNFCode.Level.PRESENTATION and c.is_generic():
+            code_to_name[c.strength_and_formulation_code] = (
+                c.strength_and_formulation_name
+            )
+    return code_to_name
