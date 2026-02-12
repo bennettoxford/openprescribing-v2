@@ -27,7 +27,7 @@
 // excluded code.  This is not required by any of OpenPresecribing's existing measures,
 // and significantly simplifies the implementation relative to OpenCodelists.
 
-import { isChemical } from "./bnf-utils.js";
+import { descendants, isAncestor, isChemical } from "./bnf-utils.js";
 
 const state = {
   query: {
@@ -388,15 +388,6 @@ function queryToSortedTerms(query) {
     ...query.excluded.map((code) => ({ code, included: false })),
   ];
   return terms.sort((a, b) => (a.code > b.code ? 1 : -1));
-}
-
-function isAncestor(code1, code2) {
-  // Indicates whether code1 is an ancestor of code2.
-  return code2.startsWith(code1) && code1 !== code2;
-}
-
-function descendants(code, codes) {
-  return codes.filter((c) => isAncestor(code, c));
 }
 
 function isDirectlyIncluded(query, code) {
