@@ -155,7 +155,7 @@ tableModalBody.addEventListener("htmx:afterSwap", () => {
     if (e.ctrlKey || e.metaKey) {
       const td = e.target.closest("td");
       if (td) {
-        handleTableCtrlClick(td);
+        handleTableCtrlClick(table, td);
       }
     }
   });
@@ -236,6 +236,12 @@ function setTableState(table) {
 
   table.querySelectorAll("tr").forEach((tr) => {
     const code = tr.dataset.code;
+
+    // First, remove all data attributes.
+    setBoolAttr(tr, "included", false);
+    setBoolAttr(tr, "excluded", false);
+
+    // Then set any that are necessary.
     if (isDirectlyIncluded(query, code)) {
       setBoolAttr(tr, "included", true);
     } else if (isDirectlyExcluded(query, code)) {
@@ -316,7 +322,7 @@ function handleTreeCtrlClick(li) {
   setTreeState(false);
 }
 
-function handleTableCtrlClick(td) {
+function handleTableCtrlClick(table, td) {
   // Respond to user clicking a table cell while holding control.
 
   const tr = td.closest("tr");
@@ -327,23 +333,21 @@ function handleTableCtrlClick(td) {
     // This item is directly included:
     // * Don't include it
     removeItem(query.included, code);
-    setBoolAttr(tr, "included", false);
   } else if (isDirectlyExcluded(query, code)) {
     // This item is directly excluded:
     // * Don't exclude it
     removeItem(query.excluded, code);
-    setBoolAttr(tr, "excluded", false);
   } else if (isIncluded(query, state.chemicalCode)) {
     // An ancestor is included:
     // * Exclude this one
     query.excluded.push(code);
-    setBoolAttr(tr, "excluded", true);
   } else {
     // No ancestors or descendants are included:
     // * Include this one
     query.included.push(code);
-    setBoolAttr(tr, "included", true);
   }
+
+  setTableState(table);
 }
 
 function textToQuery(text) {
