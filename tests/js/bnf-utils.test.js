@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { isChemical } from "../../openprescribing/web/static/js/bnf-utils.js";
+import { isChemical } from "@js/bnf-utils.js";
 
 describe("isChemical", () => {
   it("returns true for 9-character codes", () => {
