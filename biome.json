@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["openprescribing/web/static/**/*.{css,js}"]
+    "includes": ["openprescribing/web/static/**/*.{css,js}", "tests/js/*.js"]
   },
   "formatter": {
     "enabled": true,

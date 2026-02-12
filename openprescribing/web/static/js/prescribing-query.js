@@ -28,6 +28,16 @@
 // and significantly simplifies the implementation relative to OpenCodelists.
 
 import { isChemical } from "./bnf-utils.js";
+import {
+  hasDirectlyExcludedDescendant,
+  hasDirectlyIncludedDescendant,
+  isDirectlyExcluded,
+  isDirectlyIncluded,
+  isExcluded,
+  isIncluded,
+  isPartiallyIncludedChemical,
+  toggleCode,
+} from "./prescribing-query-utils.js";
 
 const state = {
   query: {
@@ -144,7 +154,7 @@ tableModalBody.addEventListener("htmx:afterSwap", () => {
     if (e.ctrlKey || e.metaKey) {
       const td = e.target.closest("td");
       if (td) {
-        handleTableCtrlClick(td);
+        handleTableCtrlClick(table, td);
       }
     }
   });
@@ -191,10 +201,10 @@ function setTreeState(newlyOpened) {
     setBoolAttr(li, "excluded", false);
 
     // Then set any that are necessary.
-    if (descendantIsDirectlyIncluded(query, code)) {
+    if (hasDirectlyIncludedDescendant(query, code)) {
       setBoolAttr(li, "open", true);
     }
-    if (descendantIsDirectlyExcluded(query, code)) {
+    if (hasDirectlyExcludedDescendant(query, code)) {
       setBoolAttr(li, "open", true);
     }
 
@@ -225,6 +235,12 @@ function setTableState(table) {
 
   table.querySelectorAll("tr").forEach((tr) => {
     const code = tr.dataset.code;
+
+    // First, remove all data attributes.
+    setBoolAttr(tr, "included", false);
+    setBoolAttr(tr, "excluded", false);
+
+    // Then set any that are necessary.
     if (isDirectlyIncluded(query, code)) {
       setBoolAttr(tr, "included", true);
     } else if (isDirectlyExcluded(query, code)) {
@@ -263,76 +279,16 @@ function handleTreeClick(li) {
 function handleTreeCtrlClick(li) {
   // Respond to user clicking a tree node while holding control.
 
-  const code = li.dataset.code;
-  const query = getCurrentQuery();
-
-  if (isDirectlyIncluded(query, code)) {
-    // This item is directly included:
-    // * Don't include it
-    // * Remove descendant exclusions
-    removeItem(query.included, code);
-    descendants(code, query.excluded).forEach((c) => {
-      removeItem(query.excluded, c);
-    });
-  } else if (isDirectlyExcluded(query, code)) {
-    // This item is directly excluded:
-    // * Don't exclude it
-    removeItem(query.excluded, code);
-  } else if (ancestorIsDirectlyExcluded(query, code)) {
-    // An ancestor is excluded: do nothing
-  } else if (descendantIsDirectlyIncluded(query, code)) {
-    // A descendant is included:
-    // * Include this one
-    // * Remove descendant inclusions
-    query.included.push(code);
-    descendants(code, query.included).forEach((c) => {
-      removeItem(query.included, c);
-    });
-  } else if (ancestorIsDirectlyIncluded(query, code)) {
-    // An ancestor is included:
-    // * Exclude this one
-    // * Remove descendant exclusions
-    query.excluded.push(code);
-    descendants(code, query.excluded).forEach((c) => {
-      removeItem(query.excluded, c);
-    });
-  } else {
-    // No ancestors or descendants are included:
-    // * Include this one
-    query.included.push(code);
-  }
-
+  toggleCode(getCurrentQuery(), li.dataset.code);
   setTreeState(false);
 }
 
-function handleTableCtrlClick(td) {
+function handleTableCtrlClick(table, td) {
   // Respond to user clicking a table cell while holding control.
 
   const tr = td.closest("tr");
-  const code = tr.dataset.code;
-  const query = getCurrentQuery();
-
-  if (isDirectlyIncluded(query, code)) {
-    // This item is directly included:
-    // * Don't include it
-    removeItem(query.included, code);
-    setBoolAttr(tr, "included", false);
-  } else if (isDirectlyExcluded(query, code)) {
-    // This item is directly excluded:
-    // * Don't exclude it
-    removeItem(query.excluded, code);
-    setBoolAttr(tr, "excluded", false);
-  } else if (isIncluded(query, state.chemicalCode)) {
-    // An ancestor is included:
-    // * Exclude this one
-    query.excluded.push(code);
-    setBoolAttr(tr, "excluded", true);
-  } else {
-    // No ancestors or descendants are included:
-    // * Include this one
-    query.included.push(code);
-    setBoolAttr(tr, "included", true);
-  }
+  toggleCode(getCurrentQuery(), tr.dataset.code);
+  setTableState(table);
 }
 
 function textToQuery(text) {
@@ -388,80 +344,6 @@ function queryToSortedTerms(query) {
     ...query.excluded.map((code) => ({ code, included: false })),
   ];
   return terms.sort((a, b) => (a.code > b.code ? 1 : -1));
-}
-
-function isAncestor(code1, code2) {
-  // Indicates whether code1 is an ancestor of code2.
-  return code2.startsWith(code1) && code1 !== code2;
-}
-
-function descendants(code, codes) {
-  return codes.filter((c) => isAncestor(code, c));
-}
-
-function isDirectlyIncluded(query, code) {
-  // Indicates whether code is directly included by query.
-  return query.included.includes(code);
-}
-
-function isDirectlyExcluded(query, code) {
-  // Indicates whether code is directly excluded by query.
-  return query.excluded.includes(code);
-}
-
-function isIncluded(query, code) {
-  // Indicates whether code is directly or indirectly included by query.
-  return query.included.some((c) => code.startsWith(c));
-}
-
-function isExcluded(query, code) {
-  // Indicates whether code is directly or indirectly excluded by query.
-  return query.excluded.some((c) => code.startsWith(c));
-}
-
-function descendantIsDirectlyIncluded(query, code) {
-  // Indicates whether any of code's descendants are directly included by query.
-  return query.included.some((c) => isAncestor(code, c));
-}
-
-function descendantIsDirectlyExcluded(query, code) {
-  // Indicates whether any of code's descendants are directly excluded by query.
-  return query.excluded.some((c) => isAncestor(code, c));
-}
-
-function ancestorIsDirectlyIncluded(query, code) {
-  // Indicates whether any of code's ancestors are directly included by query.
-  return query.included.some((c) => isAncestor(c, code));
-}
-
-function ancestorIsDirectlyExcluded(query, code) {
-  // Indicates whether any of code's ancestors are directly excluded by query.
-  return query.excluded.some((c) => isAncestor(c, code));
-}
-
-function isPartiallyIncludedChemical(query, code) {
-  // Indicates whether code is for a chemical substance, and if so, whether it is
-  // partially included.  That is, whether either:
-  //   * the chemical substance is directly or indirectly included but one of its
-  //     descendants is excluded, or
-  //   * the chemical substance is not included but one of its descendants is.
-  //
-  // We only need to check whether any descendants are directly included or excluded:
-  //   * if a descendant is directly excluded, then it implies the chemical substance is
-  //     included;
-  //   * if a descendant is directly included, then it implies the chemical substance is
-  //     not included.
-  return (
-    isChemical(code) &&
-    (descendantIsDirectlyIncluded(query, code) ||
-      descendantIsDirectlyExcluded(query, code))
-  );
-}
-
-function removeItem(array, item) {
-  // Removes the first occurrence of the item from the array.
-  const ix = array.indexOf(item);
-  array.splice(ix, 1);
 }
 
 function setBoolAttr(el, attrName, val) {
