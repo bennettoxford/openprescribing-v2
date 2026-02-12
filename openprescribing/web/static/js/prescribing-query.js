@@ -27,7 +27,18 @@
 // excluded code.  This is not required by any of OpenPresecribing's existing measures,
 // and significantly simplifies the implementation relative to OpenCodelists.
 
-import { descendants, isAncestor, isChemical } from "./bnf-utils.js";
+import { descendants, isChemical } from "./bnf-utils.js";
+import {
+  ancestorIsDirectlyExcluded,
+  ancestorIsDirectlyIncluded,
+  descendantIsDirectlyExcluded,
+  descendantIsDirectlyIncluded,
+  isDirectlyExcluded,
+  isDirectlyIncluded,
+  isExcluded,
+  isIncluded,
+  isPartiallyIncludedChemical,
+} from "./prescribing-query-utils.js";
 
 const state = {
   query: {
@@ -388,65 +399,6 @@ function queryToSortedTerms(query) {
     ...query.excluded.map((code) => ({ code, included: false })),
   ];
   return terms.sort((a, b) => (a.code > b.code ? 1 : -1));
-}
-
-function isDirectlyIncluded(query, code) {
-  // Indicates whether code is directly included by query.
-  return query.included.includes(code);
-}
-
-function isDirectlyExcluded(query, code) {
-  // Indicates whether code is directly excluded by query.
-  return query.excluded.includes(code);
-}
-
-function isIncluded(query, code) {
-  // Indicates whether code is directly or indirectly included by query.
-  return query.included.some((c) => code.startsWith(c));
-}
-
-function isExcluded(query, code) {
-  // Indicates whether code is directly or indirectly excluded by query.
-  return query.excluded.some((c) => code.startsWith(c));
-}
-
-function descendantIsDirectlyIncluded(query, code) {
-  // Indicates whether any of code's descendants are directly included by query.
-  return query.included.some((c) => isAncestor(code, c));
-}
-
-function descendantIsDirectlyExcluded(query, code) {
-  // Indicates whether any of code's descendants are directly excluded by query.
-  return query.excluded.some((c) => isAncestor(code, c));
-}
-
-function ancestorIsDirectlyIncluded(query, code) {
-  // Indicates whether any of code's ancestors are directly included by query.
-  return query.included.some((c) => isAncestor(c, code));
-}
-
-function ancestorIsDirectlyExcluded(query, code) {
-  // Indicates whether any of code's ancestors are directly excluded by query.
-  return query.excluded.some((c) => isAncestor(c, code));
-}
-
-function isPartiallyIncludedChemical(query, code) {
-  // Indicates whether code is for a chemical substance, and if so, whether it is
-  // partially included.  That is, whether either:
-  //   * the chemical substance is directly or indirectly included but one of its
-  //     descendants is excluded, or
-  //   * the chemical substance is not included but one of its descendants is.
-  //
-  // We only need to check whether any descendants are directly included or excluded:
-  //   * if a descendant is directly excluded, then it implies the chemical substance is
-  //     included;
-  //   * if a descendant is directly included, then it implies the chemical substance is
-  //     not included.
-  return (
-    isChemical(code) &&
-    (descendantIsDirectlyIncluded(query, code) ||
-      descendantIsDirectlyExcluded(query, code))
-  );
 }
 
 function removeItem(array, item) {
