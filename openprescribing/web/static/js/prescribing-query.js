@@ -27,17 +27,16 @@
 // excluded code.  This is not required by any of OpenPresecribing's existing measures,
 // and significantly simplifies the implementation relative to OpenCodelists.
 
-import { descendants, isChemical } from "./bnf-utils.js";
+import { isChemical } from "./bnf-utils.js";
 import {
-  hasDirectlyExcludedAncestor,
   hasDirectlyExcludedDescendant,
-  hasDirectlyIncludedAncestor,
   hasDirectlyIncludedDescendant,
   isDirectlyExcluded,
   isDirectlyIncluded,
   isExcluded,
   isIncluded,
   isPartiallyIncludedChemical,
+  toggleCode,
 } from "./prescribing-query-utils.js";
 
 const state = {
@@ -280,45 +279,7 @@ function handleTreeClick(li) {
 function handleTreeCtrlClick(li) {
   // Respond to user clicking a tree node while holding control.
 
-  const code = li.dataset.code;
-  const query = getCurrentQuery();
-
-  if (isDirectlyIncluded(query, code)) {
-    // This item is directly included:
-    // * Don't include it
-    // * Remove descendant exclusions
-    removeItem(query.included, code);
-    descendants(code, query.excluded).forEach((c) => {
-      removeItem(query.excluded, c);
-    });
-  } else if (isDirectlyExcluded(query, code)) {
-    // This item is directly excluded:
-    // * Don't exclude it
-    removeItem(query.excluded, code);
-  } else if (hasDirectlyExcludedAncestor(query, code)) {
-    // An ancestor is excluded: do nothing
-  } else if (hasDirectlyIncludedDescendant(query, code)) {
-    // A descendant is included:
-    // * Include this one
-    // * Remove descendant inclusions
-    query.included.push(code);
-    descendants(code, query.included).forEach((c) => {
-      removeItem(query.included, c);
-    });
-  } else if (hasDirectlyIncludedAncestor(query, code)) {
-    // An ancestor is included:
-    // * Exclude this one
-    // * Remove descendant exclusions
-    query.excluded.push(code);
-    descendants(code, query.excluded).forEach((c) => {
-      removeItem(query.excluded, c);
-    });
-  } else {
-    // No ancestors or descendants are included:
-    // * Include this one
-    query.included.push(code);
-  }
-
+  toggleCode(getCurrentQuery(), li.dataset.code);
   setTreeState(false);
 }
 
@@ -326,27 +287,7 @@ function handleTableCtrlClick(table, td) {
   // Respond to user clicking a table cell while holding control.
 
   const tr = td.closest("tr");
-  const code = tr.dataset.code;
-  const query = getCurrentQuery();
-
-  if (isDirectlyIncluded(query, code)) {
-    // This item is directly included:
-    // * Don't include it
-    removeItem(query.included, code);
-  } else if (isDirectlyExcluded(query, code)) {
-    // This item is directly excluded:
-    // * Don't exclude it
-    removeItem(query.excluded, code);
-  } else if (hasDirectlyIncludedAncestor(query, code)) {
-    // An ancestor is included:
-    // * Exclude this one
-    query.excluded.push(code);
-  } else {
-    // No ancestors or descendants are included:
-    // * Include this one
-    query.included.push(code);
-  }
-
+  toggleCode(getCurrentQuery(), tr.dataset.code);
   setTableState(table);
 }
 
@@ -403,12 +344,6 @@ function queryToSortedTerms(query) {
     ...query.excluded.map((code) => ({ code, included: false })),
   ];
   return terms.sort((a, b) => (a.code > b.code ? 1 : -1));
-}
-
-function removeItem(array, item) {
-  // Removes the first occurrence of the item from the array.
-  const ix = array.indexOf(item);
-  array.splice(ix, 1);
 }
 
 function setBoolAttr(el, attrName, val) {

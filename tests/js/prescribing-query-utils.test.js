@@ -8,6 +8,7 @@ import {
   isExcluded,
   isIncluded,
   isPartiallyIncludedChemical,
+  toggleCode,
 } from "@js/prescribing-query-utils.js";
 import { describe, expect, it } from "vitest";
 
@@ -15,6 +16,44 @@ const CHAPTER = "01";
 const SECTION = "0101";
 const CHEMICAL = "010101000";
 const PRODUCT = "010101000AA";
+
+describe("toggleCode", () => {
+  it("toggling unselected code adds it to included", () => {
+    const query = { included: [], excluded: [] };
+    toggleCode(query, CHAPTER);
+    expect(query).toEqual({ included: [CHAPTER], excluded: [] });
+  });
+
+  it("toggling included code removes it from included and removes excluded descendants", () => {
+    const query = { included: [CHAPTER], excluded: [SECTION] };
+    toggleCode(query, CHAPTER);
+    expect(query).toEqual({ included: [], excluded: [] });
+  });
+
+  it("toggling descendant of included code adds it to excluded", () => {
+    const query = { included: [CHAPTER], excluded: [] };
+    toggleCode(query, SECTION);
+    expect(query).toEqual({ included: [CHAPTER], excluded: [SECTION] });
+  });
+
+  it("toggling descendant of excluded code does nothing", () => {
+    const query = { included: [CHAPTER], excluded: [SECTION] };
+    toggleCode(query, CHEMICAL);
+    expect(query).toEqual({ included: [CHAPTER], excluded: [SECTION] });
+  });
+
+  it("toggling excluded code removes it from excluded", () => {
+    const query = { included: [CHAPTER], excluded: [SECTION] };
+    toggleCode(query, SECTION);
+    expect(query).toEqual({ included: [CHAPTER], excluded: [] });
+  });
+
+  it("toggling ancestor of included code includes it and removes included descendants", () => {
+    const query = { included: [SECTION], excluded: [CHEMICAL] };
+    toggleCode(query, CHAPTER);
+    expect(query).toEqual({ included: [CHAPTER], excluded: [CHEMICAL] });
+  });
+});
 
 describe("isDirectlyIncluded", () => {
   it("returns true when code is directly included", () => {

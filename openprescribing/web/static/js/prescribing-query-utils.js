@@ -1,4 +1,48 @@
-import { isAncestor, isChemical } from "./bnf-utils.js";
+import { descendants, isAncestor, isChemical } from "./bnf-utils.js";
+
+export function toggleCode(query, code) {
+  // Updates query to include or exclude the given code (or do nothing), depending
+  // on whether the code, its ancestors, or its descendants are included.
+  //
+  // See comment at top of prescribing-query.js for more about inclusions and
+  // exclusions.
+
+  if (isDirectlyIncluded(query, code)) {
+    // This item is directly included:
+    // * Don't include it
+    // * Remove descendant exclusions
+    removeItem(query.included, code);
+    descendants(code, query.excluded).forEach((c) => {
+      removeItem(query.excluded, c);
+    });
+  } else if (isDirectlyExcluded(query, code)) {
+    // This item is directly excluded:
+    // * Don't exclude it
+    removeItem(query.excluded, code);
+  } else if (hasDirectlyExcludedAncestor(query, code)) {
+    // An ancestor is excluded: do nothing
+  } else if (hasDirectlyIncludedDescendant(query, code)) {
+    // A descendant is included:
+    // * Include this one
+    // * Remove descendant inclusions
+    query.included.push(code);
+    descendants(code, query.included).forEach((c) => {
+      removeItem(query.included, c);
+    });
+  } else if (hasDirectlyIncludedAncestor(query, code)) {
+    // An ancestor is included:
+    // * Exclude this one
+    // * Remove descendant exclusions
+    query.excluded.push(code);
+    descendants(code, query.excluded).forEach((c) => {
+      removeItem(query.excluded, c);
+    });
+  } else {
+    // No ancestors or descendants are included:
+    // * Include this one
+    query.included.push(code);
+  }
+}
 
 export function isDirectlyIncluded(query, code) {
   // Indicates whether code is directly included by query.
@@ -57,4 +101,10 @@ export function isPartiallyIncludedChemical(query, code) {
     (hasDirectlyIncludedDescendant(query, code) ||
       hasDirectlyExcludedDescendant(query, code))
   );
+}
+
+function removeItem(array, item) {
+  // Removes the first occurrence of the item from the array.
+  const ix = array.indexOf(item);
+  array.splice(ix, 1);
 }
