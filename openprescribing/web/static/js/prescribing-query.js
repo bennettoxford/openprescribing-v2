@@ -337,7 +337,7 @@ function handleTableCtrlClick(table, td) {
     // This item is directly excluded:
     // * Don't exclude it
     removeItem(query.excluded, code);
-  } else if (isIncluded(query, state.chemicalCode)) {
+  } else if (hasDirectlyIncludedAncestor(query, code)) {
     // An ancestor is included:
     // * Exclude this one
     query.excluded.push(code);
