@@ -326,9 +326,7 @@ function renderSelectedCodes(field) {
   const query = state.query[field];
   const terms = queryToSortedTerms(query);
 
-  const input = document.querySelector(
-    `[data-bnf-codes-input][data-field="${field}"]`,
-  );
+  const input = getCodeInput(field);
   input.value = terms
     .map(({ code, included }) => (included ? code : `-${code}`))
     .join("\n");
