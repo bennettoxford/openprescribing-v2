@@ -108,7 +108,7 @@ setBoolAttr(tree, "selectable", true);
   state.query[field] = textToQuery(input.value);
 
   // Update the list of selected codes.
-  renderSelectedCodes(field);
+  renderSelectedCodes(state.query[field], getCodesList(field));
 });
 
 tree.addEventListener("click", (e) => {
@@ -194,7 +194,7 @@ treeModal.addEventListener("hidden.bs.modal", () => {
 
   // Otherwise, we update the corresponding list of codes and hidden input with a text
   // representation of the current query.
-  renderSelectedCodes(state.field);
+  renderSelectedCodes(getCurrentQuery(), getCodesList(state.field));
   setInputValue(state.field);
   state.field = null;
 });
@@ -326,11 +326,10 @@ function textToQuery(text) {
   return { included, excluded };
 }
 
-function renderSelectedCodes(field) {
+function renderSelectedCodes(query, list) {
   // Update the list of codes.
-  const query = state.query[field];
+
   const terms = queryToSortedTerms(query);
-  const list = getCodesList(field);
 
   if (terms.length === 0) {
     list.innerHTML = `<li class="list-group-item text-muted">No presentations selected.</li>`;
