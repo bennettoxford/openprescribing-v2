@@ -195,7 +195,7 @@ treeModal.addEventListener("hidden.bs.modal", () => {
   // Otherwise, we update the corresponding list of codes and hidden input with a text
   // representation of the current query.
   renderSelectedCodes(getCurrentQuery(), getCodesList(state.field));
-  setInputValue(state.field);
+  setInputValue(getCurrentQuery(), getCodeInput(state.field));
   state.field = null;
 });
 
@@ -343,13 +343,11 @@ function renderSelectedCodes(query, list) {
   }
 }
 
-function setInputValue(field) {
+function setInputValue(query, input) {
   // Update the hidden input.
 
-  const query = state.query[field];
   const terms = queryToSortedTerms(query);
 
-  const input = getCodeInput(field);
   input.value = terms
     .map(({ code, included }) => (included ? code : `-${code}`))
     .join("\n");
