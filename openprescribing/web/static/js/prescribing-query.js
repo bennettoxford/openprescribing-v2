@@ -192,9 +192,10 @@ treeModal.addEventListener("hidden.bs.modal", () => {
     return;
   }
 
-  // Otherwise, we update the corresponding list and hidden input with a text
+  // Otherwise, we update the corresponding list of codes and hidden input with a text
   // representation of the current query.
   renderSelectedCodes(state.field);
+  setInputValue(state.field);
   state.field = null;
 });
 
@@ -326,16 +327,11 @@ function textToQuery(text) {
 }
 
 function renderSelectedCodes(field) {
-  // Update the list of codes and the hidden input.
+  // Update the list of codes.
   const query = state.query[field];
   const terms = queryToSortedTerms(query);
-
-  const input = getCodeInput(field);
-  input.value = terms
-    .map(({ code, included }) => (included ? code : `-${code}`))
-    .join("\n");
-
   const list = getCodesList(field);
+
   if (terms.length === 0) {
     list.innerHTML = `<li class="list-group-item text-muted">No presentations selected.</li>`;
   } else {
@@ -346,6 +342,18 @@ function renderSelectedCodes(field) {
       )
       .join("");
   }
+}
+
+function setInputValue(field) {
+  // Update the hidden input.
+
+  const query = state.query[field];
+  const terms = queryToSortedTerms(query);
+
+  const input = getCodeInput(field);
+  input.value = terms
+    .map(({ code, included }) => (included ? code : `-${code}`))
+    .join("\n");
 }
 
 function setBoolAttr(el, attrName, val) {
