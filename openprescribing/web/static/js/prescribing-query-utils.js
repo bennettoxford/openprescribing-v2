@@ -1,3 +1,8 @@
+// This module contains pure functions that have no dependency on the DOM.  They are in
+// a separate module because our current JS setup makes it hard to import
+// prescribing-query.js into tests.  This is a bit of a smell, and we should aim to
+// fold all of these functions back into prescribing-query.js in future.
+
 import { descendants, isAncestor, isChemical } from "./bnf-utils.js";
 
 export function toggleCode(query, code) {
