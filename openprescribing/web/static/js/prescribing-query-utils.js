@@ -42,6 +42,23 @@ export function queryToSortedTerms(query) {
   return terms.sort((a, b) => (a.code > b.code ? 1 : -1));
 }
 
+export function textToQuery(text) {
+  // Given text from a hidden input, return a query object.
+  const included = [];
+  const excluded = [];
+  const terms = text.split(/\s+/);
+
+  terms.forEach((term) => {
+    if (term.startsWith("-")) {
+      excluded.push(term.slice(1));
+    } else if (term !== "") {
+      included.push(term);
+    }
+  });
+
+  return { included, excluded };
+}
+
 export function toggleCode(query, code) {
   // Updates query to include or exclude the given code (or do nothing), depending
   // on whether the code, its ancestors, or its descendants are included.
