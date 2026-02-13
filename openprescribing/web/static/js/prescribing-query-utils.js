@@ -5,6 +5,16 @@
 
 import { descendants, isAncestor, isChemical } from "./bnf-utils.js";
 
+export function queryToSortedTerms(query) {
+  // Given a query, return an array of terms (objects with properties `code` and
+  // `included`), sorted by code.
+  const terms = [
+    ...query.included.map((code) => ({ code, included: true })),
+    ...query.excluded.map((code) => ({ code, included: false })),
+  ];
+  return terms.sort((a, b) => (a.code > b.code ? 1 : -1));
+}
+
 export function toggleCode(query, code) {
   // Updates query to include or exclude the given code (or do nothing), depending
   // on whether the code, its ancestors, or its descendants are included.
