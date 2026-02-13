@@ -61,6 +61,10 @@ function getCurrentQuery() {
 
 // The various elements that we'll be interacting with.  {
 
+const formControls = {
+  ntr: document.querySelector('[data-controls="ntr"]'),
+  dtr: document.querySelector('[data-controls="dtr"]'),
+};
 const selectorButtons = document.querySelectorAll("[data-bnf-selector]");
 const codeInputs = document.querySelectorAll("[data-bnf-codes-input]");
 const treeModal = document.getElementById("bnf-tree-modal");
