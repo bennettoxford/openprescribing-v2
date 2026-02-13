@@ -7,4 +7,7 @@ module.exports = defineConfig({
       "@js": path.resolve(__dirname, "openprescribing/web/static/js"),
     },
   },
+  test: {
+    environment: "jsdom",
+  },
 });

@@ -36,6 +36,9 @@ import {
   isExcluded,
   isIncluded,
   isPartiallyIncludedChemical,
+  renderSelectedCodes,
+  setInputValue,
+  textToQuery,
   toggleCode,
 } from "./prescribing-query-utils.js";
 
@@ -60,8 +63,10 @@ function getCurrentQuery() {
 
 // The various elements that we'll be interacting with.  {
 
-const selectorButtons = document.querySelectorAll("[data-bnf-selector]");
-const codeInputs = document.querySelectorAll("[data-bnf-codes-input]");
+const formControls = {
+  ntr: document.querySelector('[data-controls="ntr"]'),
+  dtr: document.querySelector('[data-controls="dtr"]'),
+};
 const treeModal = document.getElementById("bnf-tree-modal");
 const treeModalObj = new bootstrap.Modal(treeModal);
 const tree = document.getElementById("bnf-tree");
@@ -71,27 +76,41 @@ const tableModalObj = new bootstrap.Modal(tableModal);
 const tableModalTitle = tableModal.querySelector(".modal-title");
 const tableModalBody = tableModal.querySelector(".modal-body");
 
+function getCodeInput(field) {
+  return formControls[field].querySelector("[data-bnf-codes-input]");
+}
+
+function getCodesList(field) {
+  return formControls[field].querySelector("[data-bnf-codes-list]");
+}
+
+function getSelectorButton(field) {
+  return formControls[field].querySelector("[data-bnf-selector]");
+}
+
 // }
 
 // Activate the CSS selectors that indicate whether a node is included or not.
 setBoolAttr(tree, "selectable", true);
 
-codeInputs.forEach((input) => {
-  // Populate the state from the hidden input.
-  state.query[input.dataset.field] = textToQuery(input.value);
-  // Update the list of selected codes.
-  renderSelectedCodes(input.dataset.field);
-});
-
-selectorButtons.forEach((button) => {
+["ntr", "dtr"].forEach((field) => {
+  // Set up buttons.
+  const button = getSelectorButton(field);
   button.addEventListener("click", (e) => {
     // The user has clicked on the button.
     e.preventDefault();
-    state.field = e.target.dataset.field;
-    const title = `Select codes for ${state.field === "ntr" ? "numerator" : "denominator"}`;
+    state.field = field;
+    const title = `Select codes for ${field === "ntr" ? "numerator" : "denominator"}`;
     treeModal.querySelector(".modal-title").innerHTML = title;
     treeModalObj.show();
   });
+
+  // Populate the state from the hidden input.
+  const input = getCodeInput(field);
+  state.query[field] = textToQuery(input.value);
+
+  // Update the list of selected codes.
+  renderSelectedCodes(state.query[field], getCodesList(field));
 });
 
 tree.addEventListener("click", (e) => {
@@ -175,9 +194,10 @@ treeModal.addEventListener("hidden.bs.modal", () => {
     return;
   }
 
-  // Otherwise, we update the corresponding list and hidden input with a text
+  // Otherwise, we update the corresponding list of codes and hidden input with a text
   // representation of the current query.
-  renderSelectedCodes(state.field);
+  renderSelectedCodes(getCurrentQuery(), getCodesList(state.field));
+  setInputValue(getCurrentQuery(), getCodeInput(state.field));
   state.field = null;
 });
 
@@ -289,61 +309,6 @@ function handleTableCtrlClick(table, td) {
   const tr = td.closest("tr");
   toggleCode(getCurrentQuery(), tr.dataset.code);
   setTableState(table);
-}
-
-function textToQuery(text) {
-  // Given text from a hidden input, return a query object.
-  const included = [];
-  const excluded = [];
-  const terms = text.split(/\s+/);
-
-  terms.forEach((term) => {
-    if (term.startsWith("-")) {
-      excluded.push(term.slice(1));
-    } else if (term !== "") {
-      included.push(term);
-    }
-  });
-
-  return { included, excluded };
-}
-
-function renderSelectedCodes(field) {
-  // Update the list of codes and the hidden input.
-  const query = state.query[field];
-  const terms = queryToSortedTerms(query);
-
-  const input = document.querySelector(
-    `[data-bnf-codes-input][data-field="${field}"]`,
-  );
-  input.value = terms
-    .map(({ code, included }) => (included ? code : `-${code}`))
-    .join("\n");
-
-  const list = document.querySelector(
-    `[data-bnf-codes-list][data-field="${field}"]`,
-  );
-
-  if (terms.length === 0) {
-    list.innerHTML = `<li class="list-group-item text-muted">No presentations selected.</li>`;
-  } else {
-    list.innerHTML = terms
-      .map(
-        ({ code, included }) =>
-          `<li class="list-group-item"><code>${included ? code : `-${code}`}</code></li>`,
-      )
-      .join("");
-  }
-}
-
-function queryToSortedTerms(query) {
-  // Given a query, return an array of terms (objects with properties `code` and
-  // `included`), sorted by code.
-  const terms = [
-    ...query.included.map((code) => ({ code, included: true })),
-    ...query.excluded.map((code) => ({ code, included: false })),
-  ];
-  return terms.sort((a, b) => (a.code > b.code ? 1 : -1));
 }
 
 function setBoolAttr(el, attrName, val) {
