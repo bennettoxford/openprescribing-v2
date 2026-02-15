@@ -1,3 +1,5 @@
+import csv
+
 import duckdb
 
 from openprescribing.data.ingestors import prescribing
@@ -41,6 +43,107 @@ def test_prescribing_ingest(tmp_path, settings):
     last_modified = settings.PRESCRIBING_DATABASE.stat().st_mtime
     prescribing.ingest()
     assert settings.PRESCRIBING_DATABASE.stat().st_mtime == last_modified
+
+
+def test_prescribing_ingest_applies_bnf_code_changes(tmp_path, settings):
+    settings.DOWNLOAD_DIR = tmp_path / "downloads"
+    settings.PRESCRIBING_DATABASE = tmp_path / "data" / "prescribing.duckdb"
+    settings.BNF_CODE_CHANGES_DIR = tmp_path
+
+    test_data = {
+        ("prescribing", "2023-01-01", "v3"): [
+            {
+                "BNF_CODE": "OLD12345",
+                "SNOMED_CODE": "12345678",
+                "PRACTICE_CODE": "ABC123",
+                "QUANTITY": "10.0",
+                "ITEMS": "100",
+                "TOTAL_QUANTITY": "150.0",
+                "NIC": "12.34",
+                "ACTUAL_COST": "15.34",
+            },
+        ],
+        ("prescribing", "2024-01-01", "v3"): [
+            {
+                "BNF_CODE": "NEW12345",
+                "SNOMED_CODE": "12345678",
+                "PRACTICE_CODE": "ABC123",
+                "QUANTITY": "12.0",
+                "ITEMS": "110",
+                "TOTAL_QUANTITY": "160.0",
+                "NIC": "14.34",
+                "ACTUAL_COST": "17.34",
+            },
+        ],
+        ("prescribing", "2025-01-01", "v3"): [
+            {
+                "BNF_CODE": "01234ABC",
+                "SNOMED_CODE": "87654321",
+                "PRACTICE_CODE": "ABC123",
+                "QUANTITY": "12.0",
+                "ITEMS": "110",
+                "TOTAL_QUANTITY": "160.0",
+                "NIC": "14.34",
+                "ACTUAL_COST": "17.34",
+            },
+        ],
+        ("list_size", "2023-01-01", "v2"): [
+            {
+                "ORG_CODE": "ABC123",
+                "NUMBER_OF_PATIENTS": "12345",
+                "ORG_TYPE": "GP",
+                "SEX": "ALL",
+                "AGE_GROUP_5": "ALL",
+            },
+        ],
+    }
+    write_as_parquet_files(test_data, settings.DOWNLOAD_DIR)
+
+    with (settings.BNF_CODE_CHANGES_DIR / "bnf_code_mapping.csv").open("w") as f:
+        writer = csv.writer(f)
+        writer.writerows(
+            [
+                ["old_code", "new_code"],
+                ["OLD12345", "NEW12345"],
+            ]
+        )
+
+    prescribing.ingest()
+
+    tables = get_all_tables(settings.PRESCRIBING_DATABASE)
+
+    presentation_rows = sorted(
+        tables["presentation"], key=lambda row: row["original_bnf_code"]
+    )
+    assert presentation_rows == [
+        {
+            "id": 1,
+            "bnf_code": "01234ABC",
+            "original_bnf_code": "01234ABC",
+            "snomed_code": 87654321,
+        },
+        {
+            "id": 2,
+            "bnf_code": "NEW12345",
+            "original_bnf_code": "NEW12345",
+            "snomed_code": 12345678,
+        },
+        {
+            "id": 3,
+            "bnf_code": "NEW12345",
+            "original_bnf_code": "OLD12345",
+            "snomed_code": 12345678,
+        },
+    ]
+
+    prescribing_rows = sorted(tables["prescribing"], key=lambda row: row["date"])
+    assert len(prescribing_rows) == 3
+    assert [r["date"].year for r in prescribing_rows] == [2023, 2024, 2025]
+    assert [r["bnf_code"] for r in prescribing_rows] == [
+        "NEW12345",
+        "NEW12345",
+        "01234ABC",
+    ]
 
 
 def generate_prescribing_data():
