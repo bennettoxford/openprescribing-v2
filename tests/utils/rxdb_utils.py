@@ -44,6 +44,13 @@ LIST_SIZE_SOURCE_SCHEMA = pyarrow.schema(
     ]
 )
 
+BNF_CODE_CHANGES_SOURCE_SCHEMA = pyarrow.schema(
+    [
+        ("old_code", pyarrow.string()),
+        ("new_code", pyarrow.string()),
+    ]
+)
+
 LIST_SIZE_SOURCE_DEFAULTS = {
     "date": datetime.date(2000, 1, 1),
     "practice_code": "",
@@ -115,6 +122,9 @@ def rxdb_ingest(conn, prescribing_data=(), list_size_data=()):
     Given a DuckDB connection and some prescribing and list size data as lists of
     dictionaries, ingest that data into the database using the same function used in
     production.
+
+    If tests need to supply their own BNF code changes, we should add a bnf_code_changes
+    parameter to this function.
     """
     prescribing_data = prepare_data(prescribing_data, PRESCRIBING_SOURCE_DEFAULTS)
     list_size_data = prepare_data(list_size_data, LIST_SIZE_SOURCE_DEFAULTS)
@@ -124,12 +134,17 @@ def rxdb_ingest(conn, prescribing_data=(), list_size_data=()):
     list_size_source = pyarrow.Table.from_pylist(
         list_size_data, schema=LIST_SIZE_SOURCE_SCHEMA
     )
+    bnf_code_changes_source = pyarrow.Table.from_pylist(
+        [], schema=BNF_CODE_CHANGES_SOURCE_SCHEMA
+    )
     # Register the PyArrow Tables so they can be queried like any other table in DuckDB
     conn.register("prescribing_source", prescribing_source)
     conn.register("list_size_source", list_size_source)
+    conn.register("bnf_code_changes_source", bnf_code_changes_source)
     ingest_sources(conn)
     conn.unregister("prescribing_source")
     conn.unregister("list_size_source")
+    conn.unregister("bnf_code_changes_source")
 
 
 def prepare_data(data, defaults):
