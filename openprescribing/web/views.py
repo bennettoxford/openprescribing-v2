@@ -88,7 +88,7 @@ def query(request):
         "org": org,
         "orgs": orgs,
         "org_types": Org.OrgType.choices,
-        "prescribing_api_url": api_url,
+        "prescribing_deciles_url": api_url,
         "tree": tree,
         "deciles_chart": deciles_chart.to_dict(),
     }

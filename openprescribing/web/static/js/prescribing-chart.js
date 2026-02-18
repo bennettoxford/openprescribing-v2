@@ -102,14 +102,14 @@ const createTypeahead = ({
   });
 };
 
-const updateChart = (prescribingApiUrl) => {
+const updateChart = (prescribingDecilesUrl) => {
   const chartContainer = document.querySelector("#prescribing-chart");
   const chartSpec = JSON.parse(
     document.getElementById("deciles_chart").textContent,
   );
   const decilesChartResult = vegaEmbed(chartContainer, chartSpec);
 
-  fetch(prescribingApiUrl)
+  fetch(prescribingDecilesUrl)
     .then((response) => {
       if (!response.ok) {
         throw new Error(`Failed to fetch chart data: ${response.status}`);
@@ -145,10 +145,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("orgs")) {
     setupOrgSearch();
   }
-  const prescribingApiUrl = JSON.parse(
-    document.getElementById("prescribing-api-url").textContent,
+  const prescribingDecilesUrl = JSON.parse(
+    document.getElementById("prescribing-deciles-url").textContent,
   );
-  if (prescribingApiUrl) {
-    updateChart(prescribingApiUrl);
+  if (prescribingDecilesUrl) {
+    updateChart(prescribingDecilesUrl);
   }
 });
