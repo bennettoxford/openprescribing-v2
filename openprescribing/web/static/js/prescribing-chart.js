@@ -103,7 +103,7 @@ const createTypeahead = ({
 };
 
 const updateDecilesChart = (prescribingDecilesUrl) => {
-  const chartContainer = document.querySelector("#prescribing-chart");
+  const chartContainer = document.querySelector("#deciles-chart-container");
   const chartSpec = JSON.parse(
     document.getElementById("deciles-chart").textContent,
   );
