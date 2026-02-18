@@ -1,16 +1,13 @@
-import json
-
 import pytest
+
+from openprescribing.web import api
 
 
 @pytest.mark.django_db(databases=["data"])
 def test_prescribing_deciles(client, sample_data):
     rsp = client.get("/api/prescribing-deciles/?ntr_codes=1001030U0")
     assert rsp.status_code == 200
-    assert (
-        next(iter(json.loads(rsp.text)["datasets"].values()))[-1]["value"]
-        == 64.15611215168303
-    )
+    assert rsp.json()["deciles"][-1]["value"] == pytest.approx(64.15, 0.001)
 
 
 @pytest.mark.django_db(databases=["data"])
@@ -23,9 +20,7 @@ def test_prescribing_deciles_with_practice(client, sample_data):
 def test_prescribing_deciles_with_exclusion(client, sample_data):
     rsp = client.get("/api/prescribing-deciles/?ntr_codes=1001030U0,-1001030U0AAABAB")
     assert rsp.status_code == 200
-    assert next(iter(json.loads(rsp.text)["datasets"].values()))[-1][
-        "value"
-    ] == pytest.approx(59.07, 0.001)
+    assert rsp.json()["deciles"][-1]["value"] == pytest.approx(59.07, 0.001)
 
 
 @pytest.mark.django_db(databases=["data"])
@@ -34,3 +29,9 @@ def test_prescribing_deciles_with_denominator(client, sample_data):
         "/api/prescribing-deciles/?ntr_codes=1001030U0AA&dtr_codes=1001030U0"
     )
     assert rsp.status_code == 200
+
+
+def test_nans_to_nones():
+    records = [{"k1": 1.0, "k2": "aaa"}, {"k1": float("NaN"), "k2": "bbb"}]
+    api.nans_to_nones(records)
+    assert records == [{"k1": 1.0, "k2": "aaa"}, {"k1": None, "k2": "bbb"}]

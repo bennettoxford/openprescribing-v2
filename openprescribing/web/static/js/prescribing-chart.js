@@ -104,6 +104,10 @@ const createTypeahead = ({
 
 const updateChart = (prescribingApiUrl) => {
   const chartContainer = document.querySelector("#prescribing-chart");
+  const chartSpec = JSON.parse(
+    document.getElementById("deciles_chart").textContent,
+  );
+  const decilesChartResult = vegaEmbed(chartContainer, chartSpec);
 
   fetch(prescribingApiUrl)
     .then((response) => {
@@ -112,9 +116,19 @@ const updateChart = (prescribingApiUrl) => {
       }
       return response.json();
     })
-    .then((chartSpec) => {
-      chartContainer.textContent = "";
-      return vegaEmbed("#prescribing-chart", chartSpec);
+    .then((response) => {
+      response.deciles.forEach((record) => {
+        record.month = new Date(record.month);
+      });
+      response.org.forEach((record) => {
+        record.month = new Date(record.month);
+      });
+      decilesChartResult.then((result) => {
+        result.view
+          .insert("deciles", response.deciles)
+          .insert("org", response.org)
+          .run();
+      });
     })
     .catch((error) => {
       console.error("Unable to render prescribing chart", error);
