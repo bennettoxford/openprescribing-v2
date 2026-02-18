@@ -1,4 +1,5 @@
-import altair as alt
+import math
+
 from django.http import JsonResponse
 
 from openprescribing.data import rxdb
@@ -29,11 +30,9 @@ def prescribing_deciles(request):
         WHERE bnf_code IN ({", ".join(f"'{c}'" for c in dtr_codes)})
         """
         multiplier = 100
-        title = "%"
     else:
         dtr_sql = "SELECT practice_id, date_id, total AS value FROM list_size"
         multiplier = 1000
-        title = "Items per 1000 patients"
 
     with rxdb.get_cursor() as cursor:
         # We currently have about 8 years (96 months) of list size data.
@@ -56,26 +55,26 @@ def prescribing_deciles(request):
 
     odm = ntr_odm / dtr_odm * multiplier
 
-    deciles_df = build_deciles_df(odm)
-    x = alt.X("month:T", title="Month", axis=alt.Axis(format="%Y %b"))
-    y = alt.Y("value:Q", title=title)
-    stroke_dash = (
-        alt.when(alt.datum.line == "p50")
-        .then(alt.value((6, 2)))
-        .otherwise(alt.value((2, 6)))
-    )
-    deciles_chart = (
-        alt.Chart(deciles_df)
-        .mark_line(color="blue")
-        .encode(x=x, y=y, detail="line", strokeDash=stroke_dash)
-        .properties(width=660, height=360)
-    )
-
+    deciles_records = build_deciles_df(odm).to_dict("records")
     if org is not None:
-        org_df = build_org_df(odm, org)
-        org_chart = alt.Chart(org_df).mark_line(color="red").encode(x=x, y=y)
-        chart = deciles_chart + org_chart
+        org_records = build_org_df(odm, org).to_dict("records")
+        # The organisation-date matrix (odm) can contain NaNs. NaNs are ignored when
+        # deciles are computed, and so are not present in deciles_records. However,
+        # NaNs are present in org_records. Python's json.JSONEncoder will serialise
+        # NaNs, but JavaScript's JSON.parse won't deserialise them. Consequently, we
+        # have to convert NaNs to Nones ourselves.
+        nans_to_nones(org_records)
     else:
-        chart = deciles_chart
+        org_records = []
 
-    return JsonResponse(chart.to_dict())
+    return JsonResponse(
+        {"deciles": deciles_records, "org": org_records},
+        json_dumps_params={"allow_nan": False},
+    )
+
+
+def nans_to_nones(records):
+    for record in records:
+        for key, value in record.items():
+            if isinstance(value, float) and math.isnan(value):
+                record[key] = None

@@ -102,22 +102,36 @@ const createTypeahead = ({
   });
 };
 
-const updateChart = (prescribingApiUrl) => {
-  const chartContainer = document.querySelector("#prescribing-chart");
+const updateDecilesChart = (prescribingDecilesUrl) => {
+  const chartContainer = document.querySelector("#deciles-chart-container");
+  const chartSpec = JSON.parse(
+    document.getElementById("deciles-chart").textContent,
+  );
+  const chartResult = vegaEmbed(chartContainer, chartSpec);
 
-  fetch(prescribingApiUrl)
+  fetch(prescribingDecilesUrl)
     .then((response) => {
       if (!response.ok) {
         throw new Error(`Failed to fetch chart data: ${response.status}`);
       }
       return response.json();
     })
-    .then((chartSpec) => {
-      chartContainer.textContent = "";
-      return vegaEmbed("#prescribing-chart", chartSpec);
+    .then((response) => {
+      response.deciles.forEach((record) => {
+        record.month = new Date(record.month);
+      });
+      response.org.forEach((record) => {
+        record.month = new Date(record.month);
+      });
+      chartResult.then((result) => {
+        result.view
+          .insert("deciles", response.deciles)
+          .insert("org", response.org)
+          .run();
+      });
     })
     .catch((error) => {
-      console.error("Unable to render prescribing chart", error);
+      console.error("Unable to render deciles chart", error);
       chartContainer.textContent =
         "Unable to load chart data. Please try again later.";
     });
@@ -131,10 +145,10 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("orgs")) {
     setupOrgSearch();
   }
-  const prescribingApiUrl = JSON.parse(
-    document.getElementById("prescribing-api-url").textContent,
+  const prescribingDecilesUrl = JSON.parse(
+    document.getElementById("prescribing-deciles-url").textContent,
   );
-  if (prescribingApiUrl) {
-    updateChart(prescribingApiUrl);
+  if (prescribingDecilesUrl) {
+    updateDecilesChart(prescribingDecilesUrl);
   }
 });

@@ -1,3 +1,4 @@
+import altair as alt
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
@@ -60,6 +61,22 @@ def query(request):
 
     orgs = make_orgs()
 
+    x = alt.X("month:T", title="Month", axis=alt.Axis(format="%Y %b"))
+    y = alt.Y("value:Q", title="%" if dtr_codes_raw else "Items per 1000 patients")
+    stroke_dash = (
+        alt.when(alt.datum.line == "p50")
+        .then(alt.value((6, 2)))
+        .otherwise(alt.value((2, 6)))
+    )
+    deciles_chart = (
+        alt.Chart(alt.NamedData("deciles"))
+        .mark_line(color="blue")
+        .encode(x=x, y=y, detail="line:O", strokeDash=stroke_dash)
+        .properties(width=660, height=360)
+    )
+    org_chart = alt.Chart(alt.NamedData("org")).mark_line(color="red").encode(x=x, y=y)
+    deciles_chart += org_chart
+
     ctx = {
         "ntr_codes": ntr_codes_raw,
         "ntr_product_type": ntr_product_type,
@@ -71,8 +88,9 @@ def query(request):
         "org": org,
         "orgs": orgs,
         "org_types": Org.OrgType.choices,
-        "prescribing_api_url": api_url,
+        "prescribing_deciles_url": api_url,
         "tree": tree,
+        "deciles_chart": deciles_chart.to_dict(),
     }
 
     return render(request, "query.html", ctx)
