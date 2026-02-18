@@ -102,7 +102,7 @@ const createTypeahead = ({
   });
 };
 
-const updateChart = (prescribingDecilesUrl) => {
+const updateDecilesChart = (prescribingDecilesUrl) => {
   const chartContainer = document.querySelector("#prescribing-chart");
   const chartSpec = JSON.parse(
     document.getElementById("deciles_chart").textContent,
@@ -149,6 +149,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("prescribing-deciles-url").textContent,
   );
   if (prescribingDecilesUrl) {
-    updateChart(prescribingDecilesUrl);
+    updateDecilesChart(prescribingDecilesUrl);
   }
 });
