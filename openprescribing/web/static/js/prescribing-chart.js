@@ -131,7 +131,7 @@ const updateDecilesChart = (prescribingDecilesUrl) => {
       });
     })
     .catch((error) => {
-      console.error("Unable to render prescribing chart", error);
+      console.error("Unable to render deciles chart", error);
       chartContainer.textContent =
         "Unable to load chart data. Please try again later.";
     });
