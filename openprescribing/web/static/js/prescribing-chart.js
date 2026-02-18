@@ -107,7 +107,7 @@ const updateDecilesChart = (prescribingDecilesUrl) => {
   const chartSpec = JSON.parse(
     document.getElementById("deciles-chart").textContent,
   );
-  const decilesChartResult = vegaEmbed(chartContainer, chartSpec);
+  const chartResult = vegaEmbed(chartContainer, chartSpec);
 
   fetch(prescribingDecilesUrl)
     .then((response) => {
@@ -123,7 +123,7 @@ const updateDecilesChart = (prescribingDecilesUrl) => {
       response.org.forEach((record) => {
         record.month = new Date(record.month);
       });
-      decilesChartResult.then((result) => {
+      chartResult.then((result) => {
         result.view
           .insert("deciles", response.deciles)
           .insert("org", response.org)
