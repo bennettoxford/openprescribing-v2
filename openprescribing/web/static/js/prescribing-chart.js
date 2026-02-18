@@ -105,7 +105,7 @@ const createTypeahead = ({
 const updateDecilesChart = (prescribingDecilesUrl) => {
   const chartContainer = document.querySelector("#prescribing-chart");
   const chartSpec = JSON.parse(
-    document.getElementById("deciles_chart").textContent,
+    document.getElementById("deciles-chart").textContent,
   );
   const decilesChartResult = vegaEmbed(chartContainer, chartSpec);
 
