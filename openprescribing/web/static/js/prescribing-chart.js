@@ -107,7 +107,9 @@ const updateDecilesChart = (prescribingDecilesUrl) => {
   const chartSpec = JSON.parse(
     document.getElementById("deciles-chart").textContent,
   );
-  const chartResult = vegaEmbed(chartContainer, chartSpec);
+
+  const opt = { renderer: "svg" };
+  const chartResult = vegaEmbed(chartContainer, chartSpec, opt);
 
   fetch(prescribingDecilesUrl)
     .then((response) => {
