@@ -12,10 +12,14 @@ def build_deciles_df(odm):
     centiles = [10, 20, 30, 40, 50, 60, 70, 80, 90]
     # rows are centiles, columns are dates
     cdm = np.nanpercentile(odm.values, centiles, axis=0)
-    deciles_df = pd.DataFrame(cdm, columns=odm.col_labels)
-    deciles_df = _restructure_df(deciles_df)
-    deciles_df["line"] = deciles_df["line"].apply(lambda n: f"p{centiles[n]:02}")
-    return deciles_df
+
+    records = []
+    # transpose the matrix to preserve previous order (by month by centile)
+    for month, row in zip(odm.col_labels, cdm.transpose()):
+        for centile, value in zip(centiles, row):
+            records.append({"month": month, "line": f"p{centile:02}", "value": value})
+
+    return pd.DataFrame(records)
 
 
 def build_all_orgs_df(odm):
