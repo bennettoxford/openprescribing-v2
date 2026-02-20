@@ -46,6 +46,15 @@
                 {% if ntr_codes %}
                 <h1 class="h4">Prescribing data</h1>
                 <div id="deciles-chart-container" class="py-3">Loading chart...</div>
+                <div>
+                    <fieldset>
+                        <h2 class="h5">Show prescribing</h2>
+                        <input type="radio" id="decile" name="chart_type" value="decile" selected>
+                        <label for="decile">Deciles</label><br>
+                        <input type="radio" id="all_orgs" name="chart_type" value="all_orgs">
+                        <label for="all_orgs">All organisations</label><br>
+                    </fieldset>
+                </div>
                 <div class="row">
                     <div class="col-6">
                         <h2 class="h5">Numerator</h2>
