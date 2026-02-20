@@ -5,10 +5,14 @@ from django.http import JsonResponse
 from openprescribing.data import rxdb
 from openprescribing.data.models import Org
 from openprescribing.data.rxdb.search import ProductType, search
-from openprescribing.data.utils.deciles_utils import build_deciles_df, build_org_df
+from openprescribing.data.utils.deciles_utils import (
+    build_all_orgs_df,
+    build_deciles_df,
+    build_org_df,
+)
 
 
-def prescribing_deciles(request):
+def _build_odm(request):
     ntr_query = request.GET.get("ntr_codes").split(",")
     ntr_product_type = ProductType(request.GET.get("ntr_product_type", "all"))
     ntr_codes = search(ntr_query, ntr_product_type)
@@ -54,6 +58,24 @@ def prescribing_deciles(request):
     dtr_odm = dtr_pdm.group_rows(org_to_practice_ids)
 
     odm = ntr_odm / dtr_odm * multiplier
+
+    return odm, org
+
+
+def prescribing_all_orgs(request):
+    odm, _ = _build_odm(request)
+
+    all_orgs_records = build_all_orgs_df(odm).to_dict("records")
+    nans_to_nones(all_orgs_records)
+
+    return JsonResponse(
+        {"all_orgs": all_orgs_records},
+        json_dumps_params={"allow_nan": False},
+    )
+
+
+def prescribing_deciles(request):
+    odm, org = _build_odm(request)
 
     deciles_records = build_deciles_df(odm).to_dict("records")
     if org is not None:
