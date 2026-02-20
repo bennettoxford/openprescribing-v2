@@ -1,6 +1,5 @@
 import pytest
 
-from openprescribing.data import rxdb
 from openprescribing.web import api
 
 
@@ -43,8 +42,7 @@ def test_prescribing_deciles_with_denominator(client, sample_data):
 
 
 @pytest.mark.django_db(databases=["data"])
-def test_reshape_cdm(pdm):
-    cdm = rxdb.get_centiles(pdm)
+def test_reshape_cdm(cdm):
     obs_records = list(api.reshape_cdm(cdm))
     rows = [
         ["2025-01-01", "p10", 2.0],

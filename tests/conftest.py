@@ -137,3 +137,8 @@ def pdm():
     ]
     months = ["2025-01-01", "2025-02-01"]
     return LabelledMatrix(values, practices, months)
+
+
+@pytest.fixture
+def cdm(pdm):
+    return openprescribing.data.rxdb.get_centiles(pdm)
