@@ -13,19 +13,6 @@ from openprescribing.data.utils.deciles_utils import (
 
 
 @pytest.fixture
-def pdm():
-    values = np.array([[i, i + 1] for i in range(21)])
-    practices = [
-        Org.objects.create(
-            id=f"PRAC{i:02}", name=f"Practice {i}", org_type=Org.OrgType.PRACTICE
-        )
-        for i in range(21)
-    ]
-    months = ["2025-01-01", "2025-02-01"]
-    return LabelledMatrix(values, practices, months)
-
-
-@pytest.fixture
 def pdm_small():
     values = np.array([[i, i + 1] for i in range(5)])
     practices = [

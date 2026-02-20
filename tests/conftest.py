@@ -1,9 +1,11 @@
 import datetime
 
+import numpy as np
 import pytest
 
 import openprescribing.data.rxdb
 from openprescribing.data.models import BNFCode, Org, OrgRelation
+from openprescribing.data.rxdb.labelled_matrix import LabelledMatrix
 from tests.utils.rxdb_utils import RXDBFixture
 
 
@@ -122,3 +124,16 @@ def sample_data(rxdb, bnf_codes):
         list_size_data=list_size_data,
         prescribing_data=prescribing_data,
     )
+
+
+@pytest.fixture
+def pdm():
+    values = np.array([[i, i + 1] for i in range(21)])
+    practices = [
+        Org.objects.create(
+            id=f"PRAC{i:02}", name=f"Practice {i}", org_type=Org.OrgType.PRACTICE
+        )
+        for i in range(21)
+    ]
+    months = ["2025-01-01", "2025-02-01"]
+    return LabelledMatrix(values, practices, months)
