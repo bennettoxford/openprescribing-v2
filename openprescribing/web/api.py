@@ -81,7 +81,7 @@ def prescribing_deciles(request):
     odm, org = _build_odm(request)
     cdm = get_centiles(odm)
 
-    deciles_records = reshape_cdm(cdm)
+    deciles_records = list(reshape_cdm(cdm))
     if org is not None:
         org_records = build_org_df(odm, org).to_dict("records")
         # The organisation-date matrix (odm) can contain NaNs. NaNs are ignored when
@@ -100,13 +100,10 @@ def prescribing_deciles(request):
 
 
 def reshape_cdm(cdm):
-    records = []
     # transpose the matrix to preserve previous order (by month by centile)
     for month, row in zip(cdm.col_labels, cdm.values.transpose()):
         for centile, value in zip(cdm.row_labels, row):
-            records.append({"month": month, "line": f"p{centile:02}", "value": value})
-
-    return records
+            yield {"month": month, "line": f"p{centile:02}", "value": value}
 
 
 def nans_to_nones(records):
