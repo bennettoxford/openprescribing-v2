@@ -80,8 +80,9 @@ def prescribing_all_orgs(request):
 @cache_control(public=True, max_age=3600)
 def prescribing_deciles(request):
     odm, org = _build_odm(request)
+    cdm = get_centiles(odm)
 
-    deciles_records = build_deciles_df(odm).to_dict("records")
+    deciles_records = build_deciles_df(cdm).to_dict("records")
     if org is not None:
         org_records = build_org_df(odm, org).to_dict("records")
         # The organisation-date matrix (odm) can contain NaNs. NaNs are ignored when
@@ -99,9 +100,7 @@ def prescribing_deciles(request):
     )
 
 
-def build_deciles_df(odm):
-    cdm = get_centiles(odm)
-
+def build_deciles_df(cdm):
     records = []
     # transpose the matrix to preserve previous order (by month by centile)
     for month, row in zip(cdm.col_labels, cdm.values.transpose()):

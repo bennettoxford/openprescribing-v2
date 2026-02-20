@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
+from openprescribing.data import rxdb
 from openprescribing.web import api
 
 
@@ -45,7 +46,9 @@ def test_prescribing_deciles_with_denominator(client, sample_data):
 
 @pytest.mark.django_db(databases=["data"])
 def test_build_deciles_df(pdm):
-    chart_df = api.build_deciles_df(pdm)
+    cdm = rxdb.get_centiles(pdm)
+
+    chart_df = api.build_deciles_df(cdm)
 
     expected_df = pd.DataFrame(
         [
