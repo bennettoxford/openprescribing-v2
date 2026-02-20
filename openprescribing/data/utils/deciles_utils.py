@@ -15,7 +15,6 @@ def build_all_orgs_df(odm):
 
 
 def build_org_df(odm, org):
-    org_ix = odm.row_labels.index(org)
-    org_values = odm.values[org_ix]
+    org_values = odm.get_row(org)
     org_df = pd.DataFrame({"month": odm.col_labels, "value": org_values})
     return org_df
