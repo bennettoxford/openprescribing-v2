@@ -42,6 +42,33 @@ def test_prescribing_deciles_with_denominator(client, sample_data):
 
 
 @pytest.mark.django_db(databases=["data"])
+def test_reshape_cdm(cdm):
+    obs_records = list(api.reshape_cdm(cdm))
+    rows = [
+        ["2025-01-01", "p10", 2.0],
+        ["2025-01-01", "p20", 4.0],
+        ["2025-01-01", "p30", 6.0],
+        ["2025-01-01", "p40", 8.0],
+        ["2025-01-01", "p50", 10.0],
+        ["2025-01-01", "p60", 12.0],
+        ["2025-01-01", "p70", 14.0],
+        ["2025-01-01", "p80", 16.0],
+        ["2025-01-01", "p90", 18.0],
+        ["2025-02-01", "p10", 3.0],
+        ["2025-02-01", "p20", 5.0],
+        ["2025-02-01", "p30", 7.0],
+        ["2025-02-01", "p40", 9.0],
+        ["2025-02-01", "p50", 11.0],
+        ["2025-02-01", "p60", 13.0],
+        ["2025-02-01", "p70", 15.0],
+        ["2025-02-01", "p80", 17.0],
+        ["2025-02-01", "p90", 19.0],
+    ]
+    exp_records = [dict(zip(["month", "line", "value"], row)) for row in rows]
+    assert obs_records == exp_records
+
+
+@pytest.mark.django_db(databases=["data"])
 @pytest.mark.parametrize(
     "params, expected_last_value",
     [

@@ -100,6 +100,10 @@ class LabelledMatrix:
         grouped_values = row_grouper(self.values)
         return self.__class__(grouped_values, new_row_labels, self.col_labels)
 
+    def get_row(self, row_label):
+        row_ix = self.row_labels.index(row_label)
+        return self.values[row_ix]
+
 
 # These "row groupers" are pure functions of their inputs, are not entirely trivial to
 # construct, and are expected to be used repeatedly, so it makes sense to cache them

@@ -120,3 +120,8 @@ def test_group_rows_by_label():
                 ("Y", ("A", "C")),
             )
         )
+
+
+def test_get_row():
+    matrix = LabelledMatrix(np.array([[1.0, 2.0], [3.0, 4.0]]), ("A", "B"), (1, 2))
+    assert np.array_equal(matrix.get_row("A"), np.array([1.0, 2.0]))

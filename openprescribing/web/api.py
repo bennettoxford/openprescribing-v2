@@ -5,12 +5,9 @@ from django.views.decorators.cache import cache_control
 
 from openprescribing.data import rxdb
 from openprescribing.data.models import Org
+from openprescribing.data.rxdb import get_centiles
 from openprescribing.data.rxdb.search import ProductType, search
-from openprescribing.data.utils.deciles_utils import (
-    build_all_orgs_df,
-    build_deciles_df,
-    build_org_df,
-)
+from openprescribing.data.utils.deciles_utils import build_all_orgs_df
 
 
 def _build_odm(request):
@@ -79,10 +76,14 @@ def prescribing_all_orgs(request):
 @cache_control(public=True, max_age=3600)
 def prescribing_deciles(request):
     odm, org = _build_odm(request)
+    cdm = get_centiles(odm)
 
-    deciles_records = build_deciles_df(odm).to_dict("records")
+    deciles_records = list(reshape_cdm(cdm))
     if org is not None:
-        org_records = build_org_df(odm, org).to_dict("records")
+        org_records = [
+            {"month": month, "value": value}
+            for month, value in zip(odm.col_labels, odm.get_row(org))
+        ]
         # The organisation-date matrix (odm) can contain NaNs. NaNs are ignored when
         # deciles are computed, and so are not present in deciles_records. However,
         # NaNs are present in org_records. Python's json.JSONEncoder will serialise
@@ -96,6 +97,13 @@ def prescribing_deciles(request):
         {"deciles": deciles_records, "org": org_records},
         json_dumps_params={"allow_nan": False},
     )
+
+
+def reshape_cdm(cdm):
+    # transpose the matrix to preserve previous order (by month by centile)
+    for month, row in zip(cdm.col_labels, cdm.values.transpose()):
+        for centile, value in zip(cdm.row_labels, row):
+            yield {"month": month, "line": f"p{centile:02}", "value": value}
 
 
 def nans_to_nones(records):
