@@ -20,7 +20,8 @@ def query(request):
     dtr_product_type = request.GET.get("dtr_product_type", "all")
     org_id = request.GET.get("org_id")
 
-    api_url = None
+    deciles_api_url = None
+    all_orgs_api_url = None
     ntr_description = None
     dtr_description = None
     org = None
@@ -31,12 +32,14 @@ def query(request):
 
     if ntr_codes_raw:
         ntr_codes = ntr_codes_raw.split()
-        api_url = f"{reverse('api_prescribing_deciles')}?ntr_codes={','.join(ntr_codes)}&ntr_product_type={ntr_product_type}"
+        url_parameters = (
+            f"?ntr_codes={','.join(ntr_codes)}&ntr_product_type={ntr_product_type}"
+        )
         ntr_description = describe_search(ntr_codes, ntr_product_type)
 
         if dtr_codes_raw:
             dtr_codes = dtr_codes_raw.split()
-            api_url += (
+            url_parameters += (
                 f"&dtr_codes={','.join(dtr_codes)}&dtr_product_type={dtr_product_type}"
             )
             dtr_description = describe_search(dtr_codes, dtr_product_type)
@@ -50,7 +53,10 @@ def query(request):
             )
 
         if org_id:
-            api_url += f"&org_id={org_id}"
+            url_parameters += f"&org_id={org_id}"
+
+        deciles_api_url = f"{reverse('api_prescribing_deciles')}{url_parameters}"
+        all_orgs_api_url = f"{reverse('api_prescribing_all_orgs')}{url_parameters}"
 
     codes = (
         BNFCode.objects.filter(level__lte=BNFCode.Level.CHEMICAL_SUBSTANCE)
@@ -88,7 +94,8 @@ def query(request):
         "org": org,
         "orgs": orgs,
         "org_types": Org.OrgType.choices,
-        "prescribing_deciles_url": api_url,
+        "prescribing_deciles_url": deciles_api_url,
+        "prescribing_all_orgs_url": all_orgs_api_url,
         "tree": tree,
         "deciles_chart": deciles_chart.to_dict(),
     }
