@@ -102,15 +102,23 @@ const createTypeahead = ({
   });
 };
 
-const updateDecilesChart = (prescribingDecilesUrl) => {
+var chartResult;
+
+const createDecilesChart = () => {
   const chartContainer = document.querySelector("#deciles-chart-container");
   const chartSpec = JSON.parse(
     document.getElementById("deciles-chart").textContent,
   );
 
   const opt = { renderer: "svg" };
-  const chartResult = vegaEmbed(chartContainer, chartSpec, opt);
+  chartResult = vegaEmbed(chartContainer, chartSpec, opt);
+};
 
+const updateDecilesChart = (
+  prescribingDecilesUrl,
+  add_dataset_name,
+  remove_dataset_name,
+) => {
   fetch(prescribingDecilesUrl)
     .then((response) => {
       if (!response.ok) {
@@ -119,17 +127,20 @@ const updateDecilesChart = (prescribingDecilesUrl) => {
       return response.json();
     })
     .then((response) => {
-      response.deciles.forEach((record) => {
+      response[add_dataset_name].forEach((record) => {
         record.month = new Date(record.month);
       });
-      response.org.forEach((record) => {
-        record.month = new Date(record.month);
-      });
+      if (response.org) {
+        response.org.forEach((record) => {
+          record.month = new Date(record.month);
+        });
+      }
       chartResult.then((result) => {
-        result.view
-          .insert("deciles", response.deciles)
-          .insert("org", response.org)
-          .run();
+        result.view.insert(add_dataset_name, response[add_dataset_name]);
+        if (response.org) {
+          result.view.insert("org", response.org);
+        }
+        result.view.remove(remove_dataset_name, () => true).run();
       });
     })
     .catch((error) => {
@@ -150,7 +161,28 @@ document.addEventListener("DOMContentLoaded", () => {
   const prescribingDecilesUrl = JSON.parse(
     document.getElementById("prescribing-deciles-url").textContent,
   );
+  const prescribingAllOrgsUrl = JSON.parse(
+    document.getElementById("prescribing-all-orgs-url").textContent,
+  );
+
   if (prescribingDecilesUrl) {
-    updateDecilesChart(prescribingDecilesUrl);
+    createDecilesChart();
+
+    document.getElementById("decile").addEventListener("click", () => {
+      if (prescribingDecilesUrl) {
+        updateDecilesChart(prescribingDecilesUrl, "deciles", "all_orgs");
+      }
+    });
+
+    if (prescribingAllOrgsUrl) {
+      document.getElementById("all_orgs").addEventListener("click", () => {
+        if (prescribingAllOrgsUrl) {
+          updateDecilesChart(prescribingAllOrgsUrl, "all_orgs", "deciles");
+        }
+      });
+    }
+
+    // default to decile view!
+    document.getElementById("decile").click();
   }
 });
