@@ -1,14 +1,15 @@
 import math
 
+import pandas as pd
 from django.http import JsonResponse
 from django.views.decorators.cache import cache_control
 
 from openprescribing.data import rxdb
 from openprescribing.data.models import Org
+from openprescribing.data.rxdb import get_centiles
 from openprescribing.data.rxdb.search import ProductType, search
 from openprescribing.data.utils.deciles_utils import (
     build_all_orgs_df,
-    build_deciles_df,
     build_org_df,
 )
 
@@ -96,6 +97,18 @@ def prescribing_deciles(request):
         {"deciles": deciles_records, "org": org_records},
         json_dumps_params={"allow_nan": False},
     )
+
+
+def build_deciles_df(odm):
+    cdm = get_centiles(odm)
+
+    records = []
+    # transpose the matrix to preserve previous order (by month by centile)
+    for month, row in zip(cdm.col_labels, cdm.values.transpose()):
+        for centile, value in zip(cdm.row_labels, row):
+            records.append({"month": month, "line": f"p{centile:02}", "value": value})
+
+    return pd.DataFrame(records)
 
 
 def nans_to_nones(records):

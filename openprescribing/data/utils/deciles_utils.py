@@ -1,24 +1,10 @@
 import pandas as pd
 
-from openprescribing.data.rxdb import get_centiles
-
 
 def _restructure_df(df):
     series = df.unstack()
     series.index.names = ["month", "line"]
     return series.reset_index(name="value")
-
-
-def build_deciles_df(odm):
-    cdm = get_centiles(odm)
-
-    records = []
-    # transpose the matrix to preserve previous order (by month by centile)
-    for month, row in zip(cdm.col_labels, cdm.values.transpose()):
-        for centile, value in zip(cdm.row_labels, row):
-            records.append({"month": month, "line": f"p{centile:02}", "value": value})
-
-    return pd.DataFrame(records)
 
 
 def build_all_orgs_df(odm):

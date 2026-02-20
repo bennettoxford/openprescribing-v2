@@ -1,4 +1,6 @@
+import pandas as pd
 import pytest
+from pandas.testing import assert_frame_equal
 
 from openprescribing.web import api
 
@@ -39,6 +41,37 @@ def test_prescribing_deciles_with_denominator(client, sample_data):
     assert rsp.status_code == 200
     assert payload["deciles"][-1]["value"] == pytest.approx(27.14, 0.001)
     assert payload["org"] == []
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_build_deciles_df(pdm):
+    chart_df = api.build_deciles_df(pdm)
+
+    expected_df = pd.DataFrame(
+        [
+            ["2025-01-01", "p10", 2.0],
+            ["2025-01-01", "p20", 4.0],
+            ["2025-01-01", "p30", 6.0],
+            ["2025-01-01", "p40", 8.0],
+            ["2025-01-01", "p50", 10.0],
+            ["2025-01-01", "p60", 12.0],
+            ["2025-01-01", "p70", 14.0],
+            ["2025-01-01", "p80", 16.0],
+            ["2025-01-01", "p90", 18.0],
+            ["2025-02-01", "p10", 3.0],
+            ["2025-02-01", "p20", 5.0],
+            ["2025-02-01", "p30", 7.0],
+            ["2025-02-01", "p40", 9.0],
+            ["2025-02-01", "p50", 11.0],
+            ["2025-02-01", "p60", 13.0],
+            ["2025-02-01", "p70", 15.0],
+            ["2025-02-01", "p80", 17.0],
+            ["2025-02-01", "p90", 19.0],
+        ],
+        columns=["month", "line", "value"],
+    )
+
+    assert_frame_equal(chart_df, expected_df)
 
 
 @pytest.mark.django_db(databases=["data"])
