@@ -82,6 +82,13 @@ def query(request):
     )
     org_chart = alt.Chart(alt.NamedData("org")).mark_line(color="red").encode(x=x, y=y)
     deciles_chart += org_chart
+    all_orgs_chart = (
+        alt.Chart(alt.NamedData("all_orgs"))
+        .mark_line(color="grey", opacity=0.2)
+        .encode(x=x, y=y, detail="line:O")
+        .properties(width=660, height=360)
+    )
+    deciles_chart += all_orgs_chart
 
     ctx = {
         "ntr_codes": ntr_codes_raw,
