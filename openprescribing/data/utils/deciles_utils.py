@@ -1,6 +1,14 @@
 import numpy as np
 import pandas as pd
 
+from openprescribing.data.rxdb.labelled_matrix import LabelledMatrix
+
+
+def get_centiles(labelled_matrix):
+    centiles = (10, 20, 30, 40, 50, 60, 70, 80, 90)
+    values = np.nanpercentile(labelled_matrix.values, centiles, axis=0)
+    return LabelledMatrix(values, centiles, labelled_matrix.col_labels)
+
 
 def _restructure_df(df):
     series = df.unstack()
@@ -9,14 +17,12 @@ def _restructure_df(df):
 
 
 def build_deciles_df(odm):
-    centiles = [10, 20, 30, 40, 50, 60, 70, 80, 90]
-    # rows are centiles, columns are dates
-    cdm = np.nanpercentile(odm.values, centiles, axis=0)
+    cdm = get_centiles(odm)
 
     records = []
     # transpose the matrix to preserve previous order (by month by centile)
-    for month, row in zip(odm.col_labels, cdm.transpose()):
-        for centile, value in zip(centiles, row):
+    for month, row in zip(cdm.col_labels, cdm.values.transpose()):
+        for centile, value in zip(cdm.row_labels, row):
             records.append({"month": month, "line": f"p{centile:02}", "value": value})
 
     return pd.DataFrame(records)
