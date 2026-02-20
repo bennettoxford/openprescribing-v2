@@ -7,10 +7,7 @@ from openprescribing.data import rxdb
 from openprescribing.data.models import Org
 from openprescribing.data.rxdb import get_centiles
 from openprescribing.data.rxdb.search import ProductType, search
-from openprescribing.data.utils.deciles_utils import (
-    build_all_orgs_df,
-    build_org_df,
-)
+from openprescribing.data.utils.deciles_utils import build_all_orgs_df
 
 
 def _build_odm(request):
@@ -83,7 +80,10 @@ def prescribing_deciles(request):
 
     deciles_records = list(reshape_cdm(cdm))
     if org is not None:
-        org_records = build_org_df(odm, org).to_dict("records")
+        org_records = [
+            {"month": month, "value": value}
+            for month, value in zip(odm.col_labels, odm.get_row(org))
+        ]
         # The organisation-date matrix (odm) can contain NaNs. NaNs are ignored when
         # deciles are computed, and so are not present in deciles_records. However,
         # NaNs are present in org_records. Python's json.JSONEncoder will serialise
