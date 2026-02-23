@@ -80,6 +80,12 @@ def ingest(force=False):
             list_size_files,
         )
     )
+    conn.sql(
+        "CREATE TEMPORARY VIEW bnf_code_changes_source AS "
+        + sql_for_bnf_code_changes_view(
+            settings.BNF_CODE_CHANGES_DIR / "bnf_code_mapping.csv"
+        )
+    )
 
     # Set the new database we're building as the default schema
     conn.sql("USE new")
@@ -247,6 +253,22 @@ def ingest_sources(conn):
 
     log.info("Building `list_size` view")
     conn.sql("CREATE VIEW list_size AS " + sql_for_list_size_denormalised())
+
+    # To support BNF codes changing we need to update the presentation table with the
+    # BNF code that a presentation would have, if it had been prescribed today.  We
+    # keep the original in the original_bnf_code column for debugging purposes.
+    log.info("Updating `presentation` table")
+    conn.sql("""
+    CREATE OR REPLACE TABLE presentation AS
+    SELECT
+        presentation.id,
+        COALESCE(bnf_code_changes_source.new_code, presentation.bnf_code) AS bnf_code,
+        presentation.bnf_code AS original_bnf_code,
+        presentation.snomed_code
+    FROM presentation
+    LEFT JOIN bnf_code_changes_source
+        ON presentation.bnf_code = bnf_code_changes_source.old_code
+    """)
 
 
 def sql_for_date_table():
@@ -432,6 +454,26 @@ def sql_for_list_size_denormalised():
         practice
     ON
         lst.practice_id = practice.id
+    """
+
+
+def sql_for_bnf_code_changes_view(csv_path):
+    # Return a query that reads data about BNF code changes.
+    #
+    # This data comes from a CSV file that maps all old codes to their equivalent code
+    # today.
+
+    return f"""\
+    SELECT old_code, new_code
+    FROM
+        read_csv(
+            {escape(csv_path)},
+            header=True,
+            columns={{
+                'old_code': 'VARCHAR',
+                'new_code': 'VARCHAR',
+            }}
+        )
     """
 
 

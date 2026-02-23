@@ -114,6 +114,10 @@ WSGI_APPLICATION = "openprescribing.config.wsgi.application"
 
 PRESCRIBING_DATABASE = DATA_DIR / "prescribing.duckdb"
 
+# Path to directory with BNF code changes used to map older codes to newer ones during
+# prescribing ingest.
+BNF_CODE_CHANGES_DIR = BASE_DIR / "openprescribing" / "data" / "bnf_code_changes"
+
 SQLITE_DATABASE = DATA_DIR / "data.sqlite"
 
 
