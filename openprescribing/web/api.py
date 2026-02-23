@@ -103,7 +103,7 @@ def reshape_cdm(cdm):
     # transpose the matrix to preserve previous order (by month by centile)
     for month, row in zip(cdm.col_labels, cdm.values.transpose()):
         for centile, value in zip(cdm.row_labels, row):
-            yield {"month": month, "line": centile, "value": value}
+            yield {"month": month, "centile": centile, "value": value}
 
 
 def nans_to_nones(records):

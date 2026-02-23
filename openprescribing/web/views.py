@@ -70,14 +70,14 @@ def query(request):
     x = alt.X("month:T", title="Month", axis=alt.Axis(format="%Y %b"))
     y = alt.Y("value:Q", title="%" if dtr_codes_raw else "Items per 1000 patients")
     stroke_dash = (
-        alt.when(alt.datum.line == 50)
+        alt.when(alt.datum.centile == 50)
         .then(alt.value((6, 2)))
         .otherwise(alt.value((2, 6)))
     )
     deciles_chart = (
         alt.Chart(alt.NamedData("deciles"))
         .mark_line(color="blue")
-        .encode(x=x, y=y, detail="line:O", strokeDash=stroke_dash)
+        .encode(x=x, y=y, detail="centile:O", strokeDash=stroke_dash)
         .properties(width=660, height=360)
     )
     org_chart = alt.Chart(alt.NamedData("org")).mark_line(color="red").encode(x=x, y=y)

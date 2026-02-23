@@ -64,7 +64,7 @@ def test_reshape_cdm(cdm):
         ["2025-02-01", 80, 17.0],
         ["2025-02-01", 90, 19.0],
     ]
-    exp_records = [dict(zip(["month", "line", "value"], row)) for row in rows]
+    exp_records = [dict(zip(["month", "centile", "value"], row)) for row in rows]
     assert obs_records == exp_records
 
 
