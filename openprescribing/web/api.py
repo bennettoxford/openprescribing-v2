@@ -1,7 +1,7 @@
 import math
 
 from django.core.serializers.json import DjangoJSONEncoder
-from django.http import JsonResponse
+from django.http import JsonResponse as DjangoJsonResponse
 from django.views.decorators.cache import cache_control
 
 from openprescribing.data import rxdb
@@ -67,7 +67,7 @@ def prescribing_all_orgs(request):
     all_orgs_records = list(reshape_matrix(odm, row_name="org", col_name="month"))
     nans_to_nones(all_orgs_records)
 
-    return JsonResponse(
+    return DjangoJsonResponse(
         {"all_orgs": all_orgs_records},
         encoder=JSONEncoder,
         json_dumps_params={"allow_nan": False},
@@ -94,7 +94,7 @@ def prescribing_deciles(request):
     else:
         org_records = []
 
-    return JsonResponse(
+    return DjangoJsonResponse(
         {"deciles": deciles_records, "org": org_records},
         json_dumps_params={"allow_nan": False},
     )
