@@ -58,5 +58,13 @@ def test_strength_and_formulation_code(bnf_codes):
     assert bnf_code("1001030U0AAABAB").strength_and_formulation_code == "1001030U0_AB"
 
 
+@pytest.mark.django_db(databases=["data"])
+def test_strength_and_formulation_name(bnf_codes):
+    assert (
+        bnf_code("1001030U0AAABAB").strength_and_formulation_name
+        == "Methotrexate 2.5mg tablets (branded and generic)"
+    )
+
+
 def bnf_code(code):
     return BNFCode.objects.get(code=code)

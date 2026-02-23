@@ -127,6 +127,7 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ code_to_name|json_script:"code-to-name" }}
 {{ orgs|json_script:"orgs" }}
 {{ org_types|json_script:"org-types" }}
 {{ prescribing_deciles_url|json_script:"prescribing-deciles-url" }}
