@@ -85,7 +85,7 @@ def query(request):
     all_orgs_chart = (
         alt.Chart(alt.NamedData("all_orgs"))
         .mark_line(color="grey", opacity=0.2)
-        .encode(x=x, y=y, detail="line:O")
+        .encode(x=x, y=y, detail="org:O")
         .properties(width=660, height=360)
     )
     deciles_chart += all_orgs_chart

@@ -3,7 +3,7 @@ import pandas as pd
 
 def _restructure_df(df):
     series = df.unstack()
-    series.index.names = ["month", "line"]
+    series.index.names = ["month", "org"]
     return series.reset_index(name="value")
 
 

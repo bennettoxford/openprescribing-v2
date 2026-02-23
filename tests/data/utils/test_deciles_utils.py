@@ -41,7 +41,7 @@ def test_build_all_orgs_df(pdm_small):
             ["2025-02-01", "PRAC03", 4],
             ["2025-02-01", "PRAC04", 5],
         ],
-        columns=["month", "line", "value"],
+        columns=["month", "org", "value"],
     )
 
     assert_frame_equal(chart_df, expected_df)
