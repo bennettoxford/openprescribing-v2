@@ -42,8 +42,8 @@ def test_prescribing_deciles_with_denominator(client, sample_data):
 
 
 @pytest.mark.django_db(databases=["data"])
-def test_reshape_cdm(cdm):
-    obs_records = list(api.reshape_cdm(cdm))
+def test_reshape_matrix(cdm):
+    obs_records = list(api.reshape_matrix(cdm, row_name="centile", col_name="month"))
     rows = [
         ["2025-01-01", 10, 2.0],
         ["2025-01-01", 20, 4.0],

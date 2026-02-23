@@ -78,7 +78,7 @@ def prescribing_deciles(request):
     odm, org = _build_odm(request)
     cdm = get_centiles(odm)
 
-    deciles_records = list(reshape_cdm(cdm))
+    deciles_records = list(reshape_matrix(cdm, row_name="centile", col_name="month"))
     if org is not None:
         org_records = [
             {"month": month, "value": value}
@@ -99,11 +99,11 @@ def prescribing_deciles(request):
     )
 
 
-def reshape_cdm(cdm):
-    # transpose the matrix to preserve previous order (by month by centile)
-    for month, row in zip(cdm.col_labels, cdm.values.transpose()):
-        for centile, value in zip(cdm.row_labels, row):
-            yield {"month": month, "centile": centile, "value": value}
+def reshape_matrix(matrix, *, row_name, col_name, val_name="value"):
+    # transpose the matrix to preserve previous order (by column label by row label)
+    for col_label, row in zip(matrix.col_labels, matrix.values.transpose()):
+        for row_label, value in zip(matrix.row_labels, row):
+            yield {row_name: row_label, col_name: col_label, val_name: value}
 
 
 def nans_to_nones(records):
