@@ -67,11 +67,7 @@ def prescribing_all_orgs(request):
     all_orgs_records = list(reshape_matrix(odm, row_name="org", col_name="month"))
     nans_to_nones(all_orgs_records)
 
-    return DjangoJsonResponse(
-        {"all_orgs": all_orgs_records},
-        encoder=JSONEncoder,
-        json_dumps_params={"allow_nan": False},
-    )
+    return JsonResponse({"all_orgs": all_orgs_records})
 
 
 @cache_control(public=True, max_age=3600)
@@ -94,10 +90,14 @@ def prescribing_deciles(request):
     else:
         org_records = []
 
-    return DjangoJsonResponse(
-        {"deciles": deciles_records, "org": org_records},
-        json_dumps_params={"allow_nan": False},
-    )
+    return JsonResponse({"deciles": deciles_records, "org": org_records})
+
+
+class JsonResponse(DjangoJsonResponse):
+    def __init__(self, *args, **kwargs):
+        kwargs["encoder"] = JSONEncoder
+        kwargs["json_dumps_params"] = {"allow_nan": False}
+        super().__init__(*args, **kwargs)
 
 
 class JSONEncoder(DjangoJSONEncoder):
