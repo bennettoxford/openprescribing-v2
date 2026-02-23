@@ -4,6 +4,23 @@ from openprescribing.web import api
 
 
 @pytest.mark.django_db(databases=["data"])
+@pytest.mark.parametrize(
+    "params, expected_last_value",
+    [
+        ("?ntr_codes=1001030U0", 65.09),
+        ("?ntr_codes=1001030U0&org_id=PRA00", 68.40),
+        ("?ntr_codes=1001030U0,-1001030U0AAABAB", 59.67),
+        ("?ntr_codes=1001030U0AA&dtr_codes=1001030U0", 27.77),
+    ],
+)
+def test_prescribing_all_orgs(client, sample_data, params, expected_last_value):
+    rsp = client.get(f"/api/prescribing-all-orgs/{params}")
+    payload = rsp.json()
+    assert rsp.status_code == 200
+    assert payload["all_orgs"][-1]["value"] == pytest.approx(expected_last_value, 0.001)
+
+
+@pytest.mark.django_db(databases=["data"])
 def test_prescribing_deciles(client, sample_data):
     rsp = client.get("/api/prescribing-deciles/?ntr_codes=1001030U0")
     payload = rsp.json()
@@ -66,23 +83,6 @@ def test_reshape_matrix(cdm):
     ]
     exp_records = [dict(zip(["month", "centile", "value"], row)) for row in rows]
     assert obs_records == exp_records
-
-
-@pytest.mark.django_db(databases=["data"])
-@pytest.mark.parametrize(
-    "params, expected_last_value",
-    [
-        ("?ntr_codes=1001030U0", 65.09),
-        ("?ntr_codes=1001030U0&org_id=PRA00", 68.40),
-        ("?ntr_codes=1001030U0,-1001030U0AAABAB", 59.67),
-        ("?ntr_codes=1001030U0AA&dtr_codes=1001030U0", 27.77),
-    ],
-)
-def test_prescribing_all_orgs(client, sample_data, params, expected_last_value):
-    rsp = client.get(f"/api/prescribing-all-orgs/{params}")
-    payload = rsp.json()
-    assert rsp.status_code == 200
-    assert payload["all_orgs"][-1]["value"] == pytest.approx(expected_last_value, 0.001)
 
 
 def test_nans_to_nones():
