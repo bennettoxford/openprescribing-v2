@@ -1,5 +1,6 @@
 import math
 
+from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse
 from django.views.decorators.cache import cache_control
 
@@ -7,7 +8,6 @@ from openprescribing.data import rxdb
 from openprescribing.data.models import Org
 from openprescribing.data.rxdb import get_centiles
 from openprescribing.data.rxdb.search import ProductType, search
-from openprescribing.data.utils.deciles_utils import build_all_orgs_df
 
 
 def _build_odm(request):
@@ -64,11 +64,12 @@ def _build_odm(request):
 def prescribing_all_orgs(request):
     odm, _ = _build_odm(request)
 
-    all_orgs_records = build_all_orgs_df(odm).to_dict("records")
+    all_orgs_records = list(reshape_matrix(odm, row_name="org", col_name="month"))
     nans_to_nones(all_orgs_records)
 
     return JsonResponse(
         {"all_orgs": all_orgs_records},
+        encoder=JSONEncoder,
         json_dumps_params={"allow_nan": False},
     )
 
@@ -97,6 +98,13 @@ def prescribing_deciles(request):
         {"deciles": deciles_records, "org": org_records},
         json_dumps_params={"allow_nan": False},
     )
+
+
+class JSONEncoder(DjangoJSONEncoder):
+    def default(self, o):
+        if isinstance(o, Org):
+            return o.id
+        return super().default(o)
 
 
 def reshape_matrix(matrix, *, row_name, col_name, val_name="value"):
