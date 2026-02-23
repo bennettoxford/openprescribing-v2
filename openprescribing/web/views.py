@@ -70,7 +70,7 @@ def query(request):
     x = alt.X("month:T", title="Month", axis=alt.Axis(format="%Y %b"))
     y = alt.Y("value:Q", title="%" if dtr_codes_raw else "Items per 1000 patients")
     stroke_dash = (
-        alt.when(alt.datum.line == "p50")
+        alt.when(alt.datum.line == 50)
         .then(alt.value((6, 2)))
         .otherwise(alt.value((2, 6)))
     )
