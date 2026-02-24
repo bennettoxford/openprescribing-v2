@@ -108,9 +108,8 @@ class JSONEncoder(DjangoJSONEncoder):
 
 
 def reshape_matrix(matrix, *, row_name, col_name, val_name="value"):
-    # transpose the matrix to preserve previous order (by column label by row label)
-    for col_label, row in zip(matrix.col_labels, matrix.values.transpose()):
-        for row_label, value in zip(matrix.row_labels, row):
+    for row_label, row in zip(matrix.row_labels, matrix.values):
+        for col_label, value in zip(matrix.col_labels, row):
             yield {row_name: row_label, col_name: col_label, val_name: value}
 
 
