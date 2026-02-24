@@ -76,20 +76,24 @@
                 </div>
                 {% endif %}
                 {% if ntr_dtr_intersection_table %}
-                <p>
-                    <button
-                        class="btn btn-secondary"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#collapsePresentations"
-                        aria-expanded="false"
-                        aria-controls="collapsePresentations">
-                    Presentations
-                    </button>
-                </p>
-                <div class="collapse" id="collapsePresentations">
-                    <div class="card card-body">
-                    {% include "./_bnf_codes_intersection_table.html" with intersection_table=ntr_dtr_intersection_table %}
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <p>
+                            <button
+                                class="btn btn-secondary"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#collapsePresentations"
+                                aria-expanded="false"
+                                aria-controls="collapsePresentations">
+                            Presentations
+                            </button>
+                        </p>
+                        <div class="collapse" id="collapsePresentations">
+                            <div class="card card-body">
+                            {% include "./_bnf_codes_intersection_table.html" with intersection_table=ntr_dtr_intersection_table %}
+                            </div>
+                        </div>
                     </div>
                 </div>
                 {% endif %}
