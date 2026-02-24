@@ -18,7 +18,7 @@
         </div>
         <div class="card mt-3">
             <div class="card-body">
-                <h2 class="h5">Highlight organisation</h2>
+                <h1 class="h4">Highlight organisation</h1>
                 <div class="position-relative mb-2">
                     <label class="form-label" for="org-search">Name or code of organisation to highlight</label>
                     <input
@@ -46,16 +46,18 @@
                 {% if ntr_codes %}
                 <h1 class="h4">Prescribing data</h1>
                 <div id="deciles-chart-container" class="py-3">Loading chart...</div>
-                <div>
-                    <fieldset>
-                        <h2 class="h5">Show prescribing</h2>
-                        <input type="radio" id="decile" name="chart_type" value="decile" selected>
-                        <label for="decile">Deciles</label><br>
-                        <input type="radio" id="all_orgs" name="chart_type" value="all_orgs">
-                        <label for="all_orgs">All organisations</label><br>
-                    </fieldset>
-                </div>
                 <div class="row">
+                    <div class="col-12">
+                        <fieldset>
+                            <h2 class="h5">Show prescribing</h2>
+                            <input type="radio" id="decile" name="chart_type" value="decile" selected>
+                            <label for="decile">Deciles</label><br>
+                            <input type="radio" id="all_orgs" name="chart_type" value="all_orgs">
+                            <label for="all_orgs">All organisations</label><br>
+                        </fieldset>
+                    </div>
+                </div>
+                <div class="row mt-3">
                     <div class="col-6">
                         <h2 class="h5">Numerator</h2>
                         {% include "./_search_description.html" with description=ntr_description %}
@@ -67,29 +69,31 @@
                 </div>
                 {% if org %}
                 <div class="row">
-                    <div class="col-6">
+                    <div class="col-12">
                         <h2 class="h5">Organisation</h2>
                         {{ org.name }}
-                    </div>
-                    <div class="col-6">
                     </div>
                 </div>
                 {% endif %}
                 {% if ntr_dtr_intersection_table %}
-                <p>
-                    <button
-                        class="btn btn-secondary"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#collapsePresentations"
-                        aria-expanded="false"
-                        aria-controls="collapsePresentations">
-                    Presentations
-                    </button>
-                </p>
-                <div class="collapse" id="collapsePresentations">
-                    <div class="card card-body">
-                    {% include "./_bnf_codes_intersection_table.html" with intersection_table=ntr_dtr_intersection_table %}
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <p>
+                            <button
+                                class="btn btn-secondary"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#collapsePresentations"
+                                aria-expanded="false"
+                                aria-controls="collapsePresentations">
+                            Presentations
+                            </button>
+                        </p>
+                        <div class="collapse" id="collapsePresentations">
+                            <div class="card card-body">
+                            {% include "./_bnf_codes_intersection_table.html" with intersection_table=ntr_dtr_intersection_table %}
+                            </div>
+                        </div>
                     </div>
                 </div>
                 {% endif %}
