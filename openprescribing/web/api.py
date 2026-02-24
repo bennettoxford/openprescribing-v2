@@ -64,7 +64,7 @@ def _build_odm(request):
 def prescribing_all_orgs(request):
     odm, _ = _build_odm(request)
 
-    all_orgs_records = list(reshape_matrix(odm, row_name="org", col_name="month"))
+    all_orgs_records = list(odm.to_records(row_name="org", col_name="month"))
     nans_to_nones(all_orgs_records)
 
     return JsonResponse({"all_orgs": all_orgs_records})
@@ -75,7 +75,7 @@ def prescribing_deciles(request):
     odm, org = _build_odm(request)
     cdm = get_centiles(odm)
 
-    deciles_records = list(reshape_matrix(cdm, row_name="centile", col_name="month"))
+    deciles_records = list(cdm.to_records(row_name="centile", col_name="month"))
     if org is not None:
         org_records = [
             {"month": month, "value": value}
@@ -105,12 +105,6 @@ class JSONEncoder(DjangoJSONEncoder):
         if isinstance(o, Org):
             return o.id
         return super().default(o)
-
-
-def reshape_matrix(matrix, *, row_name, col_name, val_name="value"):
-    for row_label, row in zip(matrix.row_labels, matrix.values):
-        for col_label, value in zip(matrix.col_labels, row):
-            yield {row_name: row_label, col_name: col_label, val_name: value}
 
 
 def nans_to_nones(records):

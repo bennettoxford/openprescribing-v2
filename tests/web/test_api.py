@@ -58,33 +58,6 @@ def test_prescribing_deciles_with_denominator(client, sample_data):
     assert payload["org"] == []
 
 
-@pytest.mark.django_db(databases=["data"])
-def test_reshape_matrix(cdm):
-    obs_records = list(api.reshape_matrix(cdm, row_name="centile", col_name="month"))
-    rows = [
-        ["2025-01-01", 10, 2.0],
-        ["2025-02-01", 10, 3.0],
-        ["2025-01-01", 20, 4.0],
-        ["2025-02-01", 20, 5.0],
-        ["2025-01-01", 30, 6.0],
-        ["2025-02-01", 30, 7.0],
-        ["2025-01-01", 40, 8.0],
-        ["2025-02-01", 40, 9.0],
-        ["2025-01-01", 50, 10.0],
-        ["2025-02-01", 50, 11.0],
-        ["2025-01-01", 60, 12.0],
-        ["2025-02-01", 60, 13.0],
-        ["2025-01-01", 70, 14.0],
-        ["2025-02-01", 70, 15.0],
-        ["2025-01-01", 80, 16.0],
-        ["2025-02-01", 80, 17.0],
-        ["2025-01-01", 90, 18.0],
-        ["2025-02-01", 90, 19.0],
-    ]
-    exp_records = [dict(zip(["month", "centile", "value"], row)) for row in rows]
-    assert obs_records == exp_records
-
-
 def test_nans_to_nones():
     records = [{"k1": 1.0, "k2": "aaa"}, {"k1": float("NaN"), "k2": "bbb"}]
     api.nans_to_nones(records)
