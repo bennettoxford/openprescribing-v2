@@ -1,13 +1,13 @@
 import math
 
-from django.http import JsonResponse
+from django.core.serializers.json import DjangoJSONEncoder
+from django.http import JsonResponse as DjangoJsonResponse
 from django.views.decorators.cache import cache_control
 
 from openprescribing.data import rxdb
 from openprescribing.data.models import Org
 from openprescribing.data.rxdb import get_centiles
 from openprescribing.data.rxdb.search import ProductType, search
-from openprescribing.data.utils.deciles_utils import build_all_orgs_df
 
 
 def _build_odm(request):
@@ -64,13 +64,10 @@ def _build_odm(request):
 def prescribing_all_orgs(request):
     odm, _ = _build_odm(request)
 
-    all_orgs_records = build_all_orgs_df(odm).to_dict("records")
+    all_orgs_records = list(odm.to_records(row_name="org", col_name="month"))
     nans_to_nones(all_orgs_records)
 
-    return JsonResponse(
-        {"all_orgs": all_orgs_records},
-        json_dumps_params={"allow_nan": False},
-    )
+    return JsonResponse({"all_orgs": all_orgs_records})
 
 
 @cache_control(public=True, max_age=3600)
@@ -78,7 +75,7 @@ def prescribing_deciles(request):
     odm, org = _build_odm(request)
     cdm = get_centiles(odm)
 
-    deciles_records = list(reshape_cdm(cdm))
+    deciles_records = list(cdm.to_records(row_name="centile", col_name="month"))
     if org is not None:
         org_records = [
             {"month": month, "value": value}
@@ -93,17 +90,21 @@ def prescribing_deciles(request):
     else:
         org_records = []
 
-    return JsonResponse(
-        {"deciles": deciles_records, "org": org_records},
-        json_dumps_params={"allow_nan": False},
-    )
+    return JsonResponse({"deciles": deciles_records, "org": org_records})
 
 
-def reshape_cdm(cdm):
-    # transpose the matrix to preserve previous order (by month by centile)
-    for month, row in zip(cdm.col_labels, cdm.values.transpose()):
-        for centile, value in zip(cdm.row_labels, row):
-            yield {"month": month, "line": f"p{centile:02}", "value": value}
+class JsonResponse(DjangoJsonResponse):
+    def __init__(self, *args, **kwargs):
+        kwargs["encoder"] = JSONEncoder
+        kwargs["json_dumps_params"] = {"allow_nan": False}
+        super().__init__(*args, **kwargs)
+
+
+class JSONEncoder(DjangoJSONEncoder):
+    def default(self, o):
+        if isinstance(o, Org):
+            return o.id
+        return super().default(o)
 
 
 def nans_to_nones(records):

@@ -104,6 +104,11 @@ class LabelledMatrix:
         row_ix = self.row_labels.index(row_label)
         return self.values[row_ix]
 
+    def to_records(self, *, row_name, col_name, val_name="value"):
+        for row_label, row in zip(self.row_labels, self.values):
+            for col_label, value in zip(self.col_labels, row):
+                yield {row_name: row_label, col_name: col_label, val_name: value}
+
 
 # These "row groupers" are pure functions of their inputs, are not entirely trivial to
 # construct, and are expected to be used repeatedly, so it makes sense to cache them
