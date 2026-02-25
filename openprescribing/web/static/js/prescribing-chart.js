@@ -114,6 +114,16 @@ const createDecilesChart = () => {
   chartResult = vegaEmbed(chartContainer, chartSpec, opt);
 };
 
+const createRelativeChart = () => {
+  const chartContainer = document.querySelector("#deciles-chart-container");
+  const chartSpec = JSON.parse(
+    document.getElementById("relative-chart").textContent,
+  );
+
+  const opt = { renderer: "svg" };
+  chartResult = vegaEmbed(chartContainer, chartSpec, opt);
+};
+
 const updateDecilesChart = (
   prescribingDecilesUrl,
   add_dataset_name,
@@ -140,7 +150,10 @@ const updateDecilesChart = (
         if (response.org) {
           result.view.insert("org", response.org);
         }
-        result.view.remove(remove_dataset_name, () => true).run();
+        if (remove_dataset_name) {
+          result.view.remove(remove_dataset_name, () => true);
+        }
+        result.view.run();
       });
     })
     .catch((error) => {
@@ -167,9 +180,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (prescribingDecilesUrl) {
     createDecilesChart();
-
     document.getElementById("decile").addEventListener("click", () => {
       if (prescribingDecilesUrl) {
+        createDecilesChart();
         updateDecilesChart(prescribingDecilesUrl, "deciles", "all_orgs");
       }
     });
@@ -177,7 +190,18 @@ document.addEventListener("DOMContentLoaded", () => {
     if (prescribingAllOrgsUrl) {
       document.getElementById("all_orgs").addEventListener("click", () => {
         if (prescribingAllOrgsUrl) {
+          createDecilesChart();
           updateDecilesChart(prescribingAllOrgsUrl, "all_orgs", "deciles");
+        }
+      });
+    }
+
+    const relativeRadio = document.getElementById("relative");
+    if (relativeRadio) {
+      relativeRadio.addEventListener("click", () => {
+        if (prescribingDecilesUrl) {
+          createRelativeChart();
+          updateDecilesChart(prescribingDecilesUrl, "deciles");
         }
       });
     }

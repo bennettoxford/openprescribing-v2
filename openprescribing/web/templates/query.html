@@ -52,6 +52,15 @@
                             <label for="decile">Deciles</label><br>
                             <input type="radio" id="all_orgs" name="chart_type" value="all_orgs">
                             <label for="all_orgs">All organisations</label><br>
+                            {% if org %}
+                            <input
+                                type="radio"
+                                id="relative"
+                                name="chart_type"
+                                value="relative"
+                            >
+                            <label for="relative">Relative to median</label>
+                            {% endif %}
                         </fieldset>
                     </div>
                 </div>
@@ -133,6 +142,7 @@
 {{ prescribing_deciles_url|json_script:"prescribing-deciles-url" }}
 {{ prescribing_all_orgs_url|json_script:"prescribing-all-orgs-url" }}
 {{ deciles_chart|json_script:"deciles-chart" }}
+{{ relative_chart|json_script:"relative-chart" }}
 <script src="https://cdn.jsdelivr.net/npm/vega@6.2.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-lite@6.4.1"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-embed@7.0.2"></script>

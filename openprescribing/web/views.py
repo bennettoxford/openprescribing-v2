@@ -67,13 +67,18 @@ def query(request):
 
     orgs = make_orgs()
 
-    x = alt.X("month:T", title="Month", axis=alt.Axis(format="%Y %b"))
+    x = alt.X(
+        "month:T",
+        title="Month",
+        axis=alt.Axis(format="%Y %b", labelFlush=True, labelFlushOffset=5),
+    )
     y = alt.Y("value:Q", title="%" if dtr_codes_raw else "Items per 1000 patients")
     stroke_dash = (
         alt.when(alt.datum.centile == 50)
         .then(alt.value((6, 2)))
         .otherwise(alt.value((2, 6)))
     )
+    chart_padding = {"left": 50, "right": 10, "top": 10, "bottom": 30}
     deciles_chart = (
         alt.Chart(alt.NamedData("deciles"))
         .mark_line(color="blue")
@@ -89,6 +94,42 @@ def query(request):
         .properties(width=660, height=360)
     )
     deciles_chart += all_orgs_chart
+    deciles_chart = deciles_chart.properties(padding=chart_padding)
+
+    relative_y_title = (
+        "Difference from median (percentage points)"
+        if dtr_codes_raw
+        else "Difference from median (items per 1000 patients)"
+    )
+    relative_base = (
+        alt.Chart(alt.NamedData("deciles"))
+        .transform_filter(alt.datum.centile == 50)
+        .transform_lookup(
+            lookup="month",
+            from_=alt.LookupData(alt.NamedData("org"), "month", ["value"]),
+            as_=["org_value"],
+        )
+        .transform_calculate(relative_value="datum.org_value - datum.value")
+    )
+    relative_area = relative_base.mark_area(color="blue", opacity=0.3).encode(
+        x=x,
+        y=alt.Y("relative_value:Q", axis=alt.Axis(title=relative_y_title)),
+    )
+    relative_mirror = (
+        relative_base.transform_calculate(relative_value="-datum.relative_value")
+        .mark_point(opacity=0)
+        .encode(x=x, y="relative_value:Q")
+    )
+    median_baseline = (
+        alt.Chart({"values": [{}]})
+        .mark_rule(color="blue", strokeDash=(6, 2))
+        .encode(y=alt.datum(0))
+    )
+    relative_chart = (
+        (median_baseline + relative_area + relative_mirror)
+        .properties(width=660, height=360, padding=chart_padding)
+        .resolve_scale(y="shared")
+    )
 
     ctx = {
         "ntr_codes": ntr_codes_raw,
@@ -105,6 +146,7 @@ def query(request):
         "prescribing_all_orgs_url": all_orgs_api_url,
         "tree": tree,
         "deciles_chart": deciles_chart.to_dict(),
+        "relative_chart": relative_chart.to_dict(),
     }
 
     return render(request, "query.html", ctx)
