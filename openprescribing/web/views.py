@@ -80,8 +80,6 @@ def query(request):
         .encode(x=x, y=y, detail="centile:O", strokeDash=stroke_dash)
         .properties(width=660, height=360)
     )
-    org_chart = alt.Chart(alt.NamedData("org")).mark_line(color="red").encode(x=x, y=y)
-    deciles_chart += org_chart
     all_orgs_line_chart = (
         alt.Chart(alt.NamedData("all_orgs_line_chart"))
         .mark_line(color="grey", opacity=0.2)
@@ -103,6 +101,10 @@ def query(request):
         .properties(width=660, height=360)
     )
     deciles_chart += all_orgs_dots_chart
+
+    # Org line should go on top of any other charts
+    org_chart = alt.Chart(alt.NamedData("org")).mark_line(color="red").encode(x=x, y=y)
+    deciles_chart += org_chart
 
     ctx = {
         "ntr_codes": ntr_codes_raw,
