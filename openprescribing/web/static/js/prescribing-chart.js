@@ -118,7 +118,7 @@ const updateDecilesChart = (
   prescribingDecilesUrl,
   api_dataset_name,
   add_dataset_name,
-  remove_dataset_name,
+  remove_dataset_names,
 ) => {
   fetch(prescribingDecilesUrl)
     .then((response) => {
@@ -141,7 +141,9 @@ const updateDecilesChart = (
         if (response.org) {
           result.view.insert("org", response.org);
         }
-        result.view.remove(remove_dataset_name, () => true).run();
+        remove_dataset_names.forEach((remove_dataset_name) => {
+          result.view.remove(remove_dataset_name, () => true).run();
+        });
       });
     })
     .catch((error) => {
@@ -171,12 +173,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("decile").addEventListener("click", () => {
       if (prescribingDecilesUrl) {
-        updateDecilesChart(
-          prescribingDecilesUrl,
-          "deciles",
-          "deciles",
+        updateDecilesChart(prescribingDecilesUrl, "deciles", "deciles", [
           "all_orgs_line_chart",
-        );
+          "all_orgs_dots_chart",
+        ]);
       }
     });
 
@@ -189,7 +189,20 @@ document.addEventListener("DOMContentLoaded", () => {
               prescribingAllOrgsUrl,
               "all_orgs",
               "all_orgs_line_chart",
-              "deciles",
+              ["deciles", "all_orgs_dots_chart"],
+            );
+          }
+        });
+
+      document
+        .getElementById("all_orgs_dots_chart")
+        .addEventListener("click", () => {
+          if (prescribingAllOrgsUrl) {
+            updateDecilesChart(
+              prescribingAllOrgsUrl,
+              "all_orgs",
+              "all_orgs_dots_chart",
+              ["deciles", "all_orgs_line_chart"],
             );
           }
         });
