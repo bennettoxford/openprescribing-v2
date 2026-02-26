@@ -78,6 +78,10 @@ function getCodeInput(field) {
   return formControls[field].querySelector("[data-bnf-codes-input]");
 }
 
+function getCodesList(field) {
+  return formControls[field].querySelector("[data-bnf-codes-list]");
+}
+
 function getSelectorButton(field) {
   return formControls[field].querySelector("[data-bnf-selector]");
 }
@@ -331,10 +335,7 @@ function renderSelectedCodes(field) {
     .map(({ code, included }) => (included ? code : `-${code}`))
     .join("\n");
 
-  const list = document.querySelector(
-    `[data-bnf-codes-list][data-field="${field}"]`,
-  );
-
+  const list = getCodesList(field);
   if (terms.length === 0) {
     list.innerHTML = `<li class="list-group-item text-muted">No presentations selected.</li>`;
   } else {
