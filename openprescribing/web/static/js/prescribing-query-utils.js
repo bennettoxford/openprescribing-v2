@@ -1,4 +1,63 @@
+// This module contains pure functions that have no dependency on the DOM.  They are in
+// a separate module because our current JS setup makes it hard to import
+// prescribing-query.js into tests.  This is a bit of a smell, and we should aim to
+// fold all of these functions back into prescribing-query.js in future.
+
 import { descendants, isAncestor, isChemical } from "./bnf-utils.js";
+
+export function renderSelectedCodes(query, list) {
+  // Update the list of codes.
+
+  const terms = queryToSortedTerms(query);
+
+  if (terms.length === 0) {
+    list.innerHTML = `<li class="list-group-item text-muted">No presentations selected.</li>`;
+  } else {
+    list.innerHTML = terms
+      .map(
+        ({ code, included }) =>
+          `<li class="list-group-item"><code>${included ? code : `-${code}`}</code></li>`,
+      )
+      .join("");
+  }
+}
+
+export function setInputValue(query, input) {
+  // Update the hidden input.
+
+  const terms = queryToSortedTerms(query);
+
+  input.value = terms
+    .map(({ code, included }) => (included ? code : `-${code}`))
+    .join("\n");
+}
+
+export function queryToSortedTerms(query) {
+  // Given a query, return an array of terms (objects with properties `code` and
+  // `included`), sorted by code.
+  const terms = [
+    ...query.included.map((code) => ({ code, included: true })),
+    ...query.excluded.map((code) => ({ code, included: false })),
+  ];
+  return terms.sort((a, b) => (a.code > b.code ? 1 : -1));
+}
+
+export function textToQuery(text) {
+  // Given text from a hidden input, return a query object.
+  const included = [];
+  const excluded = [];
+  const terms = text.split(/\s+/);
+
+  terms.forEach((term) => {
+    if (term.startsWith("-")) {
+      excluded.push(term.slice(1));
+    } else if (term !== "") {
+      included.push(term);
+    }
+  });
+
+  return { included, excluded };
+}
 
 export function toggleCode(query, code) {
   // Updates query to include or exclude the given code (or do nothing), depending
