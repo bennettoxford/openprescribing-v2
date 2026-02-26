@@ -65,7 +65,6 @@ const formControls = {
   ntr: document.querySelector('[data-controls="ntr"]'),
   dtr: document.querySelector('[data-controls="dtr"]'),
 };
-const codeInputs = document.querySelectorAll("[data-bnf-codes-input]");
 const treeModal = document.getElementById("bnf-tree-modal");
 const treeModalObj = new bootstrap.Modal(treeModal);
 const tree = document.getElementById("bnf-tree");
@@ -75,6 +74,10 @@ const tableModalObj = new bootstrap.Modal(tableModal);
 const tableModalTitle = tableModal.querySelector(".modal-title");
 const tableModalBody = tableModal.querySelector(".modal-body");
 
+function getCodeInput(field) {
+  return formControls[field].querySelector("[data-bnf-codes-input]");
+}
+
 function getSelectorButton(field) {
   return formControls[field].querySelector("[data-bnf-selector]");
 }
@@ -83,13 +86,6 @@ function getSelectorButton(field) {
 
 // Activate the CSS selectors that indicate whether a node is included or not.
 setBoolAttr(tree, "selectable", true);
-
-codeInputs.forEach((input) => {
-  // Populate the state from the hidden input.
-  state.query[input.dataset.field] = textToQuery(input.value);
-  // Update the list of selected codes.
-  renderSelectedCodes(input.dataset.field);
-});
 
 ["ntr", "dtr"].forEach((field) => {
   // Set up buttons.
@@ -102,6 +98,13 @@ codeInputs.forEach((input) => {
     treeModal.querySelector(".modal-title").innerHTML = title;
     treeModalObj.show();
   });
+
+  // Populate the state from the hidden input.
+  const input = getCodeInput(field);
+  state.query[field] = textToQuery(input.value);
+
+  // Update the list of selected codes.
+  renderSelectedCodes(field);
 });
 
 tree.addEventListener("click", (e) => {
