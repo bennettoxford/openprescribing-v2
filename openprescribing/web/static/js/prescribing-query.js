@@ -65,7 +65,6 @@ const formControls = {
   ntr: document.querySelector('[data-controls="ntr"]'),
   dtr: document.querySelector('[data-controls="dtr"]'),
 };
-const selectorButtons = document.querySelectorAll("[data-bnf-selector]");
 const codeInputs = document.querySelectorAll("[data-bnf-codes-input]");
 const treeModal = document.getElementById("bnf-tree-modal");
 const treeModalObj = new bootstrap.Modal(treeModal);
@@ -75,6 +74,10 @@ const tableModal = document.getElementById("bnf-table-modal");
 const tableModalObj = new bootstrap.Modal(tableModal);
 const tableModalTitle = tableModal.querySelector(".modal-title");
 const tableModalBody = tableModal.querySelector(".modal-body");
+
+function getSelectorButton(field) {
+  return formControls[field].querySelector("[data-bnf-selector]");
+}
 
 // }
 
@@ -88,12 +91,14 @@ codeInputs.forEach((input) => {
   renderSelectedCodes(input.dataset.field);
 });
 
-selectorButtons.forEach((button) => {
+["ntr", "dtr"].forEach((field) => {
+  // Set up buttons.
+  const button = getSelectorButton(field);
   button.addEventListener("click", (e) => {
     // The user has clicked on the button.
     e.preventDefault();
-    state.field = e.target.dataset.field;
-    const title = `Select codes for ${state.field === "ntr" ? "numerator" : "denominator"}`;
+    state.field = field;
+    const title = `Select codes for ${field === "ntr" ? "numerator" : "denominator"}`;
     treeModal.querySelector(".modal-title").innerHTML = title;
     treeModalObj.show();
   });
