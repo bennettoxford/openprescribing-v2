@@ -5,6 +5,7 @@ from openprescribing.web.presenters import (
     make_bnf_table,
     make_bnf_tree,
     make_ntr_dtr_intersection_table,
+    make_org_type_for_display,
 )
 
 
@@ -229,3 +230,15 @@ def test_make_ntr_dtr_intersection_table(
     assert actual["data"] == expected["data"]
 
     assert actual["has_denominators"] is expected["has_denominators"]
+
+
+@pytest.mark.parametrize(
+    "org_type, expected_org_type_label",
+    [
+        ("icb", "ICB"),
+        ("oth", "Other organisation"),
+    ],
+)
+def test_make_org_type_for_display(org_type, expected_org_type_label):
+    actual_org_type_label = make_org_type_for_display(org_type)
+    assert actual_org_type_label == expected_org_type_label
