@@ -102,6 +102,13 @@ const createTypeahead = ({
   });
 };
 
+const updateOrgTypeLabel = (org_type) => {
+  document.getElementById("decile_org_type").textContent = ` for ${org_type}s`;
+  ["line_chart_org_types", "dots_chart_org_types"].forEach((o) => {
+    document.getElementById(o).textContent = `${org_type}s`;
+  });
+};
+
 var chartResult;
 
 const createDecilesChart = () => {
@@ -140,6 +147,7 @@ const updateDecilesChart = (
           record.month = new Date(record.month);
         });
       }
+      updateOrgTypeLabel(response.org_type);
       chartResult.then((result) => {
         result.view.insert(add_dataset_name, response[api_dataset_name]);
         if (response.org) {

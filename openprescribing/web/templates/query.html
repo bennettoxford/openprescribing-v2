@@ -49,7 +49,11 @@
                         <fieldset>
                             <h2 class="h5">Show prescribing</h2>
                             <input type="radio" id="decile" name="chart_type" value="decile" selected>
-                            <label for="decile">Deciles</label>
+                            <label for="decile">Deciles
+                                <span id="decile_org_type">
+                                    for selected org type
+                                </span>
+                            </label>
                             <a href="#deciles-help" class="link-secondary d-inline-flex align-items-center" data-bs-toggle="modal">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -67,9 +71,18 @@
                             </a>
                             <br>
                             <input type="radio" id="all_orgs_line_chart" name="chart_type" value="all_orgs_line_chart">
-                            <label for="all_orgs_line_chart">All organisations (line chart)</label><br>
+                            <label for="all_orgs_line_chart">All
+                                <span id="line_chart_org_types">
+                                    organisations
+                                </span>
+                                (line chart)
+                            </label><br>
                             <input type="radio" id="all_orgs_dots_chart" name="chart_type" value="all_orgs_dots_chart">
-                            <label for="all_orgs_dots_chart">All organisations (dots chart)</label><br>
+                            <label for="all_orgs_dots_chart">All
+                                <span id="dots_chart_org_types">
+                                organisations
+                            </span>
+                            (dots chart)</label><br>
                         </fieldset>
                     </div>
                 </div>
