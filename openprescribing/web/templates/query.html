@@ -136,7 +136,7 @@
 </div>
 
 <div class="modal" id="deciles-help" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="deciles-help-title">Understanding the deciles chart</h5>
@@ -149,10 +149,53 @@
                 </p>
                 <p>
                     The thickest blue line, with long dashes rather than short dashes, shows the median.
+                    The median is the fifth decile.
                     Half of all organisations are above the median; half are below.
                 </p>
                 <p>
                     The <span style="color: red">red</span> line, if present, highlights a single organisation.
+                </p>
+                <h6>Understanding the median</h6>
+                <p>
+                    To understand deciles, it helps to understand the median.
+                </p>
+                <p>
+                    Imagine we have prescribing data for nine practices for one month.
+                    Let's order the prescribing data from smallest to largest.
+                </p>
+                <pre><code>[4, 16, 39, 40, 43, 56, 58, 67, 97]</code></pre>
+                <p>
+                    The median splits the values into the lower half and the higher half.
+                    In this case, the median is <code>43</code>.
+                    The four values in the lower half are less than the median.
+                    The four values in the higher half are greater than the median.
+                </p>
+                <p>
+                    Calculating the median isn't always as straightforward.
+                    What should we do when there are ten practices, for example?
+                </p>
+                <pre><code>[4, 16, 39, 40, 43, 44, 56, 58, 67, 97]</code></pre>
+                <p>
+                    In this case,
+                    two values separate the lower half from the higher half: <code>43</code> and <code>44</code>.
+                    In OpenPrescribing,
+                    we use the value that's half-way between these two values as the median: <code>43.5</code>.
+                </p>
+                <p>
+                    The median is the fifth decile.
+                    With the other deciles, we still split the values into a lower part and a higher part.
+                    However, the number of values in each part is different.
+                    For example, 20% of values are less than the second decile and 80% of values are greater than the second decile.
+                </p>
+                <h6>Understanding a single organisation</h6>
+                <p>
+                    If you've chosen to highlight a single organisation,
+                    then you may be wondering how it relates to the median.
+                    If its line is below the median,
+                    then its prescribing is less than the median.
+                    Similarly, if its line is above the median,
+                    then its prescribing is greater than the median.
+                    The same is true for the other deciles.
                 </p>
             </div>
             <div class="modal-footer">
