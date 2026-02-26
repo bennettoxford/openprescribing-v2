@@ -2,24 +2,24 @@
     <label class="form-label">BNF Codes</label>
     <input
         type="hidden"
-        name="{{ prefix }}_codes"
+        name="{{ field }}_codes"
         value="{% if codes %}{{ codes }}{% endif %}"
-        data-field="{{ prefix }}"
+        data-field="{{ field }}"
         data-bnf-codes-input
     />
     <ul
-        id="{{ prefix }}-codes-list"
+        id="{{ field }}-codes-list"
         class="list-group"
-        data-field="{{ prefix }}"
+        data-field="{{ field }}"
         data-bnf-codes-list
     ></ul>
     <button
         type="button"
         class="btn btn-outline-secondary w-100 mt-2"
-        data-field="{{ prefix }}"
+        data-field="{{ field }}"
         data-bnf-selector
     >
-        Select BNF codes for {% if prefix == "ntr" %}numerator{% else %}denominator{% endif %}
+        Select BNF codes for {% if field == "ntr" %}numerator{% else %}denominator{% endif %}
     </button>
 </div>
 <div class="mb-3">
@@ -28,7 +28,7 @@
         <input
             class="form-check-input"
             type="radio"
-            name="{{ prefix }}_product_type"
+            name="{{ field }}_product_type"
             value="all"
             {% if product_type == "all" %}checked{% endif %}
         />
@@ -38,7 +38,7 @@
         <input
             class="form-check-input"
             type="radio"
-            name="{{ prefix }}_product_type"
+            name="{{ field }}_product_type"
             value="generic"
             {% if product_type == "generic" %}checked{% endif %}
         />
@@ -48,7 +48,7 @@
         <input
             class="form-check-input"
             type="radio"
-            name="{{ prefix }}_product_type"
+            name="{{ field }}_product_type"
             value="branded"
             {% if product_type == "branded" %}checked{% endif %}
         />
