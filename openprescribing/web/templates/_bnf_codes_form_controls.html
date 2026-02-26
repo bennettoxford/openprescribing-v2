@@ -4,19 +4,16 @@
         type="hidden"
         name="{{ field }}_codes"
         value="{% if codes %}{{ codes }}{% endif %}"
-        data-field="{{ field }}"
         data-bnf-codes-input
     />
     <ul
         id="{{ field }}-codes-list"
         class="list-group"
-        data-field="{{ field }}"
         data-bnf-codes-list
     ></ul>
     <button
         type="button"
         class="btn btn-outline-secondary w-100 mt-2"
-        data-field="{{ field }}"
         data-bnf-selector
     >
         Select BNF codes for {% if field == "ntr" %}numerator{% else %}denominator{% endif %}
