@@ -11,6 +11,7 @@ import {
   queryToSortedTerms,
   renderSelectedCodes,
   setInputValue,
+  textToQuery,
   toggleCode,
 } from "@js/prescribing-query-utils.js";
 import { describe, expect, it } from "vitest";
@@ -73,6 +74,15 @@ describe("queryToSortedTerms", () => {
       { code: "0102", included: false },
       { code: "02", included: true },
     ]);
+  });
+});
+
+describe("textToQuery", () => {
+  it("returns query from text", () => {
+    expect(textToQuery("01\n-0101\n-0102\n02")).toEqual({
+      included: ["01", "02"],
+      excluded: ["0101", "0102"],
+    });
   });
 });
 

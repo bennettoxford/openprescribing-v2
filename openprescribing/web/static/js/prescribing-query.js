@@ -38,6 +38,7 @@ import {
   isPartiallyIncludedChemical,
   renderSelectedCodes,
   setInputValue,
+  textToQuery,
   toggleCode,
 } from "./prescribing-query-utils.js";
 
@@ -308,23 +309,6 @@ function handleTableCtrlClick(table, td) {
   const tr = td.closest("tr");
   toggleCode(getCurrentQuery(), tr.dataset.code);
   setTableState(table);
-}
-
-function textToQuery(text) {
-  // Given text from a hidden input, return a query object.
-  const included = [];
-  const excluded = [];
-  const terms = text.split(/\s+/);
-
-  terms.forEach((term) => {
-    if (term.startsWith("-")) {
-      excluded.push(term.slice(1));
-    } else if (term !== "") {
-      included.push(term);
-    }
-  });
-
-  return { included, excluded };
 }
 
 function setBoolAttr(el, attrName, val) {
