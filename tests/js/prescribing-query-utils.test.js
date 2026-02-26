@@ -9,6 +9,8 @@ import {
   isIncluded,
   isPartiallyIncludedChemical,
   queryToSortedTerms,
+  renderSelectedCodes,
+  setInputValue,
   toggleCode,
 } from "@js/prescribing-query-utils.js";
 import { describe, expect, it } from "vitest";
@@ -17,6 +19,50 @@ const CHAPTER = "01";
 const SECTION = "0101";
 const CHEMICAL = "010101000";
 const PRODUCT = "010101000AA";
+
+describe("renderSelectedCodes", () => {
+  describe("with empty query", () => {
+    it("shows 'No presentations selected.'", () => {
+      const query = { included: [], excluded: [] };
+      const list = document.createElement("ul");
+      renderSelectedCodes(query, list);
+      expect(list.querySelectorAll("li").length).toEqual(1);
+      expect(list.querySelector("li").innerHTML).toEqual(
+        "No presentations selected.",
+      );
+    });
+  });
+
+  describe("with non-empty query", () => {
+    it("shows one li per term", () => {
+      const query = { included: ["01", "02"], excluded: ["0101", "0102"] };
+      const list = document.createElement("ul");
+      renderSelectedCodes(query, list);
+      expect(list.querySelectorAll("li").length).toEqual(4);
+      expect(list.querySelectorAll("li")[0].innerHTML).toEqual(
+        "<code>01</code>",
+      );
+      expect(list.querySelectorAll("li")[1].innerHTML).toEqual(
+        "<code>-0101</code>",
+      );
+      expect(list.querySelectorAll("li")[2].innerHTML).toEqual(
+        "<code>-0102</code>",
+      );
+      expect(list.querySelectorAll("li")[3].innerHTML).toEqual(
+        "<code>02</code>",
+      );
+    });
+  });
+});
+
+describe("setInputValue", () => {
+  it("sets input value", () => {
+    const query = { included: ["01", "02"], excluded: ["0101", "0102"] };
+    const input = document.createElement("textarea");
+    setInputValue(query, input);
+    expect(input.value).toEqual("01\n-0101\n-0102\n02");
+  });
+});
 
 describe("queryToSortedTerms", () => {
   it("returns terms sorted by code", () => {

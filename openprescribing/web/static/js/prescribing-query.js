@@ -36,7 +36,8 @@ import {
   isExcluded,
   isIncluded,
   isPartiallyIncludedChemical,
-  queryToSortedTerms,
+  renderSelectedCodes,
+  setInputValue,
   toggleCode,
 } from "./prescribing-query-utils.js";
 
@@ -324,33 +325,6 @@ function textToQuery(text) {
   });
 
   return { included, excluded };
-}
-
-function renderSelectedCodes(query, list) {
-  // Update the list of codes.
-
-  const terms = queryToSortedTerms(query);
-
-  if (terms.length === 0) {
-    list.innerHTML = `<li class="list-group-item text-muted">No presentations selected.</li>`;
-  } else {
-    list.innerHTML = terms
-      .map(
-        ({ code, included }) =>
-          `<li class="list-group-item"><code>${included ? code : `-${code}`}</code></li>`,
-      )
-      .join("");
-  }
-}
-
-function setInputValue(query, input) {
-  // Update the hidden input.
-
-  const terms = queryToSortedTerms(query);
-
-  input.value = terms
-    .map(({ code, included }) => (included ? code : `-${code}`))
-    .join("\n");
 }
 
 function setBoolAttr(el, attrName, val) {
