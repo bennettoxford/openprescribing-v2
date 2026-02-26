@@ -36,6 +36,7 @@ import {
   isExcluded,
   isIncluded,
   isPartiallyIncludedChemical,
+  queryToSortedTerms,
   toggleCode,
 } from "./prescribing-query-utils.js";
 
@@ -334,16 +335,6 @@ function renderSelectedCodes(field) {
       )
       .join("");
   }
-}
-
-function queryToSortedTerms(query) {
-  // Given a query, return an array of terms (objects with properties `code` and
-  // `included`), sorted by code.
-  const terms = [
-    ...query.included.map((code) => ({ code, included: true })),
-    ...query.excluded.map((code) => ({ code, included: false })),
-  ];
-  return terms.sort((a, b) => (a.code > b.code ? 1 : -1));
 }
 
 function setBoolAttr(el, attrName, val) {

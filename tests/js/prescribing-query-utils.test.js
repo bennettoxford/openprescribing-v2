@@ -8,6 +8,7 @@ import {
   isExcluded,
   isIncluded,
   isPartiallyIncludedChemical,
+  queryToSortedTerms,
   toggleCode,
 } from "@js/prescribing-query-utils.js";
 import { describe, expect, it } from "vitest";
@@ -16,6 +17,18 @@ const CHAPTER = "01";
 const SECTION = "0101";
 const CHEMICAL = "010101000";
 const PRODUCT = "010101000AA";
+
+describe("queryToSortedTerms", () => {
+  it("returns terms sorted by code", () => {
+    const query = { included: ["01", "02"], excluded: ["0101", "0102"] };
+    expect(queryToSortedTerms(query)).toEqual([
+      { code: "01", included: true },
+      { code: "0101", included: false },
+      { code: "0102", included: false },
+      { code: "02", included: true },
+    ]);
+  });
+});
 
 describe("toggleCode", () => {
   it("toggling unselected code adds it to included", () => {
