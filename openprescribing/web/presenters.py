@@ -129,3 +129,9 @@ def make_ntr_dtr_intersection_table(
         for code in all_codes
     ]
     return {"has_denominators": has_denominators, "data": data}
+
+
+def make_org_type_for_display(org_type):
+    if org_type == "oth":
+        return "Other organisation"
+    return Org.OrgType(org_type).label
