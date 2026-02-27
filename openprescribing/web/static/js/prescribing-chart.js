@@ -82,6 +82,11 @@ const updateOrgTypeLabel = (org_type) => {
   });
 };
 
+const updateDataDateLabel = (latest_data_date) => {
+  document.getElementById("data-date").textContent =
+    latest_data_date.toDateString();
+};
+
 var chartResult;
 
 const createDecilesChart = () => {
@@ -112,9 +117,14 @@ const updateDecilesChart = (
       return response.json();
     })
     .then((response) => {
+      var highest_month = null;
       response[api_dataset_name].forEach((record) => {
         record.month = new Date(record.month);
+        if (record.month > highest_month) {
+          highest_month = record.month;
+        }
       });
+      updateDataDateLabel(highest_month);
       if (response.org) {
         response.org.forEach((record) => {
           record.month = new Date(record.month);
