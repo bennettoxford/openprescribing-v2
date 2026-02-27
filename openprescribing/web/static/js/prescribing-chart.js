@@ -1,30 +1,3 @@
-const setupBNFCodeSearch = () => {
-  const bnfCodes = JSON.parse(document.getElementById("bnf-codes").textContent);
-  const bnfLevels = Object.fromEntries(
-    JSON.parse(document.getElementById("bnf-levels").textContent),
-  );
-
-  const bnfSearch = document.getElementById("bnf-search");
-  const bnfResults = document.getElementById("bnf-results");
-
-  createTypeahead({
-    input: bnfSearch,
-    results: bnfResults,
-    minChars: 3,
-    getMatches: (query) =>
-      bnfCodes.filter((c) => c.name.toLowerCase().includes(query)),
-    renderItem: (item) => `
-            <div class="fw-semibold">${item.name}</div>
-            <div class="text-muted small">${item.code} - ${bnfLevels[item.level]}</div>
-        `,
-    onSelect: (item) => {
-      navigateWithParams((params) => {
-        params.set("code", item.code);
-      });
-    },
-  });
-};
-
 const setupOrgSearch = () => {
   const orgs = JSON.parse(document.getElementById("orgs").textContent);
   const orgTypes = Object.fromEntries(
@@ -169,9 +142,6 @@ const updateDecilesChart = (
 
 document.addEventListener("DOMContentLoaded", () => {
   // Only initialise the Typeahead search on pages that use it
-  if (document.getElementById("bnf-codes")) {
-    setupBNFCodeSearch();
-  }
   if (document.getElementById("orgs")) {
     setupOrgSearch();
   }
