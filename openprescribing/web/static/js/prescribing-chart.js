@@ -118,15 +118,17 @@ const updateDecilesChart = (
       }
       updateOrgTypeLabel(response.org_type);
       chartResult.then((result) => {
-        result.view.insert(add_dataset_name, response[api_dataset_name]);
+        const chart = result.view;
+        chart.insert(add_dataset_name, response[api_dataset_name]);
         if (response.org) {
-          result.view.insert("org", response.org);
+          chart.insert("org", response.org);
         }
         all_dataset_names.forEach((remove_dataset_name) => {
           if (remove_dataset_name !== add_dataset_name) {
-            result.view.remove(remove_dataset_name, () => true).run();
+            chart.remove(remove_dataset_name, () => true);
           }
         });
+        chart.run();
       });
     })
     .catch((error) => {
