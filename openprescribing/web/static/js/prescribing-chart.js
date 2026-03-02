@@ -108,22 +108,11 @@ const updateDecilesChart = (
       return response.json();
     })
     .then((response) => {
-      parseRecordMonths(response[api_dataset_name]);
-      if (response.org) {
-        parseRecordMonths(response.org);
-      }
       updateOrgTypeLabel(response.org_type);
+
       chartResult.then((result) => {
         const chart = result.view;
-        chart.insert(add_dataset_name, response[api_dataset_name]);
-        if (response.org) {
-          chart.insert("org", response.org);
-        }
-        allDatasetNames.forEach((removeDatasetName) => {
-          if (removeDatasetName !== add_dataset_name) {
-            chart.remove(removeDatasetName, () => true);
-          }
-        });
+        updateNonRelativeDataset(chart, response, api_dataset_name, add_dataset_name);
         chart.run();
       });
     })
@@ -133,6 +122,27 @@ const updateDecilesChart = (
       chartContainer.textContent =
         "Unable to load chart data. Please try again later.";
     });
+};
+
+const updateNonRelativeDataset = (
+  chart,
+  response,
+  apiDatasetName,
+  addDatasetName,
+) => {
+  parseRecordMonths(response[apiDatasetName]);
+  chart.insert(addDatasetName, response[apiDatasetName]);
+
+  if (response.org) {
+    parseRecordMonths(response.org);
+    chart.insert("org", response.org);
+  }
+
+  allDatasetNames.forEach((removeDatasetName) => {
+    if (removeDatasetName !== addDatasetName) {
+      chart.remove(removeDatasetName, () => true);
+    }
+  });
 };
 
 const parseRecordMonths = (records) => {
