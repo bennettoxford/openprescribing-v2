@@ -83,6 +83,7 @@ const updateOrgTypeLabel = (org_type) => {
 };
 
 var chartResult;
+const allDatasetNames = ["deciles", "all_orgs_dots_chart", "all_orgs_line_chart"];
 
 const createDecilesChart = () => {
   const chartContainer = document.querySelector("#deciles-chart-container");
@@ -99,11 +100,6 @@ const updateDecilesChart = (
   api_dataset_name,
   add_dataset_name,
 ) => {
-  const all_dataset_names = [
-    "deciles",
-    "all_orgs_dots_chart",
-    "all_orgs_line_chart",
-  ];
   fetch(prescribingDecilesUrl)
     .then((response) => {
       if (!response.ok) {
@@ -123,9 +119,9 @@ const updateDecilesChart = (
         if (response.org) {
           chart.insert("org", response.org);
         }
-        all_dataset_names.forEach((remove_dataset_name) => {
-          if (remove_dataset_name !== add_dataset_name) {
-            chart.remove(remove_dataset_name, () => true);
+        allDatasetNames.forEach((removeDatasetName) => {
+          if (removeDatasetName !== add_dataset_name) {
+            chart.remove(removeDatasetName, () => true);
           }
         });
         chart.run();
