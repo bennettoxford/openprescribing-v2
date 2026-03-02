@@ -112,13 +112,9 @@ const updateDecilesChart = (
       return response.json();
     })
     .then((response) => {
-      response[api_dataset_name].forEach((record) => {
-        record.month = new Date(record.month);
-      });
+      parseRecordMonths(response[api_dataset_name]);
       if (response.org) {
-        response.org.forEach((record) => {
-          record.month = new Date(record.month);
-        });
+        parseRecordMonths(response.org);
       }
       updateOrgTypeLabel(response.org_type);
       chartResult.then((result) => {
@@ -138,6 +134,12 @@ const updateDecilesChart = (
       chartContainer.textContent =
         "Unable to load chart data. Please try again later.";
     });
+};
+
+const parseRecordMonths = (records) => {
+  records.forEach((record) => {
+    record.month = new Date(record.month);
+  });
 };
 
 document.addEventListener("DOMContentLoaded", () => {
