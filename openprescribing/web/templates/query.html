@@ -83,6 +83,10 @@
                                 organisations
                             </span>
                             (dots chart)</label><br>
+                            {% if org %}
+                            <input type="radio" id="relative_to_median_chart" name="chart_type" value="relative_to_median">
+                            <label for="relative_to_median_chart">Relative to median</label><br>
+                            {% endif %}
                         </fieldset>
                     </div>
                 </div>

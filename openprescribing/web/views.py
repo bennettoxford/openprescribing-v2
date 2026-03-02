@@ -102,6 +102,30 @@ def query(request):
     )
     deciles_chart += all_orgs_dots_chart
 
+    relative_to_median_bounds_chart = (
+        alt.Chart(alt.NamedData("relative_to_median_bounds"))
+        .mark_point(opacity=0)
+        .encode(x=x, y=y)
+        .properties(width=660, height=360)
+    )
+    deciles_chart += relative_to_median_bounds_chart
+
+    relative_to_median_chart = (
+        alt.Chart(alt.NamedData("relative_to_median"))
+        .mark_area(color="blue", opacity=0.3)
+        .encode(x=x, y=y, y2=alt.value(0))
+        .properties(width=660, height=360)
+    )
+    deciles_chart += relative_to_median_chart
+
+    relative_to_median_zero_line = (
+        alt.Chart(alt.NamedData("relative_to_median_zero_line"))
+        .mark_rule(color="blue", strokeDash=[6, 4])
+        .encode(y=y)
+        .properties(width=660, height=360)
+    )
+    deciles_chart += relative_to_median_zero_line
+
     # Org line should go on top of any other charts
     org_chart = alt.Chart(alt.NamedData("org")).mark_line(color="red").encode(x=x, y=y)
     deciles_chart += org_chart

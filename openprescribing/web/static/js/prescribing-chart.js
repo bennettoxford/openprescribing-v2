@@ -83,7 +83,14 @@ const updateOrgTypeLabel = (org_type) => {
 };
 
 var chartResult;
-const allDatasetNames = ["deciles", "all_orgs_dots_chart", "all_orgs_line_chart"];
+const allDatasetNames = [
+  "deciles",
+  "all_orgs_dots_chart",
+  "all_orgs_line_chart",
+  "relative_to_median",
+  "relative_to_median_bounds",
+  "relative_to_median_zero_line",
+];
 
 const createDecilesChart = () => {
   const chartContainer = document.querySelector("#deciles-chart-container");
@@ -112,7 +119,16 @@ const updateDecilesChart = (
 
       chartResult.then((result) => {
         const chart = result.view;
-        updateNonRelativeDataset(chart, response, api_dataset_name, add_dataset_name);
+        if (add_dataset_name === "relative_to_median") {
+          updateRelativeToMedianDataset(chart, response);
+        } else {
+          updateNonRelativeDataset(
+            chart,
+            response,
+            api_dataset_name,
+            add_dataset_name,
+          );
+        }
         chart.run();
       });
     })
@@ -143,6 +159,73 @@ const updateNonRelativeDataset = (
       chart.remove(removeDatasetName, () => true);
     }
   });
+};
+
+const updateRelativeToMedianDataset = (chart, response) => {
+  const { relativeToMedian, relativeToMedianBounds, relativeToMedianZeroLine } =
+    buildRelativeToMedianData(response.deciles, response.org ?? []);
+  chart.insert("relative_to_median", relativeToMedian);
+  chart.insert("relative_to_median_bounds", relativeToMedianBounds);
+  chart.insert("relative_to_median_zero_line", relativeToMedianZeroLine);
+  chart.remove("org", () => true);
+
+  allDatasetNames.forEach((removeDatasetName) => {
+    if (
+      ![
+        "relative_to_median",
+        "relative_to_median_bounds",
+        "relative_to_median_zero_line",
+      ].includes(removeDatasetName)
+    ) {
+      chart.remove(removeDatasetName, () => true);
+    }
+  });
+};
+
+const buildRelativeToMedianData = (deciles, org) => {
+  const medianByMonth = new Map();
+  deciles.forEach((record) => {
+    if (record.centile === 50 && record.value !== null) {
+      medianByMonth.set(record.month, record.value);
+    }
+  });
+
+  const relativeToMedian = [];
+  org.forEach((record) => {
+    if (record.value === null) {
+      return;
+    }
+    const median = medianByMonth.get(record.month);
+    if (median === undefined || median === null) {
+      return;
+    }
+    relativeToMedian.push({
+      month: new Date(record.month),
+      value: record.value - median,
+    });
+  });
+
+  const maxAbsDifference = Math.max(
+    ...relativeToMedian.map((record) => Math.abs(record.value)),
+    0,
+  );
+  const yDomainExtent = maxAbsDifference > 0 ? maxAbsDifference : 0.01;
+  const boundMonth =
+    relativeToMedian.length > 0
+      ? relativeToMedian[0].month
+      : org.length > 0
+        ? new Date(org[0].month)
+        : new Date();
+  const relativeToMedianBounds = [
+    { month: boundMonth, value: yDomainExtent },
+    { month: boundMonth, value: -yDomainExtent },
+  ];
+
+  return {
+    relativeToMedian,
+    relativeToMedianBounds,
+    relativeToMedianZeroLine: [{ value: 0 }],
+  };
 };
 
 const parseRecordMonths = (records) => {
@@ -196,6 +279,22 @@ document.addEventListener("DOMContentLoaded", () => {
             );
           }
         });
+    }
+
+    const relativeToMedianChart = document.getElementById(
+      "relative_to_median_chart",
+    );
+    if (relativeToMedianChart) {
+      // Will only be present if an org has been selected.
+      relativeToMedianChart.addEventListener("click", () => {
+        if (prescribingDecilesUrl) {
+          updateDecilesChart(
+            prescribingDecilesUrl,
+            "deciles",
+            "relative_to_median",
+          );
+        }
+      });
     }
 
     // default to decile view!
