@@ -15,7 +15,6 @@ dependencies = [
     "opentelemetry-exporter-otlp-proto-http>=1.38.0",
     "opentelemetry-instrumentation-django>=0.59b0",
     "opentelemetry-sdk>=1.38.0",
-    "pandas>=2.3.3",
     "pyarrow>=22.0.0",
     "requests>=2.32.5",
     "scipy>=1.16.2",
@@ -91,7 +90,6 @@ lines-after-imports = 2
 [tool.ruff.lint.flake8-import-conventions.aliases]
 altair = "alt"
 numpy = "np"
-pandas = "pd"
 
 # Note: any `exclude-newer-package` timestamps should be removed if > 7 days old
 # See https://github.com/opensafely-core/repo-template/blob/main/DEVELOPERS.md for details
