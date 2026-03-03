@@ -76,7 +76,7 @@ def query(request):
     )
     deciles_chart = (
         alt.Chart(alt.NamedData("deciles"))
-        .mark_line(color="blue")
+        .mark_line(color="#3182BD")
         .encode(x=x, y=y, detail="centile:O", strokeDash=stroke_dash)
         .properties(width=660, height=360)
     )
