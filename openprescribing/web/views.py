@@ -103,7 +103,9 @@ def query(request):
     deciles_chart += all_orgs_dots_chart
 
     # Org line should go on top of any other charts
-    org_chart = alt.Chart(alt.NamedData("org")).mark_line(color="red").encode(x=x, y=y)
+    org_chart = (
+        alt.Chart(alt.NamedData("org")).mark_line(color="#DE2D26").encode(x=x, y=y)
+    )
     deciles_chart += org_chart
 
     ctx = {
