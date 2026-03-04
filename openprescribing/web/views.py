@@ -4,7 +4,7 @@ from django.urls import reverse
 from openprescribing.data.models import BNFCode, Org
 from openprescribing.data.rxdb.search import describe_search
 
-from .charts import build_chart_spec
+from .charts import build_chart_specs
 from .presenters import (
     make_bnf_table,
     make_bnf_tree,
@@ -81,7 +81,7 @@ def query(request):
         "prescribing_deciles_url": deciles_api_url,
         "prescribing_all_orgs_url": all_orgs_api_url,
         "tree": tree,
-        "chart_spec": build_chart_spec(not dtr_codes_raw),
+        "chart_specs": build_chart_specs(not dtr_codes_raw),
     }
 
     return render(request, "query.html", ctx)

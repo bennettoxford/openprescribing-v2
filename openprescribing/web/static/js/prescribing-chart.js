@@ -83,23 +83,19 @@ const updateOrgTypeLabel = (org_type) => {
 };
 
 var chartResult;
+var chartSpecs;
 
-const createChart = () => {
+const createChart = (chartType) => {
   const chartContainer = document.querySelector("#chart-container");
-  const chartSpec = JSON.parse(
-    document.getElementById("chart-spec").textContent,
-  );
+  const chartSpec = chartSpecs[chartType];
 
   const opt = { renderer: "svg" };
   chartResult = vegaEmbed(chartContainer, chartSpec, opt);
 };
 
-const updateChart = (url, apiDatasetName, chartSpecName) => {
-  const chartSpecNames = [
-    "deciles_chart",
-    "all_orgs_dots_chart",
-    "all_orgs_line_chart",
-  ];
+const updateChart = (url, apiDatasetName, chartType) => {
+  createChart(chartType);
+
   fetch(url)
     .then((response) => {
       if (!response.ok) {
@@ -118,19 +114,16 @@ const updateChart = (url, apiDatasetName, chartSpecName) => {
       }
       updateOrgTypeLabel(response.org_type);
       chartResult.then((result) => {
-        result.view.insert(chartSpecName, response[apiDatasetName]);
+        result.view.insert(chartType, response[apiDatasetName]);
         if (response.org) {
           result.view.insert("org", response.org);
         }
-        chartSpecNames.forEach((name) => {
-          if (name !== chartSpecName) {
-            result.view.remove(name, () => true).run();
-          }
-        });
+        result.view.run();
       });
     })
     .catch((error) => {
       console.error("Unable to render deciles chart", error);
+      const chartContainer = document.querySelector("#chart-container");
       chartContainer.textContent =
         "Unable to load chart data. Please try again later.";
     });
@@ -147,10 +140,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const prescribingAllOrgsUrl = JSON.parse(
     document.getElementById("prescribing-all-orgs-url").textContent,
   );
+  chartSpecs = JSON.parse(document.getElementById("chart-specs").textContent);
 
   if (prescribingDecilesUrl) {
-    createChart();
-
     document.getElementById("deciles_chart").addEventListener("click", () => {
       updateChart(prescribingDecilesUrl, "deciles", "deciles_chart");
     });
