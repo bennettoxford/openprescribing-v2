@@ -8,7 +8,7 @@ def build_chart_spec(dtr_is_list_size):
         alt.when(alt.datum.centile == 50).then(alt.value(3)).otherwise(alt.value(1))
     )
     deciles_chart = (
-        alt.Chart(alt.NamedData("deciles"))
+        alt.Chart(alt.NamedData("deciles_chart"))
         .mark_line(color="#3182BD")
         .encode(x=x, y=y, detail="centile:O", strokeWidth=stroke_width)
         .properties(width=660, height=360)

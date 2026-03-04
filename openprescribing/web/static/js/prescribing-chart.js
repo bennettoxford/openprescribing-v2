@@ -96,7 +96,7 @@ const createChart = () => {
 
 const updateChart = (url, apiDatasetName, chartSpecName) => {
   const chartSpecNames = [
-    "deciles",
+    "deciles_chart",
     "all_orgs_dots_chart",
     "all_orgs_line_chart",
   ];
@@ -152,7 +152,7 @@ document.addEventListener("DOMContentLoaded", () => {
     createChart();
 
     document.getElementById("deciles_chart").addEventListener("click", () => {
-      updateChart(prescribingDecilesUrl, "deciles", "deciles");
+      updateChart(prescribingDecilesUrl, "deciles", "deciles_chart");
     });
 
     document
