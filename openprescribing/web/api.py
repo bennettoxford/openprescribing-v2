@@ -61,27 +61,7 @@ def _build_odm(request):
     return odm, org
 
 
-@cache_control(public=True, max_age=3600)
-def prescribing_all_orgs(request):
-    odm, org = _build_odm(request)
-
-    all_orgs_records = list(odm.to_records(row_name="org", col_name="month"))
-    nans_to_nones(all_orgs_records)
-
-    if org is None:
-        org_type = make_org_type_for_display("icb")
-    else:
-        org_type = make_org_type_for_display(org.org_type)
-
-    return JsonResponse({"all_orgs": all_orgs_records, "org_type": org_type})
-
-
-@cache_control(public=True, max_age=3600)
-def prescribing_deciles(request):
-    odm, org = _build_odm(request)
-    cdm = get_centiles(odm)
-
-    deciles_records = list(cdm.to_records(row_name="centile", col_name="month"))
+def _get_org_records(odm, org):
     if org is not None:
         org_records = [
             {"month": month, "value": value}
@@ -95,6 +75,35 @@ def prescribing_deciles(request):
         nans_to_nones(org_records)
     else:
         org_records = []
+
+    return org_records
+
+
+@cache_control(public=True, max_age=3600)
+def prescribing_all_orgs(request):
+    odm, org = _build_odm(request)
+
+    all_orgs_records = list(odm.to_records(row_name="org", col_name="month"))
+    nans_to_nones(all_orgs_records)
+    org_records = _get_org_records(odm, org)
+
+    if org is None:
+        org_type = make_org_type_for_display("icb")
+    else:
+        org_type = make_org_type_for_display(org.org_type)
+
+    return JsonResponse(
+        {"all_orgs": all_orgs_records, "org": org_records, "org_type": org_type}
+    )
+
+
+@cache_control(public=True, max_age=3600)
+def prescribing_deciles(request):
+    odm, org = _build_odm(request)
+    cdm = get_centiles(odm)
+
+    deciles_records = list(cdm.to_records(row_name="centile", col_name="month"))
+    org_records = _get_org_records(odm, org)
 
     if org is None:
         org_type = make_org_type_for_display("icb")

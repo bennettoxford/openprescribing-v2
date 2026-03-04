@@ -83,28 +83,20 @@ const updateOrgTypeLabel = (org_type) => {
 };
 
 var chartResult;
+var chartSpecs;
 
-const createDecilesChart = () => {
-  const chartContainer = document.querySelector("#deciles-chart-container");
-  const chartSpec = JSON.parse(
-    document.getElementById("deciles-chart").textContent,
-  );
+const createChart = (chartType) => {
+  const chartContainer = document.querySelector("#chart-container");
+  const chartSpec = chartSpecs[chartType];
 
   const opt = { renderer: "svg" };
   chartResult = vegaEmbed(chartContainer, chartSpec, opt);
 };
 
-const updateDecilesChart = (
-  prescribingDecilesUrl,
-  api_dataset_name,
-  add_dataset_name,
-) => {
-  const all_dataset_names = [
-    "deciles",
-    "all_orgs_dots_chart",
-    "all_orgs_line_chart",
-  ];
-  fetch(prescribingDecilesUrl)
+const updateChart = (url, apiDatasetName, chartType) => {
+  createChart(chartType);
+
+  fetch(url)
     .then((response) => {
       if (!response.ok) {
         throw new Error(`Failed to fetch chart data: ${response.status}`);
@@ -112,7 +104,7 @@ const updateDecilesChart = (
       return response.json();
     })
     .then((response) => {
-      response[api_dataset_name].forEach((record) => {
+      response[apiDatasetName].forEach((record) => {
         record.month = new Date(record.month);
       });
       if (response.org) {
@@ -122,19 +114,16 @@ const updateDecilesChart = (
       }
       updateOrgTypeLabel(response.org_type);
       chartResult.then((result) => {
-        result.view.insert(add_dataset_name, response[api_dataset_name]);
+        result.view.insert(chartType, response[apiDatasetName]);
         if (response.org) {
           result.view.insert("org", response.org);
         }
-        all_dataset_names.forEach((remove_dataset_name) => {
-          if (remove_dataset_name !== add_dataset_name) {
-            result.view.remove(remove_dataset_name, () => true).run();
-          }
-        });
+        result.view.run();
       });
     })
     .catch((error) => {
       console.error("Unable to render deciles chart", error);
+      const chartContainer = document.querySelector("#chart-container");
       chartContainer.textContent =
         "Unable to load chart data. Please try again later.";
     });
@@ -151,43 +140,26 @@ document.addEventListener("DOMContentLoaded", () => {
   const prescribingAllOrgsUrl = JSON.parse(
     document.getElementById("prescribing-all-orgs-url").textContent,
   );
+  chartSpecs = JSON.parse(document.getElementById("chart-specs").textContent);
 
   if (prescribingDecilesUrl) {
-    createDecilesChart();
-
-    document.getElementById("decile").addEventListener("click", () => {
-      if (prescribingDecilesUrl) {
-        updateDecilesChart(prescribingDecilesUrl, "deciles", "deciles");
-      }
+    document.getElementById("deciles_chart").addEventListener("click", () => {
+      updateChart(prescribingDecilesUrl, "deciles", "deciles_chart");
     });
 
-    if (prescribingAllOrgsUrl) {
-      document
-        .getElementById("all_orgs_line_chart")
-        .addEventListener("click", () => {
-          if (prescribingAllOrgsUrl) {
-            updateDecilesChart(
-              prescribingAllOrgsUrl,
-              "all_orgs",
-              "all_orgs_line_chart",
-            );
-          }
-        });
+    document
+      .getElementById("all_orgs_line_chart")
+      .addEventListener("click", () => {
+        updateChart(prescribingAllOrgsUrl, "all_orgs", "all_orgs_line_chart");
+      });
 
-      document
-        .getElementById("all_orgs_dots_chart")
-        .addEventListener("click", () => {
-          if (prescribingAllOrgsUrl) {
-            updateDecilesChart(
-              prescribingAllOrgsUrl,
-              "all_orgs",
-              "all_orgs_dots_chart",
-            );
-          }
-        });
-    }
+    document
+      .getElementById("all_orgs_dots_chart")
+      .addEventListener("click", () => {
+        updateChart(prescribingAllOrgsUrl, "all_orgs", "all_orgs_dots_chart");
+      });
 
     // default to decile view!
-    document.getElementById("decile").click();
+    document.getElementById("deciles_chart").click();
   }
 });
