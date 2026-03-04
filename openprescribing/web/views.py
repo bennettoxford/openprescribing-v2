@@ -81,7 +81,7 @@ def query(request):
         "prescribing_deciles_url": deciles_api_url,
         "prescribing_all_orgs_url": all_orgs_api_url,
         "tree": tree,
-        "deciles_chart": build_chart_spec(not dtr_codes_raw),
+        "chart_spec": build_chart_spec(not dtr_codes_raw),
     }
 
     return render(request, "query.html", ctx)

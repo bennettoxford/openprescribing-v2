@@ -87,7 +87,7 @@ var chartResult;
 const createDecilesChart = () => {
   const chartContainer = document.querySelector("#deciles-chart-container");
   const chartSpec = JSON.parse(
-    document.getElementById("deciles-chart").textContent,
+    document.getElementById("chart-spec").textContent,
   );
 
   const opt = { renderer: "svg" };
