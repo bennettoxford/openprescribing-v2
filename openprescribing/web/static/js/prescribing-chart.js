@@ -96,10 +96,10 @@ const createChart = () => {
 
 const updateChart = (
   prescribingDecilesUrl,
-  api_dataset_name,
-  add_dataset_name,
+  apiDatasetName,
+  addDatasetName,
 ) => {
-  const all_dataset_names = [
+  const allDatasetNames = [
     "deciles",
     "all_orgs_dots_chart",
     "all_orgs_line_chart",
@@ -112,7 +112,7 @@ const updateChart = (
       return response.json();
     })
     .then((response) => {
-      response[api_dataset_name].forEach((record) => {
+      response[apiDatasetName].forEach((record) => {
         record.month = new Date(record.month);
       });
       if (response.org) {
@@ -122,13 +122,13 @@ const updateChart = (
       }
       updateOrgTypeLabel(response.org_type);
       chartResult.then((result) => {
-        result.view.insert(add_dataset_name, response[api_dataset_name]);
+        result.view.insert(addDatasetName, response[apiDatasetName]);
         if (response.org) {
           result.view.insert("org", response.org);
         }
-        all_dataset_names.forEach((remove_dataset_name) => {
-          if (remove_dataset_name !== add_dataset_name) {
-            result.view.remove(remove_dataset_name, () => true).run();
+        allDatasetNames.forEach((removeDatasetName) => {
+          if (removeDatasetName !== addDatasetName) {
+            result.view.remove(removeDatasetName, () => true).run();
           }
         });
       });
