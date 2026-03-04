@@ -95,7 +95,7 @@ const createChart = () => {
 };
 
 const updateChart = (
-  prescribingDecilesUrl,
+  url,
   apiDatasetName,
   addDatasetName,
 ) => {
@@ -104,7 +104,7 @@ const updateChart = (
     "all_orgs_dots_chart",
     "all_orgs_line_chart",
   ];
-  fetch(prescribingDecilesUrl)
+  fetch(url)
     .then((response) => {
       if (!response.ok) {
         throw new Error(`Failed to fetch chart data: ${response.status}`);
