@@ -84,7 +84,7 @@ const updateOrgTypeLabel = (org_type) => {
 
 var chartResult;
 
-const createDecilesChart = () => {
+const createChart = () => {
   const chartContainer = document.querySelector("#chart-container");
   const chartSpec = JSON.parse(
     document.getElementById("chart-spec").textContent,
@@ -94,7 +94,7 @@ const createDecilesChart = () => {
   chartResult = vegaEmbed(chartContainer, chartSpec, opt);
 };
 
-const updateDecilesChart = (
+const updateChart = (
   prescribingDecilesUrl,
   api_dataset_name,
   add_dataset_name,
@@ -153,16 +153,16 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   if (prescribingDecilesUrl) {
-    createDecilesChart();
+    createChart();
 
     document.getElementById("decile").addEventListener("click", () => {
-      updateDecilesChart(prescribingDecilesUrl, "deciles", "deciles");
+      updateChart(prescribingDecilesUrl, "deciles", "deciles");
     });
 
     document
       .getElementById("all_orgs_line_chart")
       .addEventListener("click", () => {
-        updateDecilesChart(
+        updateChart(
           prescribingAllOrgsUrl,
           "all_orgs",
           "all_orgs_line_chart",
@@ -172,7 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document
       .getElementById("all_orgs_dots_chart")
       .addEventListener("click", () => {
-        updateDecilesChart(
+        updateChart(
           prescribingAllOrgsUrl,
           "all_orgs",
           "all_orgs_dots_chart",
