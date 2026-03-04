@@ -61,6 +61,24 @@ def _build_odm(request):
     return odm, org
 
 
+def _get_org_records(odm, org):
+    if org is not None:
+        org_records = [
+            {"month": month, "value": value}
+            for month, value in zip(odm.col_labels, odm.get_row(org))
+        ]
+        # The organisation-date matrix (odm) can contain NaNs. NaNs are ignored when
+        # deciles are computed, and so are not present in deciles_records. However,
+        # NaNs are present in org_records. Python's json.JSONEncoder will serialise
+        # NaNs, but JavaScript's JSON.parse won't deserialise them. Consequently, we
+        # have to convert NaNs to Nones ourselves.
+        nans_to_nones(org_records)
+    else:
+        org_records = []
+
+    return org_records
+
+
 @cache_control(public=True, max_age=3600)
 def prescribing_all_orgs(request):
     odm, org = _build_odm(request)
@@ -82,19 +100,7 @@ def prescribing_deciles(request):
     cdm = get_centiles(odm)
 
     deciles_records = list(cdm.to_records(row_name="centile", col_name="month"))
-    if org is not None:
-        org_records = [
-            {"month": month, "value": value}
-            for month, value in zip(odm.col_labels, odm.get_row(org))
-        ]
-        # The organisation-date matrix (odm) can contain NaNs. NaNs are ignored when
-        # deciles are computed, and so are not present in deciles_records. However,
-        # NaNs are present in org_records. Python's json.JSONEncoder will serialise
-        # NaNs, but JavaScript's JSON.parse won't deserialise them. Consequently, we
-        # have to convert NaNs to Nones ourselves.
-        nans_to_nones(org_records)
-    else:
-        org_records = []
+    org_records = _get_org_records(odm, org)
 
     if org is None:
         org_type = make_org_type_for_display("icb")
