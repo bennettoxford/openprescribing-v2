@@ -94,8 +94,8 @@ const createChart = () => {
   chartResult = vegaEmbed(chartContainer, chartSpec, opt);
 };
 
-const updateChart = (url, apiDatasetName, addDatasetName) => {
-  const allDatasetNames = [
+const updateChart = (url, apiDatasetName, chartSpecName) => {
+  const chartSpecNames = [
     "deciles",
     "all_orgs_dots_chart",
     "all_orgs_line_chart",
@@ -118,13 +118,13 @@ const updateChart = (url, apiDatasetName, addDatasetName) => {
       }
       updateOrgTypeLabel(response.org_type);
       chartResult.then((result) => {
-        result.view.insert(addDatasetName, response[apiDatasetName]);
+        result.view.insert(chartSpecName, response[apiDatasetName]);
         if (response.org) {
           result.view.insert("org", response.org);
         }
-        allDatasetNames.forEach((removeDatasetName) => {
-          if (removeDatasetName !== addDatasetName) {
-            result.view.remove(removeDatasetName, () => true).run();
+        chartSpecNames.forEach((name) => {
+          if (name !== chartSpecName) {
+            result.view.remove(name, () => true).run();
           }
         });
       });
