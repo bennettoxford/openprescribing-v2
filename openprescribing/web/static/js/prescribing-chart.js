@@ -85,7 +85,7 @@ const updateOrgTypeLabel = (org_type) => {
 var chartResult;
 
 const createDecilesChart = () => {
-  const chartContainer = document.querySelector("#deciles-chart-container");
+  const chartContainer = document.querySelector("#chart-container");
   const chartSpec = JSON.parse(
     document.getElementById("chart-spec").textContent,
   );
