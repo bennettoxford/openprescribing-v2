@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (prescribingDecilesUrl) {
     createChart();
 
-    document.getElementById("decile").addEventListener("click", () => {
+    document.getElementById("deciles_chart").addEventListener("click", () => {
       updateChart(prescribingDecilesUrl, "deciles", "deciles");
     });
 
@@ -180,6 +180,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
     // default to decile view!
-    document.getElementById("decile").click();
+    document.getElementById("deciles_chart").click();
   }
 });
