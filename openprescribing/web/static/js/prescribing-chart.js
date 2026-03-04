@@ -94,11 +94,7 @@ const createChart = () => {
   chartResult = vegaEmbed(chartContainer, chartSpec, opt);
 };
 
-const updateChart = (
-  url,
-  apiDatasetName,
-  addDatasetName,
-) => {
+const updateChart = (url, apiDatasetName, addDatasetName) => {
   const allDatasetNames = [
     "deciles",
     "all_orgs_dots_chart",
@@ -162,21 +158,13 @@ document.addEventListener("DOMContentLoaded", () => {
     document
       .getElementById("all_orgs_line_chart")
       .addEventListener("click", () => {
-        updateChart(
-          prescribingAllOrgsUrl,
-          "all_orgs",
-          "all_orgs_line_chart",
-        );
+        updateChart(prescribingAllOrgsUrl, "all_orgs", "all_orgs_line_chart");
       });
 
     document
       .getElementById("all_orgs_dots_chart")
       .addEventListener("click", () => {
-        updateChart(
-          prescribingAllOrgsUrl,
-          "all_orgs",
-          "all_orgs_dots_chart",
-        );
+        updateChart(prescribingAllOrgsUrl, "all_orgs", "all_orgs_dots_chart");
       });
 
     // default to decile view!
