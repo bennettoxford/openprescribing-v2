@@ -69,15 +69,13 @@ def query(request):
 
     x = alt.X("month:T", title="Month", axis=alt.Axis(format="%Y %b"))
     y = alt.Y("value:Q", title="%" if dtr_codes_raw else "Items per 1000 patients")
-    stroke_dash = (
-        alt.when(alt.datum.centile == 50)
-        .then(alt.value((6, 2)))
-        .otherwise(alt.value((2, 6)))
+    stroke_width = (
+        alt.when(alt.datum.centile == 50).then(alt.value(3)).otherwise(alt.value(1))
     )
     deciles_chart = (
         alt.Chart(alt.NamedData("deciles"))
-        .mark_line(color="blue")
-        .encode(x=x, y=y, detail="centile:O", strokeDash=stroke_dash)
+        .mark_line(color="#3182BD")
+        .encode(x=x, y=y, detail="centile:O", strokeWidth=stroke_width)
         .properties(width=660, height=360)
     )
     all_orgs_line_chart = (
@@ -103,7 +101,11 @@ def query(request):
     deciles_chart += all_orgs_dots_chart
 
     # Org line should go on top of any other charts
-    org_chart = alt.Chart(alt.NamedData("org")).mark_line(color="red").encode(x=x, y=y)
+    org_chart = (
+        alt.Chart(alt.NamedData("org"))
+        .mark_line(color="#DE2D26", strokeWidth=3)
+        .encode(x=x, y=y)
+    )
     deciles_chart += org_chart
 
     ctx = {
