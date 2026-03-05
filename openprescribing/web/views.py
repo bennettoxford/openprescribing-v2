@@ -46,12 +46,12 @@ def query(request):
                 f"&dtr_codes={','.join(dtr_codes)}&dtr_product_type={dtr_product_type}"
             )
             ntr_dtr_intersection_table = make_ntr_dtr_intersection_table(
-                ntr_codes, ntr_product_type, dtr_codes, dtr_product_type
+                ntr_query, dtr_query
             )
         else:
             dtr_description = {"text": "1000 patients"}
             ntr_dtr_intersection_table = make_ntr_dtr_intersection_table(
-                ntr_codes, ntr_product_type
+                ntr_query, None
             )
 
         if org_id:

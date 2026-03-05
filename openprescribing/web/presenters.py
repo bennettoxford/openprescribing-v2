@@ -1,7 +1,6 @@
 from collections import namedtuple
 
 from openprescribing.data.models import BNFCode, Org
-from openprescribing.data.rxdb.search import search
 
 
 def make_bnf_tree(codes):
@@ -95,21 +94,19 @@ def make_orgs():
     return orgs
 
 
-def make_ntr_dtr_intersection_table(
-    ntr_codes, ntr_product_type, dtr_codes=None, dtr_product_type=None
-):
+def make_ntr_dtr_intersection_table(ntr_query, dtr_query):
     # This is going to double-up on some work done by the `/api` call that will
     # typically happen on the same page, but I don't think there's much we can do about
     # that with the current architecture.
     # If this function is problematically slow, we could look at optimising
     # it by pushing this logic out of `web` & into `data` & doing more in the
     # database server (rather than in Python).
-    ntr_codes_full = search(ntr_codes, ntr_product_type)
+    ntr_codes_full = ntr_query.get_matching_presentation_codes()
     all_codes = set(ntr_codes_full)
 
-    has_denominators = bool(dtr_codes and dtr_product_type)
+    has_denominators = bool(dtr_query)
     if has_denominators:
-        dtr_codes_full = search(dtr_codes, dtr_product_type)
+        dtr_codes_full = dtr_query.get_matching_presentation_codes()
         all_codes = all_codes | set(dtr_codes_full)
 
     # I think it's very appropriate to sort by code here, as the BNF code

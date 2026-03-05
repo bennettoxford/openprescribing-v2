@@ -1,5 +1,6 @@
 import pytest
 
+from openprescribing.data.bnf_query import BNFQuery
 from openprescribing.data.models import BNFCode
 from openprescribing.web.presenters import (
     make_bnf_table,
@@ -215,9 +216,12 @@ def test_make_bnf_table_with_no_generic_products(bnf_codes):
 def test_make_ntr_dtr_intersection_table(
     bnf_codes, ntr_codes, ntr_product_type, dtr_codes, dtr_product_type, expected
 ):
-    actual = make_ntr_dtr_intersection_table(
-        ntr_codes, ntr_product_type, dtr_codes, dtr_product_type
-    )
+    ntr_query = BNFQuery.build(ntr_codes, ntr_product_type)
+    if dtr_codes:
+        dtr_query = BNFQuery.build(dtr_codes, dtr_product_type)
+    else:
+        dtr_query = None
+    actual = make_ntr_dtr_intersection_table(ntr_query, dtr_query)
 
     # verify expected namedtuple keys exist
     assert actual["data"][0].code == expected["data"][0][0]
