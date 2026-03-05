@@ -1,7 +1,7 @@
 from collections import namedtuple
 
 from openprescribing.data.models import BNFCode, Org
-from openprescribing.data.rxdb.search import bnf_code_names, search
+from openprescribing.data.rxdb.search import search
 
 
 def make_bnf_tree(codes):
@@ -116,7 +116,11 @@ def make_ntr_dtr_intersection_table(
     # hierarchy implicitly means that presentations are sorted together usefully.
     # This is in contrast to the codes seen in OpenPrescribing Hospitals.
     all_codes = sorted(all_codes)
-    relevant_bnf_code_names = bnf_code_names(all_codes)
+    relevant_bnf_code_names = dict(
+        BNFCode.objects.filter(code__in=all_codes)
+        .order_by("code")
+        .values_list("code", "name")
+    )
 
     Presentation = namedtuple("Presentation", "code, name, ntr, dtr")
     data = [
