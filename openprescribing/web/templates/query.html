@@ -9,9 +9,9 @@
                 <h1 class="h4">Prescribing query</h1>
                 <form>
                     <h2 class="h5">Numerator</h2>
-                    {% include "./_bnf_codes_form_controls.html" with field="ntr" query=analysis.ntr_query %}
+                    {% include "./_bnf_query_form_controls.html" with field="ntr" query=analysis.ntr_query %}
                     <h2 class="h5">Denominator</h2>
-                    {% include "./_bnf_codes_form_controls.html" with field="dtr" query=analysis.dtr_query %}
+                    {% include "./_bnf_query_form_controls.html" with field="dtr" query=analysis.dtr_query %}
                     <button type="submit" class="btn btn-primary">Submit</button>
           		</form>
             </div>
