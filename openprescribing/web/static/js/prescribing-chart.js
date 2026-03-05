@@ -75,15 +75,15 @@ const createTypeahead = ({
   });
 };
 
-const updateOrgTypeLabel = (org_type) => {
+const updateOrgTypeLabel = (orgType) => {
   const orgTypes = Object.fromEntries(
     JSON.parse(document.getElementById("org-types").textContent),
   );
 
   document.getElementById("decile_org_type").textContent =
-    ` for ${orgTypes[org_type]}s`;
+    ` for ${orgTypes[orgType]}s`;
   ["line_chart_org_types", "dots_chart_org_types"].forEach((o) => {
-    document.getElementById(o).textContent = `${orgTypes[org_type]}s`;
+    document.getElementById(o).textContent = `${orgTypes[orgType]}s`;
   });
 };
 
