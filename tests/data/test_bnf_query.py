@@ -107,3 +107,18 @@ def test_describe_search_for_generic_products(bnf_codes):
             }
         ],
     }
+
+
+def test_from_params():
+    query = BNFQuery.from_params(
+        "ntr", {"ntr_codes": "01,-0101", "ntr_product_type": "generic"}
+    )
+    assert query == BNFQuery.build(["01", "-0101"], ProductType.GENERIC)
+
+
+def test_to_params():
+    query = BNFQuery.build(["01", "-0101"], ProductType.GENERIC)
+    assert query.to_params("ntr") == {
+        "ntr_codes": "01,-0101",
+        "ntr_product_type": "generic",
+    }

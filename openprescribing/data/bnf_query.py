@@ -20,6 +20,14 @@ class BNFQuery:
     def build(cls, raw_terms, product_type):
         return cls([Term.build(rt) for rt in raw_terms], ProductType(product_type))
 
+    @classmethod
+    def from_params(cls, field, params):
+        """Build a BNFQuery from URL query parameters for a field."""
+
+        raw_terms = params[f"{field}_codes"].split(",")
+        product_type = params.get(f"{field}_product_type", "all")
+        return cls.build(raw_terms=raw_terms, product_type=product_type)
+
     def get_matching_presentation_codes(self):
         """Return list of BNF codes for presentations matching the query.
 
@@ -57,6 +65,17 @@ class BNFQuery:
             ],
         }
 
+    def to_params(self, field):
+        """Serialize to URL query parameters for a field."""
+
+        return {
+            f"{field}_codes": self.to_codes(),
+            f"{field}_product_type": self.product_type.value,
+        }
+
+    def to_codes(self):
+        return ",".join(t.to_param_value() for t in self.terms)
+
 
 @dataclass
 class Term:
@@ -80,6 +99,12 @@ class Term:
             return StrengthAndFormulationTerm(code, negated)
         else:
             return PrefixTerm(code, negated)
+
+    def to_param_value(self):
+        if self.negated:
+            return "-" + self.code
+        else:
+            return self.code
 
 
 @dataclass
