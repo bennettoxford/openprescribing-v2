@@ -8,6 +8,7 @@ import {
   isExcluded,
   isIncluded,
   isPartiallyIncludedChemical,
+  isSubmittable,
   queryToSortedTerms,
   renderSelectedCodes,
   setInputValue,
@@ -269,5 +270,27 @@ describe("isPartiallyIncludedChemical", () => {
   it("returns false when chemical has no included or excluded descendants", () => {
     const query = { included: [SECTION], excluded: [] };
     expect(isPartiallyIncludedChemical(query, CHEMICAL)).toBe(false);
+  });
+});
+
+describe("isSubmittable", () => {
+  it("returns true when codes are included in numerator", () => {
+    const state = {
+      query: {
+        ntr: { included: [CHEMICAL], excluded: [] },
+        dtr: { included: [], excluded: [] },
+      },
+    };
+    expect(isSubmittable(state)).toBe(true);
+  });
+
+  it("returns false when no codes are included in numerator", () => {
+    const state = {
+      query: {
+        ntr: { included: [], excluded: [] },
+        dtr: { included: [], excluded: [] },
+      },
+    };
+    expect(isSubmittable(state)).toBe(false);
   });
 });

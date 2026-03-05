@@ -167,3 +167,10 @@ function removeItem(array, item) {
   const ix = array.indexOf(item);
   array.splice(ix, 1);
 }
+
+export function isSubmittable(state) {
+  // The page is only submittable if no codes have been included in the numerator.
+  // We only need to check the included codes; there cannot be excluded codes
+  // without included ones.
+  return state.query.ntr.included.length > 0;
+}
