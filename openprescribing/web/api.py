@@ -4,15 +4,17 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse as DjangoJsonResponse
 
 from openprescribing.data import rxdb
+from openprescribing.data.bnf_query import BNFQuery
 from openprescribing.data.models import Org
 from openprescribing.data.rxdb import get_centiles
-from openprescribing.data.rxdb.search import ProductType, search
 
 
 def _build_odm(request):
-    ntr_query = request.GET.get("ntr_codes").split(",")
-    ntr_product_type = ProductType(request.GET.get("ntr_product_type", "all"))
-    ntr_codes = search(ntr_query, ntr_product_type)
+    ntr_query = BNFQuery.build(
+        request.GET.get("ntr_codes").split(","),
+        request.GET.get("ntr_product_type", "all"),
+    )
+    ntr_codes = ntr_query.get_matching_presentation_codes()
 
     ntr_sql = f"""
     SELECT practice_id, date_id, items AS value
@@ -21,9 +23,11 @@ def _build_odm(request):
     """
 
     if "dtr_codes" in request.GET:
-        dtr_query = request.GET.get("dtr_codes").split(",")
-        dtr_product_type = ProductType(request.GET.get("dtr_product_type", "all"))
-        dtr_codes = search(dtr_query, dtr_product_type)
+        dtr_query = BNFQuery.build(
+            request.GET.get("dtr_codes").split(","),
+            request.GET.get("dtr_product_type", "all"),
+        )
+        dtr_codes = dtr_query.get_matching_presentation_codes()
 
         dtr_sql = f"""
         SELECT practice_id, date_id, items AS value
