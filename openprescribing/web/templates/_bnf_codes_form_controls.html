@@ -3,7 +3,7 @@
     <input
         type="hidden"
         name="{{ field }}_codes"
-        value="{% if codes %}{{ codes }}{% endif %}"
+        value="{{ query.to_codes }}"
         data-bnf-codes-input
     />
     <ul
@@ -27,7 +27,7 @@
             type="radio"
             name="{{ field }}_product_type"
             value="all"
-            {% if product_type == "all" %}checked{% endif %}
+            {% if not query.product_type or query.product_type == "all" %}checked{% endif %}
         />
         <label class="form-check-label" for="product-type-all">all</label>
     </div>
@@ -37,7 +37,7 @@
             type="radio"
             name="{{ field }}_product_type"
             value="generic"
-            {% if product_type == "generic" %}checked{% endif %}
+            {% if query.product_type == "generic" %}checked{% endif %}
         />
         <label class="form-check-label" for="product-type-generic">generic</label>
     </div>
@@ -47,7 +47,7 @@
             type="radio"
             name="{{ field }}_product_type"
             value="branded"
-            {% if product_type == "branded" %}checked{% endif %}
+            {% if query.product_type == "branded" %}checked{% endif %}
         />
         <label class="form-check-label" for="product-type-branded">branded</label>
     </div>

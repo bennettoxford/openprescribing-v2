@@ -17,11 +17,6 @@ from .presenters import (
 
 
 def query(request):
-    ntr_codes_raw = request.GET.get("ntr_codes")
-    ntr_product_type = request.GET.get("ntr_product_type", "all")
-    dtr_codes_raw = request.GET.get("dtr_codes")
-    dtr_product_type = request.GET.get("dtr_product_type", "all")
-
     if "ntr_codes" in request.GET:
         analysis = Analysis.from_params(request.GET)
     else:
@@ -29,8 +24,6 @@ def query(request):
 
     deciles_api_url = None
     all_orgs_api_url = None
-    ntr_description = None
-    dtr_description = None
     org = None
     ntr_dtr_intersection_table = None
 
@@ -38,15 +31,11 @@ def query(request):
         if analysis.org_id:
             org = get_object_or_404(Org, id=analysis.org_id)
 
-        ntr_description = analysis.ntr_query.describe()
-
         if isinstance(analysis.dtr_query, BNFQuery):
-            dtr_description = analysis.dtr_query.describe()
             ntr_dtr_intersection_table = make_ntr_dtr_intersection_table(
                 analysis.ntr_query, analysis.dtr_query
             )
         else:
-            dtr_description = {"text": "1000 patients"}
             ntr_dtr_intersection_table = make_ntr_dtr_intersection_table(
                 analysis.ntr_query, None
             )
@@ -65,7 +54,12 @@ def query(request):
     orgs = make_orgs()
 
     x = alt.X("month:T", title="Month", axis=alt.Axis(format="%Y %b"))
-    y = alt.Y("value:Q", title="%" if dtr_codes_raw else "Items per 1000 patients")
+    y = alt.Y(
+        "value:Q",
+        title="%"
+        if analysis and isinstance(analysis.dtr_query, BNFQuery)
+        else "Items per 1000 patients",
+    )
     stroke_width = (
         alt.when(alt.datum.centile == 50).then(alt.value(3)).otherwise(alt.value(1))
     )
@@ -106,12 +100,7 @@ def query(request):
     deciles_chart += org_chart
 
     ctx = {
-        "ntr_codes": ntr_codes_raw,
-        "ntr_product_type": ntr_product_type,
-        "ntr_description": ntr_description,
-        "dtr_codes": dtr_codes_raw,
-        "dtr_product_type": dtr_product_type,
-        "dtr_description": dtr_description,
+        "analysis": analysis,
         "ntr_dtr_intersection_table": ntr_dtr_intersection_table,
         "org": org,
         "orgs": orgs,

@@ -9,9 +9,9 @@
                 <h1 class="h4">Prescribing query</h1>
                 <form>
                     <h2 class="h5">Numerator</h2>
-                    {% include "./_bnf_codes_form_controls.html" with field="ntr" codes=ntr_codes product_type=ntr_product_type %}
+                    {% include "./_bnf_codes_form_controls.html" with field="ntr" query=analysis.ntr_query %}
                     <h2 class="h5">Denominator</h2>
-                    {% include "./_bnf_codes_form_controls.html" with field="dtr" codes=dtr_codes product_type=dtr_product_type %}
+                    {% include "./_bnf_codes_form_controls.html" with field="dtr" query=analysis.dtr_query %}
                     <button type="submit" class="btn btn-primary">Submit</button>
           		</form>
             </div>
@@ -41,7 +41,7 @@
     <div class="col-lg-7">
         <div class="card h-100">
             <div class="card-body">
-                {% if ntr_codes %}
+                {% if analysis %}
                 <h1 class="h4">Prescribing data</h1>
                 <div id="deciles-chart-container" class="py-3">Loading chart...</div>
                 <div class="row">
@@ -89,11 +89,11 @@
                 <div class="row mt-3">
                     <div class="col-6">
                         <h2 class="h5">Numerator</h2>
-                        {% include "./_search_description.html" with description=ntr_description %}
+                        {% include "./_search_description.html" with description=analysis.ntr_query.describe %}
                     </div>
                     <div class="col-6">
                         <h2 class="h5">Denominator</h2>
-                        {% include "./_search_description.html" with description=dtr_description %}
+                        {% include "./_search_description.html" with description=analysis.dtr_query.describe %}
                     </div>
                 </div>
                 {% if org %}
