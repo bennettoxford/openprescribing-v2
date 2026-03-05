@@ -29,7 +29,7 @@ export function setInputValue(query, input) {
 
   input.value = terms
     .map(({ code, included }) => (included ? code : `-${code}`))
-    .join("\n");
+    .join(",");
 }
 
 export function queryToSortedTerms(query) {
@@ -46,7 +46,7 @@ export function textToQuery(text) {
   // Given text from a hidden input, return a query object.
   const included = [];
   const excluded = [];
-  const terms = text.split(/\s+/);
+  const terms = text.split(",");
 
   terms.forEach((term) => {
     if (term.startsWith("-")) {

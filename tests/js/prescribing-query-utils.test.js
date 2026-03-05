@@ -61,7 +61,7 @@ describe("setInputValue", () => {
     const query = { included: ["01", "02"], excluded: ["0101", "0102"] };
     const input = document.createElement("textarea");
     setInputValue(query, input);
-    expect(input.value).toEqual("01\n-0101\n-0102\n02");
+    expect(input.value).toEqual("01,-0101,-0102,02");
   });
 });
 
@@ -79,7 +79,7 @@ describe("queryToSortedTerms", () => {
 
 describe("textToQuery", () => {
   it("returns query from text", () => {
-    expect(textToQuery("01\n-0101\n-0102\n02")).toEqual({
+    expect(textToQuery("01,-0101,-0102,02")).toEqual({
       included: ["01", "02"],
       excluded: ["0101", "0102"],
     });

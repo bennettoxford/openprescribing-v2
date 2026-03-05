@@ -31,14 +31,14 @@ def query(request):
         org = get_object_or_404(Org, id=org_id)
 
     if ntr_codes_raw:
-        ntr_codes = ntr_codes_raw.split()
+        ntr_codes = ntr_codes_raw.split(",")
         url_parameters = (
             f"?ntr_codes={','.join(ntr_codes)}&ntr_product_type={ntr_product_type}"
         )
         ntr_description = describe_search(ntr_codes, ntr_product_type)
 
         if dtr_codes_raw:
-            dtr_codes = dtr_codes_raw.split()
+            dtr_codes = dtr_codes_raw.split(",")
             url_parameters += (
                 f"&dtr_codes={','.join(dtr_codes)}&dtr_product_type={dtr_product_type}"
             )
