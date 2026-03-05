@@ -1,10 +1,7 @@
 import pytest
 
-from openprescribing.data.rxdb.search import (
-    ProductType,
-    describe_search,
-    search,
-)
+from openprescribing.data.bnf_query import ProductType
+from openprescribing.data.rxdb.search import describe_search, search
 
 
 @pytest.mark.django_db(databases=["data"])
