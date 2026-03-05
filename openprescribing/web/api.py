@@ -2,7 +2,6 @@ import math
 
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse as DjangoJsonResponse
-from django.views.decorators.cache import cache_control
 
 from openprescribing.data import rxdb
 from openprescribing.data.models import Org
@@ -61,7 +60,6 @@ def _build_odm(request):
     return odm, org
 
 
-@cache_control(public=True, max_age=3600)
 def prescribing_all_orgs(request):
     odm, org = _build_odm(request)
 
@@ -76,7 +74,6 @@ def prescribing_all_orgs(request):
     return JsonResponse({"all_orgs": all_orgs_records, "org_type": org_type})
 
 
-@cache_control(public=True, max_age=3600)
 def prescribing_deciles(request):
     odm, org = _build_odm(request)
     cdm = get_centiles(odm)
