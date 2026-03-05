@@ -16,7 +16,7 @@ from .presenters import (
 )
 
 
-def query(request):
+def analysis(request):
     if "ntr_codes" in request.GET:
         analysis = Analysis.from_params(request.GET)
     else:
@@ -111,7 +111,7 @@ def query(request):
         "deciles_chart": deciles_chart.to_dict(),
     }
 
-    return render(request, "query.html", ctx)
+    return render(request, "analysis.html", ctx)
 
 
 def bnf_browser_tree(request):
