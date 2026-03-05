@@ -2,8 +2,8 @@ import altair as alt
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
+from openprescribing.data.bnf_query import BNFQuery
 from openprescribing.data.models import BNFCode, Org
-from openprescribing.data.rxdb.search import describe_search
 
 from .presenters import (
     make_bnf_table,
@@ -32,17 +32,19 @@ def query(request):
 
     if ntr_codes_raw:
         ntr_codes = ntr_codes_raw.split(",")
+        ntr_query = BNFQuery.build(ntr_codes, ntr_product_type)
+        ntr_description = ntr_query.describe()
         url_parameters = (
             f"?ntr_codes={','.join(ntr_codes)}&ntr_product_type={ntr_product_type}"
         )
-        ntr_description = describe_search(ntr_codes, ntr_product_type)
 
         if dtr_codes_raw:
             dtr_codes = dtr_codes_raw.split(",")
+            dtr_query = BNFQuery.build(dtr_codes, dtr_product_type)
+            dtr_description = dtr_query.describe()
             url_parameters += (
                 f"&dtr_codes={','.join(dtr_codes)}&dtr_product_type={dtr_product_type}"
             )
-            dtr_description = describe_search(dtr_codes, dtr_product_type)
             ntr_dtr_intersection_table = make_ntr_dtr_intersection_table(
                 ntr_codes, ntr_product_type, dtr_codes, dtr_product_type
             )
