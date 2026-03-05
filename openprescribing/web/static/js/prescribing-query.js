@@ -36,6 +36,7 @@ import {
   isExcluded,
   isIncluded,
   isPartiallyIncludedChemical,
+  isSubmittable,
   renderSelectedCodes,
   setInputValue,
   textToQuery,
@@ -67,6 +68,7 @@ const formControls = {
   ntr: document.querySelector('[data-controls="ntr"]'),
   dtr: document.querySelector('[data-controls="dtr"]'),
 };
+const submitButton = document.getElementById("prescribing-query-submit");
 const treeModal = document.getElementById("bnf-tree-modal");
 const treeModalObj = new bootstrap.Modal(treeModal);
 const tree = document.getElementById("bnf-tree");
@@ -198,6 +200,7 @@ treeModal.addEventListener("hidden.bs.modal", () => {
   // representation of the current query.
   renderSelectedCodes(getCurrentQuery(), getCodesList(state.field));
   setInputValue(getCurrentQuery(), getCodeInput(state.field));
+  submitButton.disabled = !isSubmittable(state);
   state.field = null;
 });
 

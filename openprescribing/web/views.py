@@ -1,9 +1,12 @@
+from urllib.parse import urlencode
+
 import altair as alt
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
+from openprescribing.data.analysis import Analysis
+from openprescribing.data.bnf_query import BNFQuery
 from openprescribing.data.models import BNFCode, Org
-from openprescribing.data.rxdb.search import describe_search
 
 from .presenters import (
     make_bnf_table,
@@ -13,50 +16,33 @@ from .presenters import (
 )
 
 
-def query(request):
-    ntr_codes_raw = request.GET.get("ntr_codes")
-    ntr_product_type = request.GET.get("ntr_product_type", "all")
-    dtr_codes_raw = request.GET.get("dtr_codes")
-    dtr_product_type = request.GET.get("dtr_product_type", "all")
-    org_id = request.GET.get("org_id")
+def analysis(request):
+    if "ntr_codes" in request.GET:
+        analysis = Analysis.from_params(request.GET)
+    else:
+        analysis = None
 
     deciles_api_url = None
     all_orgs_api_url = None
-    ntr_description = None
-    dtr_description = None
     org = None
     ntr_dtr_intersection_table = None
 
-    if org_id:
-        org = get_object_or_404(Org, id=org_id)
+    if analysis is not None:
+        if analysis.org_id:
+            org = get_object_or_404(Org, id=analysis.org_id)
 
-    if ntr_codes_raw:
-        ntr_codes = ntr_codes_raw.split()
-        url_parameters = (
-            f"?ntr_codes={','.join(ntr_codes)}&ntr_product_type={ntr_product_type}"
-        )
-        ntr_description = describe_search(ntr_codes, ntr_product_type)
-
-        if dtr_codes_raw:
-            dtr_codes = dtr_codes_raw.split()
-            url_parameters += (
-                f"&dtr_codes={','.join(dtr_codes)}&dtr_product_type={dtr_product_type}"
-            )
-            dtr_description = describe_search(dtr_codes, dtr_product_type)
+        if isinstance(analysis.dtr_query, BNFQuery):
             ntr_dtr_intersection_table = make_ntr_dtr_intersection_table(
-                ntr_codes, ntr_product_type, dtr_codes, dtr_product_type
+                analysis.ntr_query, analysis.dtr_query
             )
         else:
-            dtr_description = {"text": "1000 patients"}
             ntr_dtr_intersection_table = make_ntr_dtr_intersection_table(
-                ntr_codes, ntr_product_type
+                analysis.ntr_query, None
             )
 
-        if org_id:
-            url_parameters += f"&org_id={org_id}"
-
-        deciles_api_url = f"{reverse('api_prescribing_deciles')}{url_parameters}"
-        all_orgs_api_url = f"{reverse('api_prescribing_all_orgs')}{url_parameters}"
+        url_parameters = urlencode(analysis.to_params(), safe=",")
+        deciles_api_url = f"{reverse('api_prescribing_deciles')}?{url_parameters}"
+        all_orgs_api_url = f"{reverse('api_prescribing_all_orgs')}?{url_parameters}"
 
     codes = (
         BNFCode.objects.filter(level__lte=BNFCode.Level.CHEMICAL_SUBSTANCE)
@@ -68,7 +54,12 @@ def query(request):
     orgs = make_orgs()
 
     x = alt.X("month:T", title="Month", axis=alt.Axis(format="%Y %b"))
-    y = alt.Y("value:Q", title="%" if dtr_codes_raw else "Items per 1000 patients")
+    y = alt.Y(
+        "value:Q",
+        title="%"
+        if analysis and isinstance(analysis.dtr_query, BNFQuery)
+        else "Items per 1000 patients",
+    )
     stroke_width = (
         alt.when(alt.datum.centile == 50).then(alt.value(3)).otherwise(alt.value(1))
     )
@@ -109,12 +100,7 @@ def query(request):
     deciles_chart += org_chart
 
     ctx = {
-        "ntr_codes": ntr_codes_raw,
-        "ntr_product_type": ntr_product_type,
-        "ntr_description": ntr_description,
-        "dtr_codes": dtr_codes_raw,
-        "dtr_product_type": dtr_product_type,
-        "dtr_description": dtr_description,
+        "analysis": analysis,
         "ntr_dtr_intersection_table": ntr_dtr_intersection_table,
         "org": org,
         "orgs": orgs,
@@ -125,7 +111,7 @@ def query(request):
         "deciles_chart": deciles_chart.to_dict(),
     }
 
-    return render(request, "query.html", ctx)
+    return render(request, "analysis.html", ctx)
 
 
 def bnf_browser_tree(request):

@@ -29,7 +29,7 @@ export function setInputValue(query, input) {
 
   input.value = terms
     .map(({ code, included }) => (included ? code : `-${code}`))
-    .join("\n");
+    .join(",");
 }
 
 export function queryToSortedTerms(query) {
@@ -46,7 +46,7 @@ export function textToQuery(text) {
   // Given text from a hidden input, return a query object.
   const included = [];
   const excluded = [];
-  const terms = text.split(/\s+/);
+  const terms = text.split(",");
 
   terms.forEach((term) => {
     if (term.startsWith("-")) {
@@ -166,4 +166,11 @@ function removeItem(array, item) {
   // Removes the first occurrence of the item from the array.
   const ix = array.indexOf(item);
   array.splice(ix, 1);
+}
+
+export function isSubmittable(state) {
+  // The page is only submittable if no codes have been included in the numerator.
+  // We only need to check the included codes; there cannot be excluded codes
+  // without included ones.
+  return state.query.ntr.included.length > 0;
 }

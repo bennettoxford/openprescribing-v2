@@ -8,6 +8,7 @@ import {
   isExcluded,
   isIncluded,
   isPartiallyIncludedChemical,
+  isSubmittable,
   queryToSortedTerms,
   renderSelectedCodes,
   setInputValue,
@@ -61,7 +62,7 @@ describe("setInputValue", () => {
     const query = { included: ["01", "02"], excluded: ["0101", "0102"] };
     const input = document.createElement("textarea");
     setInputValue(query, input);
-    expect(input.value).toEqual("01\n-0101\n-0102\n02");
+    expect(input.value).toEqual("01,-0101,-0102,02");
   });
 });
 
@@ -79,7 +80,7 @@ describe("queryToSortedTerms", () => {
 
 describe("textToQuery", () => {
   it("returns query from text", () => {
-    expect(textToQuery("01\n-0101\n-0102\n02")).toEqual({
+    expect(textToQuery("01,-0101,-0102,02")).toEqual({
       included: ["01", "02"],
       excluded: ["0101", "0102"],
     });
@@ -269,5 +270,27 @@ describe("isPartiallyIncludedChemical", () => {
   it("returns false when chemical has no included or excluded descendants", () => {
     const query = { included: [SECTION], excluded: [] };
     expect(isPartiallyIncludedChemical(query, CHEMICAL)).toBe(false);
+  });
+});
+
+describe("isSubmittable", () => {
+  it("returns true when codes are included in numerator", () => {
+    const state = {
+      query: {
+        ntr: { included: [CHEMICAL], excluded: [] },
+        dtr: { included: [], excluded: [] },
+      },
+    };
+    expect(isSubmittable(state)).toBe(true);
+  });
+
+  it("returns false when no codes are included in numerator", () => {
+    const state = {
+      query: {
+        ntr: { included: [], excluded: [] },
+        dtr: { included: [], excluded: [] },
+      },
+    };
+    expect(isSubmittable(state)).toBe(false);
   });
 });
