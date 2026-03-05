@@ -7,7 +7,6 @@ from openprescribing.data import rxdb
 from openprescribing.data.models import Org
 from openprescribing.data.rxdb import get_centiles
 from openprescribing.data.rxdb.search import ProductType, search
-from openprescribing.web.presenters import make_org_type_for_display
 
 
 def _build_odm(request):
@@ -67,9 +66,9 @@ def prescribing_all_orgs(request):
     nans_to_nones(all_orgs_records)
 
     if org is None:
-        org_type = make_org_type_for_display("icb")
+        org_type = "icb"
     else:
-        org_type = make_org_type_for_display(org.org_type)
+        org_type = org.org_type
 
     return JsonResponse({"all_orgs": all_orgs_records, "org_type": org_type})
 
@@ -94,9 +93,9 @@ def prescribing_deciles(request):
         org_records = []
 
     if org is None:
-        org_type = make_org_type_for_display("icb")
+        org_type = "icb"
     else:
-        org_type = make_org_type_for_display(org.org_type)
+        org_type = org.org_type
 
     return JsonResponse(
         {"deciles": deciles_records, "org": org_records, "org_type": org_type}
