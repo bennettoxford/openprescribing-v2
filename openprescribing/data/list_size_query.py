@@ -12,3 +12,6 @@ class ListSizeQuery:
         """
 
         return {}
+
+    def describe(self):
+        return {"text": "1000 patients"}

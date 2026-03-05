@@ -1,7 +1,10 @@
+from urllib.parse import urlencode
+
 import altair as alt
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
+from openprescribing.data.analysis import Analysis
 from openprescribing.data.bnf_query import BNFQuery
 from openprescribing.data.models import BNFCode, Org
 
@@ -18,7 +21,11 @@ def query(request):
     ntr_product_type = request.GET.get("ntr_product_type", "all")
     dtr_codes_raw = request.GET.get("dtr_codes")
     dtr_product_type = request.GET.get("dtr_product_type", "all")
-    org_id = request.GET.get("org_id")
+
+    if "ntr_codes" in request.GET:
+        analysis = Analysis.from_params(request.GET)
+    else:
+        analysis = None
 
     deciles_api_url = None
     all_orgs_api_url = None
@@ -27,38 +34,26 @@ def query(request):
     org = None
     ntr_dtr_intersection_table = None
 
-    if org_id:
-        org = get_object_or_404(Org, id=org_id)
+    if analysis is not None:
+        if analysis.org_id:
+            org = get_object_or_404(Org, id=analysis.org_id)
 
-    if ntr_codes_raw:
-        ntr_codes = ntr_codes_raw.split(",")
-        ntr_query = BNFQuery.build(ntr_codes, ntr_product_type)
-        ntr_description = ntr_query.describe()
-        url_parameters = (
-            f"?ntr_codes={','.join(ntr_codes)}&ntr_product_type={ntr_product_type}"
-        )
+        ntr_description = analysis.ntr_query.describe()
 
-        if dtr_codes_raw:
-            dtr_codes = dtr_codes_raw.split(",")
-            dtr_query = BNFQuery.build(dtr_codes, dtr_product_type)
-            dtr_description = dtr_query.describe()
-            url_parameters += (
-                f"&dtr_codes={','.join(dtr_codes)}&dtr_product_type={dtr_product_type}"
-            )
+        if isinstance(analysis.dtr_query, BNFQuery):
+            dtr_description = analysis.dtr_query.describe()
             ntr_dtr_intersection_table = make_ntr_dtr_intersection_table(
-                ntr_query, dtr_query
+                analysis.ntr_query, analysis.dtr_query
             )
         else:
             dtr_description = {"text": "1000 patients"}
             ntr_dtr_intersection_table = make_ntr_dtr_intersection_table(
-                ntr_query, None
+                analysis.ntr_query, None
             )
 
-        if org_id:
-            url_parameters += f"&org_id={org_id}"
-
-        deciles_api_url = f"{reverse('api_prescribing_deciles')}{url_parameters}"
-        all_orgs_api_url = f"{reverse('api_prescribing_all_orgs')}{url_parameters}"
+        url_parameters = urlencode(analysis.to_params(), safe=",")
+        deciles_api_url = f"{reverse('api_prescribing_deciles')}?{url_parameters}"
+        all_orgs_api_url = f"{reverse('api_prescribing_all_orgs')}?{url_parameters}"
 
     codes = (
         BNFCode.objects.filter(level__lte=BNFCode.Level.CHEMICAL_SUBSTANCE)
