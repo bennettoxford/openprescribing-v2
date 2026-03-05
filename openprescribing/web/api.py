@@ -4,17 +4,14 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse as DjangoJsonResponse
 
 from openprescribing.data import rxdb
+from openprescribing.data.analysis import Analysis
 from openprescribing.data.bnf_query import BNFQuery
 from openprescribing.data.models import Org
 from openprescribing.data.rxdb import get_centiles
 
 
-def _build_odm(request):
-    ntr_query = BNFQuery.build(
-        request.GET.get("ntr_codes").split(","),
-        request.GET.get("ntr_product_type", "all"),
-    )
-    ntr_codes = ntr_query.get_matching_presentation_codes()
+def _build_odm(analysis):
+    ntr_codes = analysis.ntr_query.get_matching_presentation_codes()
 
     ntr_sql = f"""
     SELECT practice_id, date_id, items AS value
@@ -22,12 +19,8 @@ def _build_odm(request):
     WHERE bnf_code IN ({", ".join(f"'{c}'" for c in ntr_codes)})
     """
 
-    if "dtr_codes" in request.GET:
-        dtr_query = BNFQuery.build(
-            request.GET.get("dtr_codes").split(","),
-            request.GET.get("dtr_product_type", "all"),
-        )
-        dtr_codes = dtr_query.get_matching_presentation_codes()
+    if isinstance(analysis.dtr_query, BNFQuery):
+        dtr_codes = analysis.dtr_query.get_matching_presentation_codes()
 
         dtr_sql = f"""
         SELECT practice_id, date_id, items AS value
@@ -44,7 +37,7 @@ def _build_odm(request):
         ntr_pdm = rxdb.get_practice_date_matrix(cursor, ntr_sql, date_count=96)
         dtr_pdm = rxdb.get_practice_date_matrix(cursor, dtr_sql, date_count=96)
 
-    org_id = request.GET.get("org_id")
+    org_id = analysis.org_id
 
     if org_id is not None:
         org = Org.objects.get(id=org_id)
@@ -64,7 +57,8 @@ def _build_odm(request):
 
 
 def prescribing_all_orgs(request):
-    odm, org = _build_odm(request)
+    analysis = Analysis.from_params(request.GET)
+    odm, org = _build_odm(analysis)
 
     all_orgs_records = list(odm.to_records(row_name="org", col_name="month"))
     nans_to_nones(all_orgs_records)
@@ -78,7 +72,8 @@ def prescribing_all_orgs(request):
 
 
 def prescribing_deciles(request):
-    odm, org = _build_odm(request)
+    analysis = Analysis.from_params(request.GET)
+    odm, org = _build_odm(analysis)
     cdm = get_centiles(odm)
 
     deciles_records = list(cdm.to_records(row_name="centile", col_name="month"))
