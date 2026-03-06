@@ -186,16 +186,43 @@ document.addEventListener("DOMContentLoaded", () => {
       );
     };
 
+    const chartTypeFromUrl = () => {
+      const chartType = new URL(window.location.href).searchParams.get(
+        "chart_type",
+      );
+      if (!chartType || !chartConfigs[chartType]) {
+        // default to decile view!
+        return "deciles";
+      }
+      return chartType;
+    };
+
+    const setChartType = (chartType, pushHistory = false) => {
+      chartConfigs[chartType].radio.checked = true;
+      renderChartType(chartType);
+
+      if (!pushHistory) {
+        return;
+      }
+
+      const url = new URL(window.location.href);
+      url.searchParams.set("chart_type", chartType);
+      window.history.pushState({}, "", url);
+    };
+
     Object.entries(chartConfigs).forEach(([chartType, chartConfig]) => {
       chartConfig.radio.addEventListener("change", () => {
         if (!chartConfig.radio.checked) {
           return;
         }
-        renderChartType(chartType);
+        setChartType(chartType, true);
       });
     });
 
-    // default to decile view!
-    renderChartType("deciles");
+    window.addEventListener("popstate", () => {
+      setChartType(chartTypeFromUrl());
+    });
+
+    setChartType(chartTypeFromUrl());
   }
 });
