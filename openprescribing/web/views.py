@@ -70,7 +70,7 @@ def analysis(request):
         .properties(width=660, height=360)
     )
     all_orgs_line_chart = (
-        alt.Chart(alt.NamedData("all_orgs_line_chart"))
+        alt.Chart(alt.NamedData("all_orgs_line"))
         .mark_line(color="grey", opacity=0.2)
         .encode(x=x, y=y, detail="org:O")
         .properties(width=660, height=360)
@@ -78,7 +78,7 @@ def analysis(request):
     deciles_chart += all_orgs_line_chart
 
     all_orgs_dots_chart = (
-        alt.Chart(alt.NamedData("all_orgs_dots_chart"))
+        alt.Chart(alt.NamedData("all_orgs_dots"))
         .mark_point(color="grey", opacity=0.3, filled=True)
         .encode(
             x="x_jitter:T",
