@@ -89,8 +89,7 @@ const updateOrgTypeLabel = (orgType) => {
 
 var chartResult;
 
-const createDecilesChart = () => {
-  const chartContainer = document.querySelector("#deciles-chart-container");
+const createDecilesChart = (chartContainer) => {
   const chartSpec = JSON.parse(
     document.getElementById("deciles-chart").textContent,
   );
@@ -104,6 +103,11 @@ const updateDecilesChart = (
   api_dataset_name,
   add_dataset_name,
 ) => {
+  const chartContainer = document.querySelector("#deciles-chart-container");
+  if (!document.querySelector("#deciles-chart-container").classList.contains('vega-embed')) {
+    createDecilesChart(chartContainer);
+  }
+
   const all_dataset_names = ["deciles", "all_orgs_dots", "all_orgs_line"];
   fetch(prescribingDecilesUrl)
     .then((response) => {
@@ -155,8 +159,6 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   if (prescribingDecilesUrl) {
-    createDecilesChart();
-
     document.getElementById("decile").addEventListener("click", () => {
       updateDecilesChart(prescribingDecilesUrl, "deciles", "deciles");
     });
