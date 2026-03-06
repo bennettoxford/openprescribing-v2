@@ -162,36 +162,28 @@ document.addEventListener("DOMContentLoaded", () => {
     createDecilesChart();
 
     document.getElementById("decile").addEventListener("click", () => {
-      if (prescribingDecilesUrl) {
-        updateDecilesChart(prescribingDecilesUrl, "deciles", "deciles");
-      }
+      updateDecilesChart(prescribingDecilesUrl, "deciles", "deciles");
     });
 
-    if (prescribingAllOrgsUrl) {
-      document
-        .getElementById("all_orgs_line_chart")
-        .addEventListener("click", () => {
-          if (prescribingAllOrgsUrl) {
-            updateDecilesChart(
-              prescribingAllOrgsUrl,
-              "all_orgs",
-              "all_orgs_line_chart",
-            );
-          }
-        });
+    document
+      .getElementById("all_orgs_line_chart")
+      .addEventListener("click", () => {
+        updateDecilesChart(
+          prescribingAllOrgsUrl,
+          "all_orgs",
+          "all_orgs_line_chart",
+        );
+      });
 
-      document
-        .getElementById("all_orgs_dots_chart")
-        .addEventListener("click", () => {
-          if (prescribingAllOrgsUrl) {
-            updateDecilesChart(
-              prescribingAllOrgsUrl,
-              "all_orgs",
-              "all_orgs_dots_chart",
-            );
-          }
-        });
-    }
+    document
+      .getElementById("all_orgs_dots_chart")
+      .addEventListener("click", () => {
+        updateDecilesChart(
+          prescribingAllOrgsUrl,
+          "all_orgs",
+          "all_orgs_dots_chart",
+        );
+      });
 
     // default to decile view!
     document.getElementById("decile").click();
