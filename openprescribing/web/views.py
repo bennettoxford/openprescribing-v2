@@ -67,13 +67,11 @@ def analysis(request):
         alt.Chart(alt.NamedData("deciles"))
         .mark_line(color="#3182BD")
         .encode(x=x, y=y, detail="centile:O", strokeWidth=stroke_width)
-        .properties(width=660, height=360)
     )
     all_orgs_line_chart = (
         alt.Chart(alt.NamedData("all_orgs_line"))
         .mark_line(color="grey", opacity=0.2)
         .encode(x=x, y=y, detail="org:O")
-        .properties(width=660, height=360)
     )
     deciles_chart += all_orgs_line_chart
 
@@ -87,7 +85,6 @@ def analysis(request):
         )
         # 14 days in ms = 14*24*60*60*1000 = 1209600000
         .transform_calculate(x_jitter="time(datum.month)+(random()*1209600000)")
-        .properties(width=660, height=360)
     )
     deciles_chart += all_orgs_dots_chart
 
@@ -98,6 +95,10 @@ def analysis(request):
         .encode(x=x, y=y)
     )
     deciles_chart += org_chart
+
+    deciles_chart = deciles_chart.configure(
+        autosize={"type": "fit", "resize": True}
+    ).properties(width="container", height=360)
 
     ctx = {
         "analysis": analysis,
