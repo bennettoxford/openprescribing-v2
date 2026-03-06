@@ -6,6 +6,14 @@ const setupOrgSearch = () => {
 
   const orgSearch = document.getElementById("org-search");
   const orgResults = document.getElementById("org-results");
+  const prescribingQueryForm = document.getElementById(
+    "prescribing-query-form",
+  );
+  const prescribingQueryOrgIdInput = document.getElementById(
+    "prescribing-query-org-id",
+  );
+  const prescribingQueryNtrCodesInput =
+    prescribingQueryForm?.querySelector('[name="ntr_codes"]');
 
   createTypeahead({
     input: orgSearch,
@@ -23,17 +31,17 @@ const setupOrgSearch = () => {
             <div class="text-muted small">${org.id} - ${orgTypes[org.org_type]}</div>
         `,
     onSelect: (org) => {
-      navigateWithParams((params) => {
-        params.set("org_id", org.id);
-      });
+      prescribingQueryOrgIdInput.disabled = false;
+      prescribingQueryOrgIdInput.value = org.id;
+
+      if (!prescribingQueryNtrCodesInput.value) {
+        // Don't submit when no numerator has been selected yet.
+        return;
+      }
+
+      prescribingQueryForm.requestSubmit();
     },
   });
-};
-
-const navigateWithParams = (updateFn) => {
-  const url = new URL(window.location.href);
-  updateFn(url.searchParams);
-  window.location.href = url.toString();
 };
 
 const createTypeahead = ({
