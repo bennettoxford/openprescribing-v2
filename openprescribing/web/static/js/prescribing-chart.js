@@ -111,6 +111,7 @@ const updateDecilesChart = (
   api_dataset_name,
   add_dataset_name,
 ) => {
+  const chartLoading = document.querySelector("#deciles-chart-loading");
   const chartContainer = document.querySelector("#deciles-chart-container");
   if (!document.querySelector("#deciles-chart-container").classList.contains('vega-embed')) {
     createDecilesChart(chartContainer);
@@ -145,6 +146,8 @@ const updateDecilesChart = (
           }
         });
       });
+      chartLoading.classList.add('d-none');
+      chartContainer.classList.remove('d-none');
     })
     .catch((error) => {
       console.error("Unable to render deciles chart", error);
