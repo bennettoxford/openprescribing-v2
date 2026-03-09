@@ -8,9 +8,9 @@ so that prescribing is recorded with the BNF code that would have been used, had
 presentation been prescribed today.  This means that we don't have to worry about
 historic BNF codes when querying prescribing data.
 
-bnf_code_mapping.csv is created by the create_bnf_code_mapping command, which processes
-the CSV files in the raw/ directory.  Each of these CSV files contains the changes
-published in January of a given year.
+bnf_code_mapping.csv is created by the create_bnf_code_mapping command, and should not
+be edited by hand.  This script processes the CSV files in the raw/ directory.  Each of
+these CSV files contains the changes published in January of a given year.
 
 Changes from 2020 onwards are published by the BSA, and are available here:
 
