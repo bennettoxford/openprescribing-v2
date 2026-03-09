@@ -159,23 +159,46 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   if (prescribingDecilesUrl) {
-    document.getElementById("decile").addEventListener("click", () => {
-      updateDecilesChart(prescribingDecilesUrl, "deciles", "deciles");
+    const chartConfigs = {
+      deciles: {
+        radio: document.getElementById("decile"),
+        dataUrl: prescribingDecilesUrl,
+        apiDatasetName: "deciles",
+        addDatasetName: "deciles",
+      },
+      "all-orgs-line": {
+        radio: document.getElementById("all_orgs_line_chart"),
+        dataUrl: prescribingAllOrgsUrl,
+        apiDatasetName: "all_orgs",
+        addDatasetName: "all_orgs_line",
+      },
+      "all-orgs-dots": {
+        radio: document.getElementById("all_orgs_dots_chart"),
+        dataUrl: prescribingAllOrgsUrl,
+        apiDatasetName: "all_orgs",
+        addDatasetName: "all_orgs_dots",
+      },
+    };
+
+    const renderChartType = (chartType) => {
+      const chartConfig = chartConfigs[chartType];
+      updateDecilesChart(
+        chartConfig.dataUrl,
+        chartConfig.apiDatasetName,
+        chartConfig.addDatasetName,
+      );
+    };
+
+    Object.entries(chartConfigs).forEach(([chartType, chartConfig]) => {
+      chartConfig.radio.addEventListener("change", () => {
+        if (!chartConfig.radio.checked) {
+          return;
+        }
+        renderChartType(chartType);
+      });
     });
 
-    document
-      .getElementById("all_orgs_line_chart")
-      .addEventListener("click", () => {
-        updateDecilesChart(prescribingAllOrgsUrl, "all_orgs", "all_orgs_line");
-      });
-
-    document
-      .getElementById("all_orgs_dots_chart")
-      .addEventListener("click", () => {
-        updateDecilesChart(prescribingAllOrgsUrl, "all_orgs", "all_orgs_dots");
-      });
-
     // default to decile view!
-    document.getElementById("decile").click();
+    renderChartType("deciles");
   }
 });
