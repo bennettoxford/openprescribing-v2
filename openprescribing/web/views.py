@@ -8,6 +8,7 @@ from openprescribing.data.analysis import Analysis
 from openprescribing.data.bnf_query import BNFQuery
 from openprescribing.data.models import BNFCode, Org
 
+from .analysis_presentation import AnalysisPresentation
 from .presenters import (
     make_bnf_table,
     make_bnf_tree,
@@ -17,6 +18,8 @@ from .presenters import (
 
 
 def analysis(request):
+    analysis_presentation = AnalysisPresentation.from_params(request.GET)
+
     if "ntr_codes" in request.GET:
         analysis = Analysis.from_params(request.GET)
     else:
@@ -102,6 +105,7 @@ def analysis(request):
 
     ctx = {
         "analysis": analysis,
+        "analysis_presentation": analysis_presentation,
         "ntr_dtr_intersection_table": ntr_dtr_intersection_table,
         "org": org,
         "orgs": orgs,

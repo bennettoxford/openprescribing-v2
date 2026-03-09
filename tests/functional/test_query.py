@@ -31,7 +31,7 @@ def test_query(live_server, page: Page, sample_data):
 
     expect(page).to_have_url(
         live_server.url
-        + "/?ntr_codes=1001030U0_AC&ntr_product_type=all&dtr_codes=1001030U0&dtr_product_type=all"
+        + "/?ntr_codes=1001030U0_AC&ntr_product_type=all&dtr_codes=1001030U0&dtr_product_type=all&chart_type=deciles"
     )
 
     # Test org search
@@ -45,5 +45,5 @@ def test_query(live_server, page: Page, sample_data):
 
     expect(page).to_have_url(
         live_server.url
-        + "/?ntr_codes=1001030U0_AC&ntr_product_type=all&dtr_codes=1001030U0&dtr_product_type=all&org_id=ICB01"
+        + "/?ntr_codes=1001030U0_AC&ntr_product_type=all&dtr_codes=1001030U0&dtr_product_type=all&chart_type=deciles&org_id=ICB01"
     )

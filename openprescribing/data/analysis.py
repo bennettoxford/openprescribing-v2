@@ -20,6 +20,10 @@ class Analysis:
     ICBs, unless a particular organisation is selected, in which case that
     organisation's type is used.
 
+    There is a related class, AnalysisPresentation, that holds configuration for
+    displaying a prescribing analysis.  When new options are added to the UI, fields
+    should be added to this class if they are required by the API, and to
+    AnalysisPresentation if they are not.
     """
 
     ntr_query: BNFQuery

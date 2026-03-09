@@ -6,6 +6,14 @@ const setupOrgSearch = () => {
 
   const orgSearch = document.getElementById("org-search");
   const orgResults = document.getElementById("org-results");
+  const prescribingQueryForm = document.getElementById(
+    "prescribing-query-form",
+  );
+  const prescribingQueryOrgIdInput = document.getElementById(
+    "prescribing-query-org-id",
+  );
+  const prescribingQueryNtrCodesInput =
+    prescribingQueryForm?.querySelector('[name="ntr_codes"]');
 
   createTypeahead({
     input: orgSearch,
@@ -23,17 +31,17 @@ const setupOrgSearch = () => {
             <div class="text-muted small">${org.id} - ${orgTypes[org.org_type]}</div>
         `,
     onSelect: (org) => {
-      navigateWithParams((params) => {
-        params.set("org_id", org.id);
-      });
+      prescribingQueryOrgIdInput.disabled = false;
+      prescribingQueryOrgIdInput.value = org.id;
+
+      if (!prescribingQueryNtrCodesInput.value) {
+        // Don't submit when no numerator has been selected yet.
+        return;
+      }
+
+      prescribingQueryForm.requestSubmit();
     },
   });
-};
-
-const navigateWithParams = (updateFn) => {
-  const url = new URL(window.location.href);
-  updateFn(url.searchParams);
-  window.location.href = url.toString();
 };
 
 const createTypeahead = ({
@@ -159,23 +167,77 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   if (prescribingDecilesUrl) {
-    document.getElementById("decile").addEventListener("click", () => {
-      updateDecilesChart(prescribingDecilesUrl, "deciles", "deciles");
+    const chartConfigs = {
+      deciles: {
+        radio: document.getElementById("decile"),
+        dataUrl: prescribingDecilesUrl,
+        apiDatasetName: "deciles",
+        addDatasetName: "deciles",
+      },
+      "all-orgs-line": {
+        radio: document.getElementById("all_orgs_line_chart"),
+        dataUrl: prescribingAllOrgsUrl,
+        apiDatasetName: "all_orgs",
+        addDatasetName: "all_orgs_line",
+      },
+      "all-orgs-dots": {
+        radio: document.getElementById("all_orgs_dots_chart"),
+        dataUrl: prescribingAllOrgsUrl,
+        apiDatasetName: "all_orgs",
+        addDatasetName: "all_orgs_dots",
+      },
+    };
+
+    const renderChartType = (chartType) => {
+      const chartConfig = chartConfigs[chartType];
+      updateDecilesChart(
+        chartConfig.dataUrl,
+        chartConfig.apiDatasetName,
+        chartConfig.addDatasetName,
+      );
+    };
+
+    const chartTypeFromUrl = () => {
+      const chartType = new URL(window.location.href).searchParams.get(
+        "chart_type",
+      );
+      if (!chartType || !chartConfigs[chartType]) {
+        // default to decile view!
+        return "deciles";
+      }
+      return chartType;
+    };
+
+    const setChartType = (chartType, pushHistory = false) => {
+      chartConfigs[chartType].radio.checked = true;
+      const queryFormChartTypeInput = document.getElementById(
+        "prescribing-query-chart-type",
+      );
+      queryFormChartTypeInput.value = chartType;
+      renderChartType(chartType);
+
+      if (!pushHistory) {
+        return;
+      }
+
+      const url = new URL(window.location.href);
+      url.searchParams.set("chart_type", chartType);
+      window.history.pushState({}, "", url);
+    };
+
+    Object.entries(chartConfigs).forEach(([chartType, chartConfig]) => {
+      chartConfig.radio.addEventListener("change", () => {
+        if (!chartConfig.radio.checked) {
+          return;
+        }
+        setChartType(chartType, true);
+      });
     });
 
-    document
-      .getElementById("all_orgs_line_chart")
-      .addEventListener("click", () => {
-        updateDecilesChart(prescribingAllOrgsUrl, "all_orgs", "all_orgs_line");
-      });
+    window.addEventListener("popstate", () => {
+      setChartType(chartTypeFromUrl());
+    });
 
-    document
-      .getElementById("all_orgs_dots_chart")
-      .addEventListener("click", () => {
-        updateDecilesChart(prescribingAllOrgsUrl, "all_orgs", "all_orgs_dots");
-      });
-
-    // default to decile view!
-    document.getElementById("decile").click();
+    setChartType(chartTypeFromUrl());
   }
 });

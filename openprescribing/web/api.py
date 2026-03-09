@@ -56,27 +56,7 @@ def _build_odm(analysis):
     return odm, org
 
 
-def prescribing_all_orgs(request):
-    analysis = Analysis.from_params(request.GET)
-    odm, org = _build_odm(analysis)
-
-    all_orgs_records = list(odm.to_records(row_name="org", col_name="month"))
-    nans_to_nones(all_orgs_records)
-
-    if org is None:
-        org_type = "icb"
-    else:
-        org_type = org.org_type
-
-    return JsonResponse({"all_orgs": all_orgs_records, "org_type": org_type})
-
-
-def prescribing_deciles(request):
-    analysis = Analysis.from_params(request.GET)
-    odm, org = _build_odm(analysis)
-    cdm = get_centiles(odm)
-
-    deciles_records = list(cdm.to_records(row_name="centile", col_name="month"))
+def _get_org_records(odm, org):
     if org is not None:
         org_records = [
             {"month": month, "value": value}
@@ -90,6 +70,35 @@ def prescribing_deciles(request):
         nans_to_nones(org_records)
     else:
         org_records = []
+
+    return org_records
+
+
+def prescribing_all_orgs(request):
+    analysis = Analysis.from_params(request.GET)
+    odm, org = _build_odm(analysis)
+
+    all_orgs_records = list(odm.to_records(row_name="org", col_name="month"))
+    nans_to_nones(all_orgs_records)
+    org_records = _get_org_records(odm, org)
+
+    if org is None:
+        org_type = "icb"
+    else:
+        org_type = org.org_type
+
+    return JsonResponse(
+        {"all_orgs": all_orgs_records, "org": org_records, "org_type": org_type}
+    )
+
+
+def prescribing_deciles(request):
+    analysis = Analysis.from_params(request.GET)
+    odm, org = _build_odm(analysis)
+    cdm = get_centiles(odm)
+
+    deciles_records = list(cdm.to_records(row_name="centile", col_name="month"))
+    org_records = _get_org_records(odm, org)
 
     if org is None:
         org_type = "icb"
