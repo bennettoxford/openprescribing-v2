@@ -202,6 +202,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const setChartType = (chartType, pushHistory = false) => {
       chartConfigs[chartType].radio.checked = true;
+      const queryFormChartTypeInput = document.getElementById(
+        "prescribing-query-chart-type",
+      );
+      queryFormChartTypeInput.value = chartType;
       renderChartType(chartType);
 
       if (!pushHistory) {
