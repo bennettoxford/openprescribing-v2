@@ -18,6 +18,13 @@
                         name="chart_type"
                         value="{{ analysis_presentation.chart_type }}"
                     >
+                    <input
+                        type="hidden"
+                        id="prescribing-query-org-id"
+                        name="org_id"
+                        value="{{ analysis.org_id|default:'' }}"
+                        {% if not analysis.org_id %}disabled{% endif %}
+                    >
                     <button
                         type="submit"
                         id="prescribing-query-submit"
