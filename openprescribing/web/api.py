@@ -80,13 +80,16 @@ def prescribing_all_orgs(request):
 
     all_orgs_records = list(odm.to_records(row_name="org", col_name="month"))
     nans_to_nones(all_orgs_records)
+    org_records = _get_org_records(odm, org)
 
     if org is None:
         org_type = "icb"
     else:
         org_type = org.org_type
 
-    return JsonResponse({"all_orgs": all_orgs_records, "org_type": org_type})
+    return JsonResponse(
+        {"all_orgs": all_orgs_records, "org": org_records, "org_type": org_type}
+    )
 
 
 def prescribing_deciles(request):
