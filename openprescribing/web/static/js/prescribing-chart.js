@@ -142,9 +142,10 @@ const updateDecilesChart = (
         }
         all_dataset_names.forEach((remove_dataset_name) => {
           if (remove_dataset_name !== add_dataset_name) {
-            result.view.remove(remove_dataset_name, () => true).run();
+            result.view.remove(remove_dataset_name, () => true);
           }
         });
+        result.view.run();
 
         chartLoading.classList.add("invisible");
         chartContainer.classList.add("visible");
