@@ -10,6 +10,11 @@ class Command(BaseCommand):
     help = "Create bnf_code_mapping.csv"
 
     def handle(self, **kwargs):
+        # If an old code appears more than once in the final output, the `presentation`
+        # table will contain duplicates, and so the denormalised `prescribing` view will
+        # also contain duplicates.  This will lead to double-counting in prescribing
+        # queries.  Using a dictionary ensures that each old code appears no more than
+        # once in the final output.
         old_to_new = {}
 
         # By iterating over per-year mappings in reverse order, we can account for
