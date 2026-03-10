@@ -145,9 +145,12 @@ const updateDecilesChart = (
             result.view.remove(remove_dataset_name, () => true).run();
           }
         });
+
+        chartLoading.classList.add("invisible");
+        chartContainer.classList.add("visible");
+        chartLoading.classList.remove("visible");
+        chartContainer.classList.remove("invisible");
       });
-      chartLoading.classList.add('d-none');
-      chartContainer.classList.remove('d-none');
     })
     .catch((error) => {
       console.error("Unable to render deciles chart", error);
