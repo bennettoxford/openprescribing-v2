@@ -9,7 +9,7 @@ class AnalysisPresentation:
     """Represents configuration for displaying a prescribing analysis.
 
     See docstring to Analysis class for discussion about what belongs here vs on
-    Analaysis.
+    Analysis.
     """
 
     chart_type: ChartType
