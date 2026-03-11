@@ -133,6 +133,10 @@ searchForm.addEventListener("submit", (e) => {
 
   e.preventDefault();
   const needle = searchForm.querySelector("input").value.trim().toLowerCase();
+  if (needle === "") {
+    setTreeState(true);
+    return;
+  }
   tree.querySelectorAll("li").forEach((li) => {
     if (
       li.dataset.code.toLowerCase() === needle ||
