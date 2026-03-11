@@ -36,7 +36,7 @@ def _get_org_records(odm, org):
 
 def prescribing_all_orgs(request):
     analysis = Analysis.from_params(request.GET)
-    odm = analysis.get_organisation_date_matrix()
+    odm = analysis.get_org_date_matrix()
     org = _get_org(analysis)
 
     all_orgs_records = list(odm.to_records(row_name="org", col_name="month"))
@@ -55,7 +55,7 @@ def prescribing_all_orgs(request):
 
 def prescribing_deciles(request):
     analysis = Analysis.from_params(request.GET)
-    odm = analysis.get_organisation_date_matrix()
+    odm = analysis.get_org_date_matrix()
     org = _get_org(analysis)
     cdm = odm.get_centiles()
 

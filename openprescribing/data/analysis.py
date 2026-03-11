@@ -62,7 +62,9 @@ class Analysis:
             params["org_id"] = self.org_id
         return params
 
-    def get_organisation_date_matrix(self):
+    def get_org_date_matrix(self):
+        """Query rxdb and return a matrix with one row per org and one column per date."""
+
         ntr_sql = self.ntr_query.to_sql()
         dtr_sql = self.dtr_query.to_sql()
 
