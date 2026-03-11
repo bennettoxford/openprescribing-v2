@@ -41,6 +41,10 @@ const setupOrgSearch = () => {
 
       prescribingQueryForm.requestSubmit();
     },
+    onEmpty: () => {
+      prescribingQueryOrgIdInput.disabled = true;
+      prescribingQueryOrgIdInput.value = "";
+    },
   });
 };
 
@@ -51,12 +55,14 @@ const createTypeahead = ({
   getMatches,
   renderItem,
   onSelect,
+  onEmpty,
 }) => {
   input.addEventListener("input", () => {
     const query = input.value.trim().toLowerCase();
     if (query.length < minChars) {
       results.innerHTML = "";
       results.classList.add("d-none");
+      onEmpty();
       return;
     }
 
