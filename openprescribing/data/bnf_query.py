@@ -39,7 +39,7 @@ class BNFQuery:
 
         codes = list(
             BNFCode.objects.filter(level=BNFCode.Level.PRESENTATION)
-            .filter(reduce(Q.__or__, includes, Q()))  # TODO?
+            .filter(reduce(Q.__or__, includes, Q()))
             .exclude(reduce(Q.__or__, excludes, Q()))
             .order_by("code")
             .values_list("code", flat=True)
