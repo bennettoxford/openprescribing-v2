@@ -118,6 +118,7 @@ const updateDecilesChart = (
   }
 
   const all_dataset_names = ["deciles", "all_orgs_dots", "all_orgs_line"];
+  chartLoading.textContent = "Loading chart...";
   fetch(prescribingDecilesUrl)
     .then((response) => {
       if (!response.ok) {
