@@ -63,26 +63,8 @@ class Analysis:
         return params
 
     def get_organisation_date_matrix(self):
-        ntr_codes = self.ntr_query.get_matching_presentation_codes()
-
-        ntr_sql = f"""
-        SELECT practice_id, date_id, items AS value
-        FROM prescribing
-        WHERE bnf_code IN ({", ".join(f"'{c}'" for c in ntr_codes)})
-        """
-
-        if isinstance(self.dtr_query, BNFQuery):
-            dtr_codes = self.dtr_query.get_matching_presentation_codes()
-
-            dtr_sql = f"""
-            SELECT practice_id, date_id, items AS value
-            FROM prescribing
-            WHERE bnf_code IN ({", ".join(f"'{c}'" for c in dtr_codes)})
-            """
-            multiplier = 100
-        else:
-            dtr_sql = "SELECT practice_id, date_id, total AS value FROM list_size"
-            multiplier = 1000
+        ntr_sql = self.ntr_query.to_sql()
+        dtr_sql = self.dtr_query.to_sql()
 
         with rxdb.get_cursor() as cursor:
             # We currently have about 8 years (96 months) of list size data.
@@ -98,6 +80,11 @@ class Analysis:
 
         ntr_odm = ntr_pdm.group_rows(org_to_practice_ids)
         dtr_odm = dtr_pdm.group_rows(org_to_practice_ids)
+
+        # For prescribing vs prescribing queries, we want to show the numerator values
+        # as a percentage of the denominator values.  For prescribing vs list size
+        # queries, we want to show the numerator values per thousand patients.
+        multiplier = 100 if isinstance(self.dtr_query, BNFQuery) else 1000
 
         odm = ntr_odm / dtr_odm * multiplier
 

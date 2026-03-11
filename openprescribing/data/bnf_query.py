@@ -28,6 +28,20 @@ class BNFQuery:
         product_type = params.get(f"{field}_product_type", "all")
         return cls.build(raw_terms=raw_terms, product_type=product_type)
 
+    def to_sql(self):
+        """Return SQL that returns items prescribed for codes matching query.
+
+        The query returns one row for each practice for each month with data.
+        """
+
+        codes = self.get_matching_presentation_codes()
+
+        return f"""
+        SELECT practice_id, date_id, items AS value
+        FROM prescribing
+        WHERE bnf_code IN ({", ".join(f"'{c}'" for c in codes)})
+        """
+
     def get_matching_presentation_codes(self):
         """Return list of BNF codes for presentations matching the query.
 
