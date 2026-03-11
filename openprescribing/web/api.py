@@ -3,57 +3,9 @@ import math
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse as DjangoJsonResponse
 
-from openprescribing.data import rxdb
 from openprescribing.data.analysis import Analysis
-from openprescribing.data.bnf_query import BNFQuery
 from openprescribing.data.models import Org
 from openprescribing.data.rxdb import get_centiles
-
-
-def _build_odm(analysis):
-    ntr_codes = analysis.ntr_query.get_matching_presentation_codes()
-
-    ntr_sql = f"""
-    SELECT practice_id, date_id, items AS value
-    FROM prescribing
-    WHERE bnf_code IN ({", ".join(f"'{c}'" for c in ntr_codes)})
-    """
-
-    if isinstance(analysis.dtr_query, BNFQuery):
-        dtr_codes = analysis.dtr_query.get_matching_presentation_codes()
-
-        dtr_sql = f"""
-        SELECT practice_id, date_id, items AS value
-        FROM prescribing
-        WHERE bnf_code IN ({", ".join(f"'{c}'" for c in dtr_codes)})
-        """
-        multiplier = 100
-    else:
-        dtr_sql = "SELECT practice_id, date_id, total AS value FROM list_size"
-        multiplier = 1000
-
-    with rxdb.get_cursor() as cursor:
-        # We currently have about 8 years (96 months) of list size data.
-        ntr_pdm = rxdb.get_practice_date_matrix(cursor, ntr_sql, date_count=96)
-        dtr_pdm = rxdb.get_practice_date_matrix(cursor, dtr_sql, date_count=96)
-
-    org_id = analysis.org_id
-
-    if org_id is not None:
-        org = Org.objects.get(id=org_id)
-        org_type = org.org_type
-    else:
-        org = None
-        org_type = Org.OrgType.ICB
-
-    org_to_practice_ids = Org.objects.filter(org_type=org_type).with_practice_ids()
-
-    ntr_odm = ntr_pdm.group_rows(org_to_practice_ids)
-    dtr_odm = dtr_pdm.group_rows(org_to_practice_ids)
-
-    odm = ntr_odm / dtr_odm * multiplier
-
-    return odm
 
 
 def _get_org(analysis):
@@ -85,7 +37,7 @@ def _get_org_records(odm, org):
 
 def prescribing_all_orgs(request):
     analysis = Analysis.from_params(request.GET)
-    odm = _build_odm(analysis)
+    odm = analysis.get_organisation_date_matrix()
     org = _get_org(analysis)
 
     all_orgs_records = list(odm.to_records(row_name="org", col_name="month"))
@@ -104,7 +56,7 @@ def prescribing_all_orgs(request):
 
 def prescribing_deciles(request):
     analysis = Analysis.from_params(request.GET)
-    odm = _build_odm(analysis)
+    odm = analysis.get_organisation_date_matrix()
     org = _get_org(analysis)
     cdm = get_centiles(odm)
 

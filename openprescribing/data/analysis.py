@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from openprescribing.data import rxdb
+from openprescribing.data.models import Org
+
 from .bnf_query import BNFQuery
 from .list_size_query import ListSizeQuery
 
@@ -58,3 +61,44 @@ class Analysis:
         if self.org_id:
             params["org_id"] = self.org_id
         return params
+
+    def get_organisation_date_matrix(self):
+        ntr_codes = self.ntr_query.get_matching_presentation_codes()
+
+        ntr_sql = f"""
+        SELECT practice_id, date_id, items AS value
+        FROM prescribing
+        WHERE bnf_code IN ({", ".join(f"'{c}'" for c in ntr_codes)})
+        """
+
+        if isinstance(self.dtr_query, BNFQuery):
+            dtr_codes = self.dtr_query.get_matching_presentation_codes()
+
+            dtr_sql = f"""
+            SELECT practice_id, date_id, items AS value
+            FROM prescribing
+            WHERE bnf_code IN ({", ".join(f"'{c}'" for c in dtr_codes)})
+            """
+            multiplier = 100
+        else:
+            dtr_sql = "SELECT practice_id, date_id, total AS value FROM list_size"
+            multiplier = 1000
+
+        with rxdb.get_cursor() as cursor:
+            # We currently have about 8 years (96 months) of list size data.
+            ntr_pdm = rxdb.get_practice_date_matrix(cursor, ntr_sql, date_count=96)
+            dtr_pdm = rxdb.get_practice_date_matrix(cursor, dtr_sql, date_count=96)
+
+        if self.org_id is not None:
+            org_type = Org.objects.get(id=self.org_id).org_type
+        else:
+            org_type = Org.OrgType.ICB
+
+        org_to_practice_ids = Org.objects.filter(org_type=org_type).with_practice_ids()
+
+        ntr_odm = ntr_pdm.group_rows(org_to_practice_ids)
+        dtr_odm = dtr_pdm.group_rows(org_to_practice_ids)
+
+        odm = ntr_odm / dtr_odm * multiplier
+
+        return odm
