@@ -5,20 +5,48 @@
 
 import { descendants, isAncestor, isChemical } from "./bnf-utils.js";
 
-export function renderSelectedCodes(query, list) {
+export function renderSelectedCodes(query, list, codeToName) {
   // Update the list of codes.
 
-  const terms = queryToSortedTerms(query);
-
-  if (terms.length === 0) {
-    list.innerHTML = `<li class="list-group-item text-muted">No presentations selected.</li>`;
+  if (query.included.length === 0) {
+    list.innerHTML = `<li class="text-muted">No presentations selected.</li>`;
   } else {
-    list.innerHTML = terms
-      .map(
-        ({ code, included }) =>
-          `<li class="list-group-item"><code>${included ? code : `-${code}`}</code></li>`,
-      )
+    const groups = queryToGroups(query);
+    list.innerHTML = groups.map((g) => renderGroup(g, codeToName)).join("");
+  }
+}
+
+function queryToGroups(query) {
+  // Given a query, return an array of groups (objects with properties `code` and
+  // `excluded`.  Each group corresponds to a single code that's been included in
+  // the query.  This works, because each excluded code belongs to exactly one
+  // included code.
+
+  const groups = query.included.map((c) => ({ code: c, excluded: [] }));
+  query.excluded.forEach((c) => {
+    groups.forEach((g) => {
+      if (isAncestor(g.code, c)) {
+        g.excluded.push(c);
+      }
+    });
+  });
+
+  return groups;
+}
+
+function renderGroup(group, codeToName) {
+  // Render a single group (an object with properties `code` and `excluded`) in a list.
+
+  if (group.excluded.length === 0) {
+    return `<li>${codeToName[group.code]}</li>`;
+  } else {
+    const excludedList = group.excluded
+      .map((c) => `<li>${codeToName[c]}</li>`)
       .join("");
+    return `
+      <li>${codeToName[group.code]}, except:
+        <ul>${excludedList}</ul>
+      </li>`;
   }
 }
 

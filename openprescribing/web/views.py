@@ -12,6 +12,7 @@ from .analysis_presentation import AnalysisPresentation
 from .presenters import (
     make_bnf_table,
     make_bnf_tree,
+    make_code_to_name,
     make_ntr_dtr_intersection_table,
     make_orgs,
 )
@@ -49,6 +50,7 @@ def analysis(request):
 
     codes = BNFCode.objects.exclude(code__startswith="2")
     tree = make_bnf_tree(codes)
+    code_to_name = make_code_to_name(codes)
 
     orgs = make_orgs()
 
@@ -102,6 +104,7 @@ def analysis(request):
     ctx = {
         "analysis": analysis,
         "analysis_presentation": analysis_presentation,
+        "code_to_name": code_to_name,
         "ntr_dtr_intersection_table": ntr_dtr_intersection_table,
         "org": org,
         "orgs": orgs,
