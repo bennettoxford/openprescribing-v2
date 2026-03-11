@@ -5,7 +5,6 @@ from django.http import JsonResponse as DjangoJsonResponse
 
 from openprescribing.data.analysis import Analysis
 from openprescribing.data.models import Org
-from openprescribing.data.rxdb import get_centiles
 
 
 def _get_org(analysis):
@@ -58,7 +57,7 @@ def prescribing_deciles(request):
     analysis = Analysis.from_params(request.GET)
     odm = analysis.get_organisation_date_matrix()
     org = _get_org(analysis)
-    cdm = get_centiles(odm)
+    cdm = odm.get_centiles()
 
     deciles_records = list(cdm.to_records(row_name="centile", col_name="month"))
     org_records = _get_org_records(odm, org)

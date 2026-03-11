@@ -109,6 +109,11 @@ class LabelledMatrix:
             for col_label, value in zip(self.col_labels, row):
                 yield {row_name: row_label, col_name: col_label, val_name: value}
 
+    def get_centiles(self):
+        centiles = (10, 20, 30, 40, 50, 60, 70, 80, 90)
+        values = np.nanpercentile(self.values, centiles, axis=0)
+        return LabelledMatrix(values, centiles, self.col_labels)
+
 
 # These "row groupers" are pure functions of their inputs, are not entirely trivial to
 # construct, and are expected to be used repeatedly, so it makes sense to cache them
