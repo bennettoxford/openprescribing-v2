@@ -62,6 +62,10 @@ function getCurrentQuery() {
   return state.query[state.field];
 }
 
+const codeToName = JSON.parse(
+  document.getElementById("code-to-name").textContent,
+);
+
 // The various elements that we'll be interacting with.  {
 
 const formControls = {
@@ -112,7 +116,7 @@ setBoolAttr(tree, "selectable", true);
   state.query[field] = textToQuery(input.value);
 
   // Update the list of selected codes.
-  renderSelectedCodes(state.query[field], getCodesList(field));
+  renderSelectedCodes(state.query[field], getCodesList(field), codeToName);
 });
 
 tree.addEventListener("click", (e) => {
@@ -198,7 +202,7 @@ treeModal.addEventListener("hidden.bs.modal", () => {
 
   // Otherwise, we update the corresponding list of codes and hidden input with a text
   // representation of the current query.
-  renderSelectedCodes(getCurrentQuery(), getCodesList(state.field));
+  renderSelectedCodes(getCurrentQuery(), getCodesList(state.field), codeToName);
   setInputValue(getCurrentQuery(), getCodeInput(state.field));
   submitButton.disabled = !isSubmittable(state);
   state.field = null;

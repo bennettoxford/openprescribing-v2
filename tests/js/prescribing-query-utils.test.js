@@ -27,7 +27,7 @@ describe("renderSelectedCodes", () => {
     it("shows 'No presentations selected.'", () => {
       const query = { included: [], excluded: [] };
       const list = document.createElement("ul");
-      renderSelectedCodes(query, list);
+      renderSelectedCodes(query, list, {});
       expect(list.querySelectorAll("li").length).toEqual(1);
       expect(list.querySelector("li").innerHTML).toEqual(
         "No presentations selected.",
@@ -39,20 +39,25 @@ describe("renderSelectedCodes", () => {
     it("shows one li per term", () => {
       const query = { included: ["01", "02"], excluded: ["0101", "0102"] };
       const list = document.createElement("ul");
-      renderSelectedCodes(query, list);
+      const codeToName = {
+        "01": "Chapter 1",
+        "0101": "Section 1.1",
+        "0102": "Section 1.2",
+        "02": "Chapter 2",
+      };
+      renderSelectedCodes(query, list, codeToName);
+      expect(list.children.length).toEqual(2);
       expect(list.querySelectorAll("li").length).toEqual(4);
-      expect(list.querySelectorAll("li")[0].innerHTML).toEqual(
-        "<code>01</code>",
+      expect(list.children[0].childNodes[0].textContent.trim()).toEqual(
+        "Chapter 1, except:",
       );
-      expect(list.querySelectorAll("li")[1].innerHTML).toEqual(
-        "<code>-0101</code>",
-      );
-      expect(list.querySelectorAll("li")[2].innerHTML).toEqual(
-        "<code>-0102</code>",
-      );
-      expect(list.querySelectorAll("li")[3].innerHTML).toEqual(
-        "<code>02</code>",
-      );
+      expect(
+        list.children[0].querySelectorAll("ul > li")[0].textContent,
+      ).toEqual("Section 1.1");
+      expect(
+        list.children[0].querySelectorAll("ul > li")[1].textContent,
+      ).toEqual("Section 1.2");
+      expect(list.children[1].textContent).toEqual("Chapter 2");
     });
   });
 });
