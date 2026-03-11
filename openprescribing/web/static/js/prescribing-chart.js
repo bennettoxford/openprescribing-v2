@@ -155,8 +155,7 @@ const updateDecilesChart = (
     })
     .catch((error) => {
       console.error("Unable to render deciles chart", error);
-      const chartContainer = document.querySelector("#deciles-chart-container");
-      chartContainer.textContent =
+      chartLoading.textContent =
         "Unable to load chart data. Please try again later.";
     });
 };
