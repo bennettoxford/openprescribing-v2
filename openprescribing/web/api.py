@@ -53,7 +53,16 @@ def _build_odm(analysis):
 
     odm = ntr_odm / dtr_odm * multiplier
 
-    return odm, org
+    return odm
+
+
+def _get_org(analysis):
+    org_id = analysis.org_id
+
+    if org_id is not None:
+        return Org.objects.get(id=org_id)
+    else:
+        return None
 
 
 def _get_org_records(odm, org):
@@ -76,7 +85,8 @@ def _get_org_records(odm, org):
 
 def prescribing_all_orgs(request):
     analysis = Analysis.from_params(request.GET)
-    odm, org = _build_odm(analysis)
+    odm = _build_odm(analysis)
+    org = _get_org(analysis)
 
     all_orgs_records = list(odm.to_records(row_name="org", col_name="month"))
     nans_to_nones(all_orgs_records)
@@ -94,7 +104,8 @@ def prescribing_all_orgs(request):
 
 def prescribing_deciles(request):
     analysis = Analysis.from_params(request.GET)
-    odm, org = _build_odm(analysis)
+    odm = _build_odm(analysis)
+    org = _get_org(analysis)
     cdm = get_centiles(odm)
 
     deciles_records = list(cdm.to_records(row_name="centile", col_name="month"))
