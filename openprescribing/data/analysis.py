@@ -2,6 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from openprescribing.data import rxdb
+from openprescribing.data.models import Org
+
 from .bnf_query import BNFQuery
 from .list_size_query import ListSizeQuery
 
@@ -58,3 +61,33 @@ class Analysis:
         if self.org_id:
             params["org_id"] = self.org_id
         return params
+
+    def get_org_date_matrix(self):
+        """Query rxdb and return a matrix with one row per org and one column per date."""
+
+        ntr_sql = self.ntr_query.to_sql()
+        dtr_sql = self.dtr_query.to_sql()
+
+        with rxdb.get_cursor() as cursor:
+            # We currently have about 8 years (96 months) of list size data.
+            ntr_pdm = rxdb.get_practice_date_matrix(cursor, ntr_sql, date_count=96)
+            dtr_pdm = rxdb.get_practice_date_matrix(cursor, dtr_sql, date_count=96)
+
+        if self.org_id is not None:
+            org_type = Org.objects.get(id=self.org_id).org_type
+        else:
+            org_type = Org.OrgType.ICB
+
+        org_to_practice_ids = Org.objects.filter(org_type=org_type).with_practice_ids()
+
+        ntr_odm = ntr_pdm.group_rows(org_to_practice_ids)
+        dtr_odm = dtr_pdm.group_rows(org_to_practice_ids)
+
+        # For prescribing vs prescribing queries, we want to show the numerator values
+        # as a percentage of the denominator values.  For prescribing vs list size
+        # queries, we want to show the numerator values per thousand patients.
+        multiplier = 100 if isinstance(self.dtr_query, BNFQuery) else 1000
+
+        odm = ntr_odm / dtr_odm * multiplier
+
+        return odm
