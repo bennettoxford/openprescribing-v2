@@ -220,7 +220,7 @@ treeModal.addEventListener("hidden.bs.modal", () => {
   state.field = null;
 
   // Also wipe any current searchTerm
-  state.searchTerm = "";
+  state.searchTerm = null;
 });
 
 // }
