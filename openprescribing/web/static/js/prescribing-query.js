@@ -56,6 +56,9 @@ const state = {
   // Records the code of the chemical substance that is currently being shown in the
   // table modal.  If it is not null, we infer that the table modal is open.
   chemicalCode: null,
+  // Records the search term that is currently in the tree modal. If it is not null,
+  // either the tree modal or the table modal is open.
+  searchTerm: null,
 };
 
 function getCurrentQuery() {
@@ -136,7 +139,12 @@ searchForm.addEventListener("submit", (e) => {
   // The user has submitted the search form.
 
   e.preventDefault();
-  const needle = searchForm.querySelector("input").value.trim().toLowerCase();
+
+  // Save raw value so that we can repopulate it if we change modals
+  state.searchTerm = searchForm.querySelector("input").value;
+
+  const needle = state.searchTerm.trim().toLowerCase();
+
   if (needle === "") {
     setTreeState(true);
     return;
@@ -210,6 +218,9 @@ treeModal.addEventListener("hidden.bs.modal", () => {
   setInputValue(getCurrentQuery(), getCodeInput(state.field));
   submitButton.disabled = !isSubmittable(state);
   state.field = null;
+
+  // Also wipe any current searchTerm
+  state.searchTerm = "";
 });
 
 // }
@@ -248,7 +259,12 @@ function setTreeState(newlyOpened) {
     }
   });
 
-  searchForm.querySelector("input").value = "";
+  if (state.searchTerm !== null) {
+    searchForm.querySelector("input").value = state.searchTerm;
+    searchForm.requestSubmit();
+  } else {
+    searchForm.querySelector("input").value = "";
+  }
 }
 
 function setTableState(table) {
