@@ -23,4 +23,5 @@ jobs:
 
     - uses: bennettoxford/update-dependencies-action@v1
       with:
+        pr_label: "dependencies"
         token: ${{ steps.generate-token.outputs.token }}
