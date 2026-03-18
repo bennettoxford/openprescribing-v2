@@ -1,6 +1,7 @@
 import pytest
 import requests
 import responses
+from responses.registries import OrderedRegistry
 
 from openprescribing.data.utils.http_session import HTTPSession
 
@@ -55,3 +56,40 @@ def test_download_to_file(tmp_path):
     http.download_to_file("http://example.com/", dest_path, buffer_size=1024)
 
     assert dest_path.read_bytes() == body
+
+
+@responses.activate(registry=OrderedRegistry)
+def test_retry_fail():
+    responses.get(
+        "http://example.com/",
+        status=404,
+    )
+    responses.get(
+        "http://example.com/",
+        status=404,
+    )
+    responses.get("http://example.com/", body="hello")
+
+    http = HTTPSession("")
+    with pytest.raises(requests.HTTPError):
+        http.get("http://example.com/", 2)
+
+
+@responses.activate(registry=OrderedRegistry)
+def test_retry_succeed():
+    responses.get(
+        "http://example.com/",
+        status=404,
+    )
+    responses.get("http://example.com/", body="hello")
+
+    logs = []
+    http = HTTPSession("", log=logs.append)
+    rsp = http.get("http://example.com/", 2)
+
+    assert rsp.text == "hello"
+    assert logs == [
+        "GET http://example.com/",
+        "Retrying... (attempt 1 failed)",
+        "GET http://example.com/",
+    ]
