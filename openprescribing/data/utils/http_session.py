@@ -1,7 +1,9 @@
 import shutil
+import time
 from urllib.parse import urljoin
 
 import requests
+from requests.models import HTTPError
 
 
 class HTTPSession(requests.Session):
@@ -23,6 +25,17 @@ class HTTPSession(requests.Session):
         response = super().request(method, abs_url, *args, **kwargs)
         response.raise_for_status()
         return response
+
+    def get(self, url, retries=3, **kwargs):
+        for attempt in range(1, retries + 1):  # pragma: no branch
+            try:
+                return super().get(url, **kwargs)
+            except HTTPError:
+                if attempt == retries:
+                    raise
+                if self.log:
+                    self.log(f"Retrying... (attempt {attempt} failed)")
+                time.sleep(1)
 
     def send(self, prepared_request, **kwargs):
         if self.log:
