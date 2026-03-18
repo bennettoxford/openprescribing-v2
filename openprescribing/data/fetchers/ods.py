@@ -73,6 +73,28 @@ def fetch(directory):
 
     orgs = response.json()["orgArray"]
 
+    # In 2026-03 we observed Practices and Others attached to multiple PCNs, as they
+    # were due to change PCN at the end of month (i.e. starting new PCN on 2026-04-01).
+    # At the time, the `organisationReportSearch` endpoint returned incomplete data
+    # for this change. It included multiple PCNs for e.g. a Practice, but not the
+    # relevant dates, so we have no way to choose between them.
+    # The `singleOrganisationSearchByCode` endpoint does have these dates in the
+    # `relationships` key, so enrich `org` with that extra info for all PCNs.
+    for org in orgs:
+        # Role RO272 means PCNs
+        if not org["primaryRole"] == "RO272":
+            continue
+
+        # Occasionally (once per import) this returns HTTP 500, but typically works on an
+        # immediate retry.
+        response = http.get(
+            f"search/singleOrganisationSearchByCode?code={org['id']}", 3
+        )
+        pcn = response.json()
+
+        # Default to empty dict for historic PCNs with no current relationships
+        org["relationships"] = pcn.get("relationships", {})
+
     filename.parent.mkdir(parents=True, exist_ok=True)
     tmp_filename = get_temp_filename_for(filename)
     json_to_parquet(orgs, tmp_filename)
