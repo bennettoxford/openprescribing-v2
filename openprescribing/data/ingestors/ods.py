@@ -11,7 +11,7 @@ from openprescribing.data.utils.duckdb_utils import escape
 log = logging.getLogger(__name__)
 
 
-def ingest(force=False):
+def ingest(force=False, org_types=Org.OrgType):
     ods_files = settings.DOWNLOAD_DIR.glob("ods/*.parquet")
     latest_file = max(ods_files, default=None)
 
@@ -28,7 +28,7 @@ def ingest(force=False):
 
     with transaction.atomic(using="data"):
         Org.objects.all().delete()
-        ingest_ods(conn)
+        ingest_ods(conn, org_types)
         IngestedFile.set_by_name("ods", latest_file.name)
 
     conn.close()
@@ -37,7 +37,7 @@ def ingest(force=False):
     log.info(f"Ingested {count:,} organisations in total")
 
 
-def ingest_ods(conn):
+def ingest_ods(conn, org_types):
     OrgType = Org.OrgType
 
     ORG_TYPE_QUERIES = {
@@ -58,7 +58,7 @@ def ingest_ods(conn):
 
     known_ids = set()
 
-    for org_type in OrgType:
+    for org_type in org_types:
         if org_type == OrgType.NATION:
             continue
 
