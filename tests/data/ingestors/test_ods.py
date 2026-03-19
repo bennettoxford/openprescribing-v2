@@ -275,3 +275,119 @@ def test_ods_ingest_multiple_pcns(tmp_path, settings):
         ("U25891", "PCN", "SHELDON PCN", {"ENGLAND"}),
         ("M85171", "PRACTICE", "ROWLANDS ROAD SURGERY", {"ENGLAND", "U93165"}),
     ]
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_ods_ingest_multiple_pcns_missing_opEndDate(tmp_path, settings):
+    settings.DOWNLOAD_DIR = tmp_path / "downloads"
+    data = [
+        {
+            "id": "U39721",
+            "name": "HILLS, BROOKS & DALES GROUP PCN",
+            "inactive": False,
+            "roleName": [],
+            "primaryRole": "RO272",
+            "primaryRoleName": "PRIMARY CARE NETWORK",
+            "isPartnerToCode": [],
+            "RE4": "72Q",
+            "ICB": "QKK",
+            "NHSER": "Y56",
+            "country": "ENGLAND",
+            "relationships": {
+                "PRESCRIBING COST CENTRE": [
+                    {
+                        "id": "793254",
+                        "name": "ONE CARE LAMBETH",
+                        "primaryRole": "RO177",
+                        "role": ["RO177", "RO76"],
+                        "primaryRoleName": "PRESCRIBING COST CENTRE",
+                        "inactive": False,
+                        "opStartDate": "2021-05-01",
+                        "relationshipTypeCode": "RE8",
+                        "targetOrgCode": "U39721",
+                        "legStartDate": "2021-05-01",
+                        "targetOrgRole": ["RO272"],
+                        "sourceOrgCode": "Y07020",
+                        "sourceOrgRole": "RO76",
+                        "status": "active",
+                        "sourceOrgRoleName": "GP PRACTICE",
+                        "legEndDate": "",
+                        "lastChangeDate": "",
+                        "opEndDate": "",
+                    }
+                ]
+            },
+        },
+        {
+            "id": "U36779",
+            "name": "BRIXTON AND CLAPHAM PARK PCN",
+            "inactive": False,
+            "roleName": [],
+            "primaryRole": "RO272",
+            "primaryRoleName": "PRIMARY CARE NETWORK",
+            "isPartnerToCode": [],
+            "RE4": "72Q",
+            "ICB": "QKK",
+            "NHSER": "Y56",
+            "country": "ENGLAND",
+            "relationships": {
+                "PRESCRIBING COST CENTRE": [
+                    {
+                        "id": "875081",
+                        "name": "ONE CARE LAMBETH",
+                        "primaryRole": "RO177",
+                        "role": ["RO177", "RO76"],
+                        "primaryRoleName": "PRESCRIBING COST CENTRE",
+                        "inactive": False,
+                        "opStartDate": "2026-03-15",
+                        "relationshipTypeCode": "RE8",
+                        "targetOrgCode": "U36779",
+                        "legStartDate": "2026-03-15",
+                        "targetOrgRole": ["RO272"],
+                        "sourceOrgCode": "Y07020",
+                        "sourceOrgRole": "RO76",
+                        "status": "active",
+                        "sourceOrgRoleName": "GP PRACTICE",
+                        "legEndDate": "",
+                        "lastChangeDate": "",
+                        "opEndDate": "",
+                    }
+                ]
+            },
+        },
+        {
+            "id": "Y07020",
+            "name": "ONE CARE LAMBETH",
+            "inactive": False,
+            "roleName": ["GP PRACTICE"],
+            "primaryRole": "RO177",
+            "primaryRoleName": "PRESCRIBING COST CENTRE",
+            "isPartnerToCode": ["U36779", "U39721"],
+            "RE4": "72Q",
+            "ICB": "QKK",
+            "NHSER": "Y56",
+            "country": "ENGLAND",
+        },
+    ]
+
+    ods_file = settings.DOWNLOAD_DIR / "ods" / "ods.parquet"
+    parquet_from_dicts(ods_file, data)
+
+    org_types = [Org.OrgType.PCN, Org.OrgType.PRACTICE]
+    ods.ingest(org_types=org_types)
+
+    results = [
+        (
+            org.id,
+            org.OrgType(org.org_type).name,
+            org.name,
+            {p.id for p in org.parents.all()},
+        )
+        for org in Org.objects.all()
+    ]
+    assert results == [
+        ("ENGLAND", "NATION", "NHS England", set()),
+        ("U39721", "PCN", "HILLS, BROOKS & DALES GROUP PCN", {"ENGLAND"}),
+        ("U36779", "PCN", "BRIXTON AND CLAPHAM PARK PCN", {"ENGLAND"}),
+        ("Y07020", "PRACTICE", "ONE CARE LAMBETH", {"ENGLAND", "U36779"}),
+    ]
