@@ -67,8 +67,12 @@ def ingest_ods(conn):
             f"""
             SELECT
                 id, name, inactive,
-                -- Combine the various fields which may contain related orgs IDs into a single list
-                isPartnerToCode || [RE4, ICB, NHSER] AS related_ids
+                -- Combine the various fields which can only contain a single related
+                -- org ID into a single list
+                [RE4, ICB, NHSER] AS related_ids,
+                -- Keep the field which can contain multiple related org IDs separate.
+                -- This is used for the relationship between PCNs and Practices/Others.
+                isPartnerToCode AS partner_ids
             FROM
                 ods
             WHERE
@@ -78,10 +82,17 @@ def ingest_ods(conn):
 
         counts_by_status = {False: 0, True: 0}
 
-        for id_, name, inactive, related_ids in results.fetchall():
+        for id_, name, inactive, related_ids, partner_ids in results.fetchall():
             org = Org.objects.create(
                 id=id_, org_type=org_type, name=name, inactive=inactive
             )
+
+            if org_type is Org.OrgType.PRACTICE or org_type is Org.OrgType.OTHER:
+                assert len(partner_ids) <= 1
+                related_ids.extend(partner_ids)
+            else:
+                assert len(partner_ids) == 0
+
             # The relations we get in the data don't specify the parent/child direction.
             # However by creating orgs in strictly hierarchical order, and by only
             # creating relationships where the target already exists we know that all
