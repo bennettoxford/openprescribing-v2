@@ -159,3 +159,119 @@ def test_ods_ingest(tmp_path, settings):
     # then this will fail loudly.
     ods_file.write_text("")
     ods.ingest()
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_ods_ingest_multiple_pcns(tmp_path, settings):
+    settings.DOWNLOAD_DIR = tmp_path / "downloads"
+    data = [
+        {
+            "id": "U93165",
+            "name": "NORTH SOLIHULL PCN",
+            "inactive": False,
+            "roleName": [],
+            "primaryRole": "RO272",
+            "primaryRoleName": "PRIMARY CARE NETWORK",
+            "isPartnerToCode": [],
+            "RE4": "15E",
+            "ICB": "QHL",
+            "NHSER": "Y60",
+            "country": "ENGLAND",
+            "relationships": {
+                "PRESCRIBING COST CENTRE": [
+                    {
+                        "id": "726656",
+                        "name": "ROWLANDS ROAD SURGERY",
+                        "primaryRole": "RO177",
+                        "role": ["RO177", "RO76"],
+                        "primaryRoleName": "PRESCRIBING COST CENTRE",
+                        "inactive": False,
+                        "legEndDate": "2026-03-31",
+                        "opStartDate": "2021-04-01",
+                        "targetOrgRole": ["RO272"],
+                        "sourceOrgRole": "RO76",
+                        "relationshipTypeCode": "RE8",
+                        "targetOrgCode": "U93165",
+                        "legStartDate": "2021-04-01",
+                        "sourceOrgCode": "M85171",
+                        "opEndDate": "2026-03-31",
+                        "status": "active",
+                        "sourceOrgRoleName": "GP PRACTICE",
+                    },
+                ]
+            },
+        },
+        {
+            "id": "U25891",
+            "name": "SHELDON PCN",
+            "inactive": False,
+            "roleName": [],
+            "primaryRole": "RO272",
+            "primaryRoleName": "PRIMARY CARE NETWORK",
+            "isPartnerToCode": [],
+            "RE4": "15E",
+            "ICB": "QHL",
+            "NHSER": "Y60",
+            "country": "ENGLAND",
+            "relationships": {
+                "PRESCRIBING COST CENTRE": [
+                    {
+                        "id": "875109",
+                        "name": "ROWLANDS ROAD SURGERY",
+                        "primaryRole": "RO177",
+                        "role": ["RO177", "RO76"],
+                        "primaryRoleName": "PRESCRIBING COST CENTRE",
+                        "nonPrimaryRoleName": ["GP PRACTICE"],
+                        "inactive": True,
+                        "opStartDate": "2026-04-01",
+                        "relationshipTypeCode": "RE8",
+                        "targetOrgCode": "U25891",
+                        "legStartDate": "2026-04-01",
+                        "targetOrgRole": ["RO272"],
+                        "sourceOrgCode": "M85171",
+                        "sourceOrgRole": "RO76",
+                        "status": "retired",
+                        "sourceOrgRoleName": "GP PRACTICE",
+                        "legEndDate": "",
+                        "lastChangeDate": "",
+                        "opEndDate": "",
+                    },
+                ]
+            },
+        },
+        {
+            "id": "M85171",
+            "name": "ROWLANDS ROAD SURGERY",
+            "inactive": False,
+            "roleName": ["GP PRACTICE"],
+            "primaryRole": "RO177",
+            "primaryRoleName": "PRESCRIBING COST CENTRE",
+            "isPartnerToCode": ["U36779", "U39721"],
+            "RE4": "15E",
+            "ICB": "QHL",
+            "NHSER": "Y60",
+            "country": "ENGLAND",
+        },
+    ]
+
+    ods_file = settings.DOWNLOAD_DIR / "ods" / "ods.parquet"
+    parquet_from_dicts(ods_file, data)
+
+    org_types = [Org.OrgType.PCN, Org.OrgType.PRACTICE]
+    ods.ingest(org_types=org_types)
+
+    results = [
+        (
+            org.id,
+            org.OrgType(org.org_type).name,
+            org.name,
+            {p.id for p in org.parents.all()},
+        )
+        for org in Org.objects.all()
+    ]
+    assert results == [
+        ("ENGLAND", "NATION", "NHS England", set()),
+        ("U93165", "PCN", "NORTH SOLIHULL PCN", {"ENGLAND"}),
+        ("U25891", "PCN", "SHELDON PCN", {"ENGLAND"}),
+        ("M85171", "PRACTICE", "ROWLANDS ROAD SURGERY", {"ENGLAND", "U93165"}),
+    ]

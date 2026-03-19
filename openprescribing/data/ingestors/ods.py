@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 import duckdb
@@ -88,8 +89,18 @@ def ingest_ods(conn, org_types):
             )
 
             if org_type is Org.OrgType.PRACTICE or org_type is Org.OrgType.OTHER:
-                assert len(partner_ids) <= 1
-                related_ids.extend(partner_ids)
+                if len(partner_ids) <= 1:
+                    related_ids.extend(partner_ids)
+                else:
+                    today = datetime.date.today()
+                    # RO272 means PCN as noted elsewhere.
+                    # RE8 means "is partner to", which appears to be the standard
+                    # relationship of a Practice to a PCN.
+                    mysql = "SELECT id FROM ods, UNNEST(relationships['PRESCRIBING COST CENTRE']) AS t(rel) WHERE primaryRole='RO272' AND rel.sourceOrgCode = $1 AND rel.relationshipTypeCode = 'RE8' AND rel.opStartDate <= $2 AND ( rel.opEndDate >= $2 OR rel.opEndDate == '' );"
+                    parent_results = conn.execute(mysql, [id_, str(today)]).fetchall()
+
+                    assert len(parent_results) == 1
+                    related_ids.append(parent_results[0][0])
             else:
                 assert len(partner_ids) == 0
 
