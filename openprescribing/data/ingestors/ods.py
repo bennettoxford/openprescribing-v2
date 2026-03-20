@@ -34,11 +34,13 @@ def ingest(force=False):
 
     conn.close()
 
+    verify_ods(conn)
+
     count = Org.objects.count()
     log.info(f"Ingested {count:,} organisations in total")
 
 
-def ingest_ods(conn, org_types=Org.OrgType):
+def ingest_ods(conn):
     OrgType = Org.OrgType
 
     ORG_TYPE_QUERIES = {
@@ -59,7 +61,7 @@ def ingest_ods(conn, org_types=Org.OrgType):
 
     known_ids = set()
 
-    for org_type in org_types:
+    for org_type in OrgType:
         if org_type == OrgType.NATION:
             continue
 
@@ -137,4 +139,9 @@ def ingest_ods(conn, org_types=Org.OrgType):
             f"Ingested {total:,} orgs of {org_type!r} "
             f"(of which {counts_by_status[False]:,} are active)"
         )
-        assert total, f"No orgs of type {org_type!r} found – aborting"
+
+
+def verify_ods(conn):
+    for org_type in Org.OrgType:
+        total = Org.objects.filter(org_type=org_type).count()
+        assert total > 0, f"No orgs of type {org_type!r} found – aborting"

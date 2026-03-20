@@ -173,8 +173,7 @@ def test_ods_ingest_multiple_pcns(rxdb, tmp_path, settings, frozen_date, expecte
             rxdb.conn, "tests/data/ingestors/data/ods_ingest_multiple_pcn.json"
         )
 
-        org_types = [Org.OrgType.PCN, Org.OrgType.PRACTICE]
-        ods.ingest_ods(rxdb.conn, org_types=org_types)
+        ods.ingest_ods(rxdb.conn)
 
         results = [
             (
@@ -201,8 +200,7 @@ def test_ods_ingest_multiple_pcns_missing_opEndDate(rxdb, tmp_path, settings):
         "tests/data/ingestors/data/ods_ingest_multiple_pcns_missing_opEndDate.json",
     )
 
-    org_types = [Org.OrgType.PCN, Org.OrgType.PRACTICE]
-    ods.ingest_ods(rxdb.conn, org_types=org_types)
+    ods.ingest_ods(rxdb.conn)
 
     results = [
         (
