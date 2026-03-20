@@ -155,3 +155,8 @@ def prepare_data(data, defaults):
             row["date"] = datetime.date.fromisoformat(row["date"])
         prepared.append(row)
     return prepared
+
+
+def duckdb_view_from_json_file(conn, filename):
+    sql = f"CREATE VIEW ods AS SELECT * FROM read_json_auto('{filename}');"
+    conn.execute(sql)
