@@ -4,6 +4,7 @@ from freezegun import freeze_time
 from openprescribing.data.ingestors import ods
 from openprescribing.data.models import Org
 from tests.utils.parquet_utils import parquet_from_dicts
+from tests.utils.rxdb_utils import duckdb_view_from_json_file
 
 
 @pytest.mark.django_db(databases=["data"])
@@ -166,104 +167,14 @@ def test_ods_ingest(tmp_path, settings):
     "frozen_date,expected_pcn", [("2026-03-20", "U93165"), ("2026-04-20", "U25891")]
 )
 @pytest.mark.django_db(databases=["data"])
-def test_ods_ingest_multiple_pcns(tmp_path, settings, frozen_date, expected_pcn):
+def test_ods_ingest_multiple_pcns(rxdb, tmp_path, settings, frozen_date, expected_pcn):
     with freeze_time(frozen_date):
-        settings.DOWNLOAD_DIR = tmp_path / "downloads"
-        data = [
-            {
-                "id": "U93165",
-                "name": "NORTH SOLIHULL PCN",
-                "inactive": False,
-                "roleName": [],
-                "primaryRole": "RO272",
-                "primaryRoleName": "PRIMARY CARE NETWORK",
-                "isPartnerToCode": [],
-                "RE4": "15E",
-                "ICB": "QHL",
-                "NHSER": "Y60",
-                "country": "ENGLAND",
-                "relationships": {
-                    "PRESCRIBING COST CENTRE": [
-                        {
-                            "id": "726656",
-                            "name": "ROWLANDS ROAD SURGERY",
-                            "primaryRole": "RO177",
-                            "role": ["RO177", "RO76"],
-                            "primaryRoleName": "PRESCRIBING COST CENTRE",
-                            "inactive": False,
-                            "legEndDate": "2026-03-31",
-                            "opStartDate": "2021-04-01",
-                            "targetOrgRole": ["RO272"],
-                            "sourceOrgRole": "RO76",
-                            "relationshipTypeCode": "RE8",
-                            "targetOrgCode": "U93165",
-                            "legStartDate": "2021-04-01",
-                            "sourceOrgCode": "M85171",
-                            "opEndDate": "2026-03-31",
-                            "status": "active",
-                            "sourceOrgRoleName": "GP PRACTICE",
-                        },
-                    ]
-                },
-            },
-            {
-                "id": "U25891",
-                "name": "SHELDON PCN",
-                "inactive": False,
-                "roleName": [],
-                "primaryRole": "RO272",
-                "primaryRoleName": "PRIMARY CARE NETWORK",
-                "isPartnerToCode": [],
-                "RE4": "15E",
-                "ICB": "QHL",
-                "NHSER": "Y60",
-                "country": "ENGLAND",
-                "relationships": {
-                    "PRESCRIBING COST CENTRE": [
-                        {
-                            "id": "875109",
-                            "name": "ROWLANDS ROAD SURGERY",
-                            "primaryRole": "RO177",
-                            "role": ["RO177", "RO76"],
-                            "primaryRoleName": "PRESCRIBING COST CENTRE",
-                            "nonPrimaryRoleName": ["GP PRACTICE"],
-                            "inactive": True,
-                            "opStartDate": "2026-04-01",
-                            "relationshipTypeCode": "RE8",
-                            "targetOrgCode": "U25891",
-                            "legStartDate": "2026-04-01",
-                            "targetOrgRole": ["RO272"],
-                            "sourceOrgCode": "M85171",
-                            "sourceOrgRole": "RO76",
-                            "status": "retired",
-                            "sourceOrgRoleName": "GP PRACTICE",
-                            "legEndDate": "",
-                            "lastChangeDate": "",
-                            "opEndDate": "",
-                        },
-                    ]
-                },
-            },
-            {
-                "id": "M85171",
-                "name": "ROWLANDS ROAD SURGERY",
-                "inactive": False,
-                "roleName": ["GP PRACTICE"],
-                "primaryRole": "RO177",
-                "primaryRoleName": "PRESCRIBING COST CENTRE",
-                "isPartnerToCode": ["U36779", "U39721"],
-                "RE4": "15E",
-                "ICB": "QHL",
-                "NHSER": "Y60",
-                "country": "ENGLAND",
-            },
-        ]
-
-        ods_file = settings.DOWNLOAD_DIR / "ods" / "ods.parquet"
-        parquet_from_dicts(ods_file, data)
+        duckdb_view_from_json_file(
+            rxdb.conn, "tests/data/ingestors/data/ods_ingest_multiple_pcn.json"
+        )
 
         org_types = [Org.OrgType.PCN, Org.OrgType.PRACTICE]
-        ods.ingest(org_types=org_types)
+        ods.ingest_ods(rxdb.conn, org_types=org_types)
 
         results = [
             (
@@ -284,103 +195,14 @@ def test_ods_ingest_multiple_pcns(tmp_path, settings, frozen_date, expected_pcn)
 
 @freeze_time("2026-03-20")
 @pytest.mark.django_db(databases=["data"])
-def test_ods_ingest_multiple_pcns_missing_opEndDate(tmp_path, settings):
-    settings.DOWNLOAD_DIR = tmp_path / "downloads"
-    data = [
-        {
-            "id": "U39721",
-            "name": "HILLS, BROOKS & DALES GROUP PCN",
-            "inactive": False,
-            "roleName": [],
-            "primaryRole": "RO272",
-            "primaryRoleName": "PRIMARY CARE NETWORK",
-            "isPartnerToCode": [],
-            "RE4": "72Q",
-            "ICB": "QKK",
-            "NHSER": "Y56",
-            "country": "ENGLAND",
-            "relationships": {
-                "PRESCRIBING COST CENTRE": [
-                    {
-                        "id": "793254",
-                        "name": "ONE CARE LAMBETH",
-                        "primaryRole": "RO177",
-                        "role": ["RO177", "RO76"],
-                        "primaryRoleName": "PRESCRIBING COST CENTRE",
-                        "inactive": False,
-                        "opStartDate": "2021-05-01",
-                        "relationshipTypeCode": "RE8",
-                        "targetOrgCode": "U39721",
-                        "legStartDate": "2021-05-01",
-                        "targetOrgRole": ["RO272"],
-                        "sourceOrgCode": "Y07020",
-                        "sourceOrgRole": "RO76",
-                        "status": "active",
-                        "sourceOrgRoleName": "GP PRACTICE",
-                        "legEndDate": "",
-                        "lastChangeDate": "",
-                        "opEndDate": "",
-                    }
-                ]
-            },
-        },
-        {
-            "id": "U36779",
-            "name": "BRIXTON AND CLAPHAM PARK PCN",
-            "inactive": False,
-            "roleName": [],
-            "primaryRole": "RO272",
-            "primaryRoleName": "PRIMARY CARE NETWORK",
-            "isPartnerToCode": [],
-            "RE4": "72Q",
-            "ICB": "QKK",
-            "NHSER": "Y56",
-            "country": "ENGLAND",
-            "relationships": {
-                "PRESCRIBING COST CENTRE": [
-                    {
-                        "id": "875081",
-                        "name": "ONE CARE LAMBETH",
-                        "primaryRole": "RO177",
-                        "role": ["RO177", "RO76"],
-                        "primaryRoleName": "PRESCRIBING COST CENTRE",
-                        "inactive": False,
-                        "opStartDate": "2026-03-15",
-                        "relationshipTypeCode": "RE8",
-                        "targetOrgCode": "U36779",
-                        "legStartDate": "2026-03-15",
-                        "targetOrgRole": ["RO272"],
-                        "sourceOrgCode": "Y07020",
-                        "sourceOrgRole": "RO76",
-                        "status": "active",
-                        "sourceOrgRoleName": "GP PRACTICE",
-                        "legEndDate": "",
-                        "lastChangeDate": "",
-                        "opEndDate": "",
-                    }
-                ]
-            },
-        },
-        {
-            "id": "Y07020",
-            "name": "ONE CARE LAMBETH",
-            "inactive": False,
-            "roleName": ["GP PRACTICE"],
-            "primaryRole": "RO177",
-            "primaryRoleName": "PRESCRIBING COST CENTRE",
-            "isPartnerToCode": ["U36779", "U39721"],
-            "RE4": "72Q",
-            "ICB": "QKK",
-            "NHSER": "Y56",
-            "country": "ENGLAND",
-        },
-    ]
-
-    ods_file = settings.DOWNLOAD_DIR / "ods" / "ods.parquet"
-    parquet_from_dicts(ods_file, data)
+def test_ods_ingest_multiple_pcns_missing_opEndDate(rxdb, tmp_path, settings):
+    duckdb_view_from_json_file(
+        rxdb.conn,
+        "tests/data/ingestors/data/ods_ingest_multiple_pcns_missing_opEndDate.json",
+    )
 
     org_types = [Org.OrgType.PCN, Org.OrgType.PRACTICE]
-    ods.ingest(org_types=org_types)
+    ods.ingest_ods(rxdb.conn, org_types=org_types)
 
     results = [
         (
