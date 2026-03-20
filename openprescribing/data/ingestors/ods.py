@@ -30,11 +30,10 @@ def ingest(force=False):
     with transaction.atomic(using="data"):
         Org.objects.all().delete()
         ingest_ods(conn)
+        verify_ods(conn)
         IngestedFile.set_by_name("ods", latest_file.name)
 
     conn.close()
-
-    verify_ods(conn)
 
     count = Org.objects.count()
     log.info(f"Ingested {count:,} organisations in total")
