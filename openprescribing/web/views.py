@@ -85,11 +85,11 @@ def analysis(request):
     )
     all_orgs_labels = (
         alt.Chart(alt.NamedData("all_orgs_line"))
-        .mark_text(align="center", dx=50, dy=-25, fontSize=18, fontWeight="bold")
+        .mark_text(align="left", dx=10, dy=-25, fontSize=12, fontWeight="bold")
         .encode(
             x=alt.value(50),
             y=alt.value(50),
-            text="org:O",
+            text="org_name:O",
             color=alt.value("black"),
             opacity=alt.condition(highlight, alt.value(1), alt.value(0)),
         )
