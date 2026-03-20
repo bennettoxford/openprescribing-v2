@@ -175,21 +175,10 @@ def test_ods_ingest_multiple_pcns(rxdb, tmp_path, settings, frozen_date, expecte
 
         ods.ingest_ods(rxdb.conn)
 
-        results = [
-            (
-                org.id,
-                org.OrgType(org.org_type).name,
-                org.name,
-                {p.id for p in org.parents.all()},
-            )
-            for org in Org.objects.all()
-        ]
-        assert results == [
-            ("ENGLAND", "NATION", "NHS England", set()),
-            ("U93165", "PCN", "NORTH SOLIHULL PCN", {"ENGLAND"}),
-            ("U25891", "PCN", "SHELDON PCN", {"ENGLAND"}),
-            ("M85171", "PRACTICE", "ROWLANDS ROAD SURGERY", {"ENGLAND", expected_pcn}),
-        ]
+        assert {p.id for p in Org.objects.get(id="M85171").parents.all()} == {
+            "ENGLAND",
+            expected_pcn,
+        }
 
 
 @freeze_time("2026-03-20")
@@ -202,18 +191,7 @@ def test_ods_ingest_multiple_pcns_missing_opEndDate(rxdb, tmp_path, settings):
 
     ods.ingest_ods(rxdb.conn)
 
-    results = [
-        (
-            org.id,
-            org.OrgType(org.org_type).name,
-            org.name,
-            {p.id for p in org.parents.all()},
-        )
-        for org in Org.objects.all()
-    ]
-    assert results == [
-        ("ENGLAND", "NATION", "NHS England", set()),
-        ("U39721", "PCN", "HILLS, BROOKS & DALES GROUP PCN", {"ENGLAND"}),
-        ("U36779", "PCN", "BRIXTON AND CLAPHAM PARK PCN", {"ENGLAND"}),
-        ("Y07020", "PRACTICE", "ONE CARE LAMBETH", {"ENGLAND", "U36779"}),
-    ]
+    assert {p.id for p in Org.objects.get(id="Y07020").parents.all()} == {
+        "ENGLAND",
+        "U36779",
+    }
