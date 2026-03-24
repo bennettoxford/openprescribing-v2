@@ -1,6 +1,6 @@
 from datetime import date
 
-from openprescribing.data.rxdb import get_practice_date_matrix
+from openprescribing.data.queries import get_practice_date_matrix
 
 
 def test_get_practice_date_matrix(rxdb):

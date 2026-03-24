@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from openprescribing.data import rxdb
+from openprescribing.data import queries, rxdb
 from openprescribing.data.models import Org
 
 from .bnf_query import BNFQuery
@@ -70,8 +70,8 @@ class Analysis:
 
         with rxdb.get_cursor() as cursor:
             # We currently have about 8 years (96 months) of list size data.
-            ntr_pdm = rxdb.get_practice_date_matrix(cursor, ntr_sql, date_count=96)
-            dtr_pdm = rxdb.get_practice_date_matrix(cursor, dtr_sql, date_count=96)
+            ntr_pdm = queries.get_practice_date_matrix(cursor, ntr_sql, date_count=96)
+            dtr_pdm = queries.get_practice_date_matrix(cursor, dtr_sql, date_count=96)
 
         if self.org_id is not None:
             org_type = Org.objects.get(id=self.org_id).org_type
