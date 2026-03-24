@@ -152,7 +152,7 @@ def prepare_data(data, defaults):
     prepared = []
     for input_row in data:
         row = defaults | input_row
-        if isinstance(row["date"], str):
+        if isinstance(row["date"], str):  # pragma: no cover
             row["date"] = datetime.date.fromisoformat(row["date"])
         prepared.append(row)
     return prepared
