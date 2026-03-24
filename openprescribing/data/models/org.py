@@ -4,11 +4,11 @@ from django.db import models
 class OrgQuerySet(models.QuerySet):
     def with_practice_ids(self):
         """
-        Return each Org in the QuerySet paired with the IDs of all the practices which
-        belong to it:
+        Return ID of each Org in the QuerySet paired with the IDs of all the practices
+        which belong to it:
 
-            Org("parent_1", ...), {"practice_1", "practice_2", "practice_3"}
-            Org("parent_2", ...), {"practice_4", "practice_5"}
+            "parent_1", {"practice_1", "practice_2", "practice_3"}
+            "parent_2", {"practice_4", "practice_5"}
             ...
 
         This is the structure required by `LabelledMatrix.group_rows()` so this can be
@@ -29,7 +29,8 @@ class OrgQuerySet(models.QuerySet):
         for org_id, practice_id in relations.values_list("parent_id", "child_id"):
             orgs_by_id[org_id][1].append(practice_id)
         return tuple(
-            (org, frozenset(practice_ids)) for org, practice_ids in orgs_by_id.values()
+            (org.id, frozenset(practice_ids))
+            for org, practice_ids in orgs_by_id.values()
         )
 
 

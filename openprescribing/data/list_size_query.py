@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(frozen=True)
 class ListSizeQuery:
     """Represents a query returning list size data."""
 

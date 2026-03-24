@@ -122,3 +122,5 @@ def sample_data(rxdb, bnf_codes):
         list_size_data=list_size_data,
         prescribing_data=prescribing_data,
     )
+
+    return {"list_size_data": list_size_data, "prescribing_data": prescribing_data}

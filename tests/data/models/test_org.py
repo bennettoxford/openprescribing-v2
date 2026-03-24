@@ -45,14 +45,8 @@ def test_as_practice_code_map():
     result = Org.objects.filter(org_type=Org.OrgType.ICB).with_practice_ids()
 
     assert result == (
-        (
-            Org.objects.get(id="icb0"),
-            {"pra00", "pra01", "pra02"},
-        ),
-        (
-            Org.objects.get(id="icb1"),
-            {"pra10", "pra11", "pra12"},
-        ),
+        ("icb0", {"pra00", "pra01", "pra02"}),
+        ("icb1", {"pra10", "pra11", "pra12"}),
     )
 
 
@@ -65,25 +59,18 @@ def test_as_practice_code_map_only_uses_direct_relations():
     icb.parents.add(region)
     practice.parents.add(icb)
 
-    assert Org.objects.filter(id="r").with_practice_ids() == (
-        (
-            region,
-            frozenset(),
-        ),
-    )
+    assert Org.objects.filter(id="r").with_practice_ids() == (("r", frozenset()),)
 
 
 @pytest.mark.django_db(databases=["data"])
 def test_as_practice_code_map_treats_practices_as_their_own_descendants():
-    practices = [
+    for i in range(3):
         Org.objects.create(id=f"pra{i}", org_type=Org.OrgType.PRACTICE)
-        for i in range(3)
-    ]
 
     assert Org.objects.with_practice_ids() == (
-        (practices[0], {"pra0"}),
-        (practices[1], {"pra1"}),
-        (practices[2], {"pra2"}),
+        ("pra0", {"pra0"}),
+        ("pra1", {"pra1"}),
+        ("pra2", {"pra2"}),
     )
 
 

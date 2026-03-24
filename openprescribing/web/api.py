@@ -1,10 +1,16 @@
 import math
 
-from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse as DjangoJsonResponse
 
+from openprescribing.data import rxdb
 from openprescribing.data.analysis import Analysis
 from openprescribing.data.models import Org
+from openprescribing.data.queries import get_org_date_ratio_matrix
+
+
+# We currently have about 8 years (96 months) of list size data.  In future we could
+# allow this to be configured by the user, or calculated directly from the data.
+DATE_COUNT = 96
 
 
 def _get_org(analysis):
@@ -20,7 +26,7 @@ def _get_org_records(odm, org):
     if org is not None:
         org_records = [
             {"month": month, "value": value}
-            for month, value in zip(odm.col_labels, odm.get_row(org))
+            for month, value in zip(odm.col_labels, odm.get_row(org.id))
         ]
         # The organisation-date matrix (odm) can contain NaNs. NaNs are ignored when
         # deciles are computed, and so are not present in deciles_records. However,
@@ -36,7 +42,8 @@ def _get_org_records(odm, org):
 
 def prescribing_all_orgs(request):
     analysis = Analysis.from_params(request.GET)
-    odm = analysis.get_org_date_matrix()
+    with rxdb.get_cursor() as cursor:
+        odm = get_org_date_ratio_matrix(cursor, analysis, date_count=DATE_COUNT)
     org = _get_org(analysis)
 
     all_orgs_records = list(odm.to_records(row_name="org", col_name="month"))
@@ -55,7 +62,8 @@ def prescribing_all_orgs(request):
 
 def prescribing_deciles(request):
     analysis = Analysis.from_params(request.GET)
-    odm = analysis.get_org_date_matrix()
+    with rxdb.get_cursor() as cursor:
+        odm = get_org_date_ratio_matrix(cursor, analysis, date_count=DATE_COUNT)
     org = _get_org(analysis)
     cdm = odm.get_centiles()
 
@@ -74,16 +82,8 @@ def prescribing_deciles(request):
 
 class JsonResponse(DjangoJsonResponse):
     def __init__(self, *args, **kwargs):
-        kwargs["encoder"] = JSONEncoder
         kwargs["json_dumps_params"] = {"allow_nan": False}
         super().__init__(*args, **kwargs)
-
-
-class JSONEncoder(DjangoJSONEncoder):
-    def default(self, o):
-        if isinstance(o, Org):
-            return o.id
-        return super().default(o)
 
 
 def nans_to_nones(records):

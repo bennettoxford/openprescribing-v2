@@ -9,22 +9,24 @@ from django.db.models import Q
 from .models import BNFCode
 
 
-@dataclass
+@dataclass(frozen=True)
 class BNFQuery:
     """Represents a query returning codes for BNF presentations."""
 
-    terms: list[Term]
+    terms: tuple[Term]
     product_type: ProductType
 
     @classmethod
     def build(cls, raw_terms, product_type):
-        return cls([Term.build(rt) for rt in raw_terms], ProductType(product_type))
+        return cls(
+            tuple([Term.build(rt) for rt in raw_terms]), ProductType(product_type)
+        )
 
     @classmethod
     def from_params(cls, field, params):
         """Build a BNFQuery from URL query parameters for a field."""
 
-        raw_terms = params[f"{field}_codes"].split(",")
+        raw_terms = tuple(params[f"{field}_codes"].split(","))
         product_type = params.get(f"{field}_product_type", "all")
         return cls.build(raw_terms=raw_terms, product_type=product_type)
 
@@ -91,7 +93,7 @@ class BNFQuery:
         return ",".join(t.to_param_value() for t in self.terms)
 
 
-@dataclass
+@dataclass(frozen=True)
 class Term:
     """Represents a term in a query.
 
@@ -121,7 +123,7 @@ class Term:
             return self.code
 
 
-@dataclass
+@dataclass(frozen=True)
 class PrefixTerm(Term):
     """Represents a query for all presentations below an object in the BNF hierarchy."""
 
@@ -133,7 +135,7 @@ class PrefixTerm(Term):
         return {"code": self.code, "description": description}
 
 
-@dataclass
+@dataclass(frozen=True)
 class StrengthAndFormulationTerm(Term):
     """Represents a query for all presentations with a given strength and formulation.
 
@@ -148,17 +150,17 @@ class StrengthAndFormulationTerm(Term):
     """
 
     def __post_init__(self):
-        self.prefix, self.suffix = self.code.split("_")
-        assert len(self.prefix) == 9  # chemical substance code
-        assert len(self.suffix) == 2  # strength and formulation part
+        prefix, suffix = self.code.split("_")
+        assert len(prefix) == 9  # chemical substance code
+        assert len(suffix) == 2  # strength and formulation part
 
     def build_q(self):
-        return Q(code__startswith=self.prefix, code__endswith=self.suffix)
+        prefix, suffix = self.code.split("_")
+        return Q(code__startswith=prefix, code__endswith=suffix)
 
     def describe(self, product_type):
-        generic_code_obj = BNFCode.objects.get(
-            code=f"{self.prefix}AA{self.suffix}{self.suffix}"
-        )
+        prefix, suffix = self.code.split("_")
+        generic_code_obj = BNFCode.objects.get(code=f"{prefix}AA{suffix}{suffix}")
         if product_type == ProductType.ALL:
             description = f"{generic_code_obj.name} (branded and generic)"
         else:
