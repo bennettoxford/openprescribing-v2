@@ -1,6 +1,5 @@
 import math
 
-from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse as DjangoJsonResponse
 
 from openprescribing.data import rxdb
@@ -27,7 +26,7 @@ def _get_org_records(odm, org):
     if org is not None:
         org_records = [
             {"month": month, "value": value}
-            for month, value in zip(odm.col_labels, odm.get_row(org))
+            for month, value in zip(odm.col_labels, odm.get_row(org.id))
         ]
         # The organisation-date matrix (odm) can contain NaNs. NaNs are ignored when
         # deciles are computed, and so are not present in deciles_records. However,
@@ -83,16 +82,8 @@ def prescribing_deciles(request):
 
 class JsonResponse(DjangoJsonResponse):
     def __init__(self, *args, **kwargs):
-        kwargs["encoder"] = JSONEncoder
         kwargs["json_dumps_params"] = {"allow_nan": False}
         super().__init__(*args, **kwargs)
-
-
-class JSONEncoder(DjangoJSONEncoder):
-    def default(self, o):
-        if isinstance(o, Org):
-            return o.id
-        return super().default(o)
 
 
 def nans_to_nones(records):

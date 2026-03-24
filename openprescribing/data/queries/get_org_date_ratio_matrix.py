@@ -20,10 +20,10 @@ def get_org_date_ratio_matrix(cursor, analysis, date_count=None):
     else:
         org_type = Org.OrgType.ICB
 
-    org_to_practice_ids = Org.objects.filter(org_type=org_type).with_practice_ids()
+    org_id_to_practice_ids = Org.objects.filter(org_type=org_type).with_practice_ids()
 
-    ntr_odm = ntr_pdm.group_rows(org_to_practice_ids)
-    dtr_odm = dtr_pdm.group_rows(org_to_practice_ids)
+    ntr_odm = ntr_pdm.group_rows(org_id_to_practice_ids)
+    dtr_odm = dtr_pdm.group_rows(org_id_to_practice_ids)
 
     # For prescribing vs prescribing queries, we want to show the numerator values
     # as a percentage of the denominator values.  For prescribing vs list size
