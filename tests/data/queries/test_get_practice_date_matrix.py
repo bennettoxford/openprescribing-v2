@@ -16,16 +16,30 @@ def test_get_practice_date_matrix(rxdb):
     rxdb.ingest(
         [
             {
+                # not included: too early
                 "date": "2025-01-01",
                 "practice_code": "JKL123",
                 "bnf_code": "1001030U0AAABAB",
                 "items": 90,
             },
             {
+                # not included: wrong code
+                "date": "2025-02-01",
+                "practice_code": "ABC123",
+                "bnf_code": "0601060D0BSAAA0",
+                "items": 25,
+            },
+            {
                 "date": "2025-02-01",
                 "practice_code": "ABC123",
                 "bnf_code": "1001030U0AAABAB",
                 "items": 25,
+            },
+            {
+                "date": "2025-02-01",
+                "practice_code": "ABC123",
+                "bnf_code": "1001030U0AAABAB",
+                "items": 15,
             },
             {
                 "date": "2025-02-01",
@@ -63,7 +77,7 @@ def test_get_practice_date_matrix(rxdb):
     assert matrix.col_labels == (date(2025, 3, 1), date(2025, 2, 1))
 
     assert matrix.values.tolist() == [
-        [10, 25],
+        [10, 40],
         [30, 0],
         [15, 40],
     ]
