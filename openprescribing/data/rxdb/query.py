@@ -38,7 +38,7 @@ PRACTICE_DATE_MATRIX_CACHE_SIZE = 128
 
 
 @functools.lru_cache(maxsize=PRACTICE_DATE_MATRIX_CACHE_SIZE)
-def get_practice_date_matrix(cursor, sql, parameters=None, date_count=None):
+def get_practice_date_matrix(cursor, sql, date_count=None):
     """
     Given a SQL query of the form:
 
@@ -67,7 +67,6 @@ def get_practice_date_matrix(cursor, sql, parameters=None, date_count=None):
             value
         FROM ({sql})
         """,
-        parameters=parameters,
     )
 
     return LabelledMatrix(
@@ -122,7 +121,7 @@ def get_index_tuple(index_value_pairs):
     return tuple(index_to_value.get(index) for index in all_indexes)
 
 
-def get_grouped_sum_ndarray(cursor, row_count, col_count, sql, parameters=None):
+def get_grouped_sum_ndarray(cursor, row_count, col_count, sql):
     """
     Given a SQL query of the form:
 
@@ -142,7 +141,7 @@ def get_grouped_sum_ndarray(cursor, row_count, col_count, sql, parameters=None):
     """
     # The `sql` method is lazy so it parses the query and determines the column types
     # but doesn't yet execute it
-    results = cursor.sql(sql, params=parameters)
+    results = cursor.sql(sql)
 
     assert results.columns == ["row_index", "column_index", "value"]
     row_type, col_type, value_type = results.types
