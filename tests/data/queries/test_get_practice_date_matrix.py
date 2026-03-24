@@ -6,12 +6,13 @@ from openprescribing.data.bnf_query import BNFQuery
 from openprescribing.data.list_size_query import ListSizeQuery
 from openprescribing.data.models import BNFCode
 from openprescribing.data.queries import get_practice_date_matrix
+from tests.utils.rxdb_utils import assert_approx_equal
+
+from .alternative_implementations import get_practice_date_matrix_alternative
 
 
 @pytest.mark.django_db(databases=["data"])
-def test_get_practice_date_matrix(rxdb):
-    # TODO: This is really not a great test, but it does exercise the full logic and
-    # demonstrate the basic process.
+def test_get_practice_date_matrix_spot_check(rxdb):
     BNFCode.objects.create(code="1001030U0AAABAB", level=7)
     rxdb.ingest(
         [
@@ -71,40 +72,39 @@ def test_get_practice_date_matrix(rxdb):
     query = BNFQuery.build(["1001030U0AAABAB"], "all")
 
     with rxdb.get_cursor() as cursor:
-        matrix = get_practice_date_matrix(cursor, query, date_count=2)
+        pdm = get_practice_date_matrix(cursor, query, date_count=2)
 
-    assert matrix.row_labels == ("ABC123", "DEF123", "GHI123")
-    assert matrix.col_labels == (date(2025, 3, 1), date(2025, 2, 1))
+    assert pdm.row_labels == ("ABC123", "DEF123", "GHI123")
+    assert pdm.col_labels == (date(2025, 3, 1), date(2025, 2, 1))
 
-    assert matrix.values.tolist() == [
+    assert pdm.values.tolist() == [
         [10, 40],
         [30, 0],
         [15, 40],
     ]
 
 
-def test_get_practice_date_matrix_for_list_sizes(rxdb):
-    rxdb.ingest(
-        [
-            {"date": "2025-03-01", "practice_code": "ABC123"},
-            {"date": "2025-02-01", "practice_code": "DEF123"},
-            {"date": "2025-01-01", "practice_code": "GHI123"},
-        ],
-        list_size_data=[
-            {"date": "2025-01-01", "practice_code": "ABC123", "total": 10},
-            {"date": "2025-02-01", "practice_code": "DEF123", "total": 20},
-            {"date": "2025-03-01", "practice_code": "GHI123", "total": 30},
-        ],
-    )
+@pytest.mark.django_db(databases=["data"])
+def test_get_practice_date_matrix_for_bnf_query(rxdb, sample_data):
+    query = BNFQuery.build(["1001030U0AAABAB"], "all")
 
     with rxdb.get_cursor() as cursor:
-        matrix = get_practice_date_matrix(cursor, ListSizeQuery())
+        pdm = get_practice_date_matrix(cursor, query, date_count=2)
 
-    assert matrix.row_labels == ("ABC123", "DEF123", "GHI123")
-    assert matrix.col_labels == (date(2025, 3, 1), date(2025, 2, 1), date(2025, 1, 1))
+    expected_pdm = get_practice_date_matrix_alternative(
+        sample_data, query, date_count=2
+    )
 
-    assert matrix.values.tolist() == [
-        [0, 0, 10],
-        [0, 20, 0],
-        [30, 0, 0],
-    ]
+    assert_approx_equal(pdm, expected_pdm)
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_get_practice_date_matrix_for_list_sizes(rxdb, sample_data):
+    query = ListSizeQuery()
+
+    with rxdb.get_cursor() as cursor:
+        pdm = get_practice_date_matrix(cursor, query)
+
+    expected_pdm = get_practice_date_matrix_alternative(sample_data, query)
+
+    assert_approx_equal(pdm, expected_pdm)

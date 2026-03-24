@@ -5,6 +5,7 @@ import uuid
 
 import duckdb
 import pyarrow
+import pytest
 
 from openprescribing.data.ingestors.prescribing import ingest_sources
 from openprescribing.data.rxdb.connection import CursorCacheKeyWrapper
@@ -160,3 +161,9 @@ def prepare_data(data, defaults):
 def duckdb_view_from_json_file(conn, filename):
     sql = f"CREATE VIEW ods AS SELECT * FROM read_json_auto('{filename}');"
     conn.execute(sql)
+
+
+def assert_approx_equal(matrix1, matrix2):
+    assert matrix1.row_labels == matrix2.row_labels
+    assert matrix1.col_labels == matrix2.col_labels
+    assert matrix1.values == pytest.approx(matrix2.values)
