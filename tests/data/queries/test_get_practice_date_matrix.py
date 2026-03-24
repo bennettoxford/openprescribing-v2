@@ -1,19 +1,54 @@
 from datetime import date
 
+import pytest
+
+from openprescribing.data.models import BNFCode
 from openprescribing.data.queries import get_practice_date_matrix
 
 
+@pytest.mark.django_db(databases=["data"])
 def test_get_practice_date_matrix(rxdb):
     # TODO: This is really not a great test, but it does exercise the full logic and
     # demonstrate the basic process.
+    BNFCode.objects.create(code="1001030U0AAABAB", level=7)
     rxdb.ingest(
         [
-            {"date": "2025-01-01", "practice_code": "JKL123", "items": 90},
-            {"date": "2025-02-01", "practice_code": "ABC123", "items": 25},
-            {"date": "2025-02-01", "practice_code": "GHI123", "items": 40},
-            {"date": "2025-03-01", "practice_code": "ABC123", "items": 10},
-            {"date": "2025-03-01", "practice_code": "DEF123", "items": 30},
-            {"date": "2025-03-01", "practice_code": "GHI123", "items": 15},
+            {
+                "date": "2025-01-01",
+                "practice_code": "JKL123",
+                "bnf_code": "1001030U0AAABAB",
+                "items": 90,
+            },
+            {
+                "date": "2025-02-01",
+                "practice_code": "ABC123",
+                "bnf_code": "1001030U0AAABAB",
+                "items": 25,
+            },
+            {
+                "date": "2025-02-01",
+                "practice_code": "GHI123",
+                "bnf_code": "1001030U0AAABAB",
+                "items": 40,
+            },
+            {
+                "date": "2025-03-01",
+                "practice_code": "ABC123",
+                "bnf_code": "1001030U0AAABAB",
+                "items": 10,
+            },
+            {
+                "date": "2025-03-01",
+                "practice_code": "DEF123",
+                "bnf_code": "1001030U0AAABAB",
+                "items": 30,
+            },
+            {
+                "date": "2025-03-01",
+                "practice_code": "GHI123",
+                "bnf_code": "1001030U0AAABAB",
+                "items": 15,
+            },
         ],
     )
 
