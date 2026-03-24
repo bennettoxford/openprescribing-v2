@@ -38,7 +38,7 @@ PRACTICE_DATE_MATRIX_CACHE_SIZE = 128
 
 
 @functools.lru_cache(maxsize=PRACTICE_DATE_MATRIX_CACHE_SIZE)
-def get_practice_date_matrix(cursor, sql, date_count=None):
+def get_practice_date_matrix(cursor, query, date_count=None):
     """
     Given a SQL query of the form:
 
@@ -65,7 +65,7 @@ def get_practice_date_matrix(cursor, sql, date_count=None):
             practice_id AS row_index,
             date_id AS column_index,
             value
-        FROM ({sql})
+        FROM ({query.to_sql()})
         """,
     )
 

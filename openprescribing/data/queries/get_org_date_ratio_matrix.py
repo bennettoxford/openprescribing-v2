@@ -8,11 +8,12 @@ def get_org_date_ratio_matrix(cursor, analysis, date_count=None):
     """Return a matrix with one row per org and one column per date, giving ratio
     between numerator and denominator values specified by queries in given analysis."""
 
-    ntr_sql = analysis.ntr_query.to_sql()
-    dtr_sql = analysis.dtr_query.to_sql()
-
-    ntr_pdm = get_practice_date_matrix(cursor, ntr_sql, date_count=date_count)
-    dtr_pdm = get_practice_date_matrix(cursor, dtr_sql, date_count=date_count)
+    ntr_pdm = get_practice_date_matrix(
+        cursor, analysis.ntr_query, date_count=date_count
+    )
+    dtr_pdm = get_practice_date_matrix(
+        cursor, analysis.dtr_query, date_count=date_count
+    )
 
     if analysis.org_id is not None:
         org_type = Org.objects.get(id=analysis.org_id).org_type

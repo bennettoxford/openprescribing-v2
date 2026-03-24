@@ -2,6 +2,8 @@ from datetime import date
 
 import pytest
 
+from openprescribing.data.bnf_query import BNFQuery
+from openprescribing.data.list_size_query import ListSizeQuery
 from openprescribing.data.models import BNFCode
 from openprescribing.data.queries import get_practice_date_matrix
 
@@ -52,12 +54,10 @@ def test_get_practice_date_matrix(rxdb):
         ],
     )
 
+    query = BNFQuery.build(["1001030U0AAABAB"], "all")
+
     with rxdb.get_cursor() as cursor:
-        matrix = get_practice_date_matrix(
-            cursor,
-            "SELECT practice_id, date_id, items AS value FROM prescribing",
-            date_count=2,
-        )
+        matrix = get_practice_date_matrix(cursor, query, date_count=2)
 
     assert matrix.row_labels == ("ABC123", "DEF123", "GHI123")
     assert matrix.col_labels == (date(2025, 3, 1), date(2025, 2, 1))
@@ -84,10 +84,7 @@ def test_get_practice_date_matrix_for_list_sizes(rxdb):
     )
 
     with rxdb.get_cursor() as cursor:
-        matrix = get_practice_date_matrix(
-            cursor,
-            "SELECT practice_id, date_id, total AS value FROM list_size",
-        )
+        matrix = get_practice_date_matrix(cursor, ListSizeQuery())
 
     assert matrix.row_labels == ("ABC123", "DEF123", "GHI123")
     assert matrix.col_labels == (date(2025, 3, 1), date(2025, 2, 1), date(2025, 1, 1))
