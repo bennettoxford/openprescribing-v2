@@ -163,7 +163,7 @@ def get_grouped_sum_ndarray(cursor, row_count, col_count, sql):
     accumulator_ravel = accumulator.ravel("A")
     is_fortran_order = int(accumulator.flags.f_contiguous)
 
-    for batch in results.fetch_record_batch(rows_per_batch=RECORD_BATCH_SIZE):
+    for batch in results.to_arrow_reader(batch_size=RECORD_BATCH_SIZE):
         row_indexes = batch.column(0).to_numpy()
         col_indexes = batch.column(1).to_numpy()
         values = batch.column(2).to_numpy()
