@@ -123,6 +123,14 @@ const updateDecilesChart = (
     createDecilesChart(chartContainer);
   }
 
+  const truncate_string = (str) => {
+    const maxLength = 65;
+    if (str.length > maxLength) {
+      return `${str.slice(0, maxLength)}...`;
+    }
+    return str;
+  };
+
   const all_dataset_names = ["deciles", "all_orgs_dots", "all_orgs_line"];
   chartLoading.textContent = "Loading chart...";
   fetch(prescribingDecilesUrl)
@@ -143,6 +151,15 @@ const updateDecilesChart = (
       }
       updateOrgTypeLabel(response.org_type);
       chartResult.then((result) => {
+        const orgs = JSON.parse(document.getElementById("orgs").textContent);
+
+        if (api_dataset_name === "all_orgs") {
+          for (const element of response[api_dataset_name]) {
+            element.org_name = truncate_string(
+              orgs.find((e) => e.id === element.org).name,
+            );
+          }
+        }
         result.view.insert(add_dataset_name, response[api_dataset_name]);
         if (response.org) {
           result.view.insert("org", response.org);

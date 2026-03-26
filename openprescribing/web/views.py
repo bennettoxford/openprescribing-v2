@@ -69,11 +69,32 @@ def analysis(request):
         .mark_line(color="#3182BD")
         .encode(x=x, y=y, detail="centile:O", strokeWidth=stroke_width)
     )
+
+    highlight = alt.selection_point(on="pointerover", empty=False)
     all_orgs_line_chart = (
         alt.Chart(alt.NamedData("all_orgs_line"))
-        .mark_line(color="grey", opacity=0.2)
-        .encode(x=x, y=y, detail="org:O")
+        .mark_line(color="grey")
+        .encode(
+            x=x,
+            y=y,
+            detail="org:O",
+            color=alt.condition(highlight, alt.value("#3182BD"), alt.value("grey")),
+            opacity=alt.condition(highlight, alt.value(1), alt.value(0.2)),
+        )
+        .add_params(highlight)
     )
+    all_orgs_labels = (
+        alt.Chart(alt.NamedData("all_orgs_line"))
+        .mark_text(align="left", dx=10, dy=-25, fontSize=12, fontWeight="bold")
+        .encode(
+            x=alt.value(50),
+            y=alt.value(50),
+            text="org_name:O",
+            color=alt.value("black"),
+            opacity=alt.condition(highlight, alt.value(1), alt.value(0)),
+        )
+    )
+    all_orgs_line_chart += all_orgs_labels
     deciles_chart += all_orgs_line_chart
 
     all_orgs_dots_chart = (
