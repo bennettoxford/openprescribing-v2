@@ -17,4 +17,6 @@ urlpatterns = [
     ),
     path("bnf/", views.bnf_browser_tree),
     path("bnf/<slug:code>/", views.bnf_browser_table),
+    path("feedback/thumb/<int:thumb>", views.feedback_thumb),
+    path("feedback/text/<int:thumb>", views.feedback_text, name="feedback_text"),
 ]

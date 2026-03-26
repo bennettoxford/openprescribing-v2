@@ -3,6 +3,7 @@ import re
 import pytest
 
 from openprescribing.web.analysis_presentation import ChartType
+from openprescribing.web.models.feedback import Feedback
 
 
 @pytest.mark.django_db(databases=["data"])
@@ -80,3 +81,17 @@ def test_bnf_table_with_generic_products(client, bnf_codes):
 def test_bnf_table_with_no_generic_products(client, bnf_codes):
     rsp = client.get("/bnf/0601060D0/")
     assert rsp.status_code == 200
+
+
+@pytest.mark.parametrize("thumb", [0, 1])
+def test_feedback_thumb(client, thumb):
+    rsp = client.get(f"/feedback/thumb/{thumb}")
+    assert rsp.status_code == 200
+
+
+@pytest.mark.parametrize("thumb", [0, 1])
+@pytest.mark.django_db(databases=["default"])
+def test_feedback_text(client, thumb):
+    rsp = client.post(f"/feedback/text/{thumb}", {"feedback": "very good site"})
+    assert rsp.status_code == 200
+    assert Feedback.objects.get().text == "very good site"

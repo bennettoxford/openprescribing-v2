@@ -44,10 +44,15 @@
     </header>
 
     <div class="bg-warning-subtle text-warning-emphasis border-bottom">
-      <div class="container py-2 text-center fw-medium">
+      <div class="container py-2 text-center fw-medium" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
         This is a beta version of a new OpenPrescribing.
-        Do you have feedback?
-        Email <a class="text-reset" href="mailto:bennett@phc.ox.ac.uk?subject=OpenPrescribing%20Beta%20Feedback">bennett@phc.ox.ac.uk</a>.
+      </div>
+      <div class="container py-2 text-center fw-medium" hx-headers='{"x-csrftoken": "{{ csrf_token }}"}'>
+        <div id="feedback">
+            IS IT GUD?
+            <button hx-post="/feedback/thumb/1" hx-target="#feedback" hx-swap="outerHTML">YES</button>
+            <button hx-post="/feedback/thumb/0" hx-target="#feedback" hx-swap="outerHTML">NO</button>
+        </div>
       </div>
     </div>
 
