@@ -1,6 +1,7 @@
 from urllib.parse import urlencode
 
 import altair as alt
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 
@@ -9,6 +10,7 @@ from openprescribing.data.bnf_query import BNFQuery
 from openprescribing.data.models import BNFCode, Org
 
 from .analysis_presentation import AnalysisPresentation
+from .models import Feedback
 from .presenters import (
     make_bnf_table,
     make_bnf_tree,
@@ -157,3 +159,15 @@ def bnf_browser_table(request, code):
 
     ctx = {"headers": headers, "rows": rows}
     return render(request, "bnf_browser_table.html", ctx)
+
+
+def feedback_thumb(request, thumb):
+    up = thumb > 0
+    feedback_text_url = reverse("feedback_text", args=[(1 if up else 0)])
+    ctx = {"feedback_text_url": feedback_text_url}
+    return render(request, "feedback_form.html", ctx)
+
+
+def feedback_text(request, thumb):
+    Feedback.objects.create(thumbs_up=thumb, text=request.POST["feedback"])
+    return HttpResponse("Thanks for your time!")
