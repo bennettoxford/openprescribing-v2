@@ -1,0 +1,38 @@
+{% with current_state=state|default:"prompt" %}
+  {% if current_state == "prompt" %}
+    <div id="feedback-banner" class="container py-3 text-center fw-medium d-flex align-items-center justify-content-center gap-1 flex-wrap">
+      <span>This is a beta version of a new OpenPrescribing.</span>
+      <span>Are you finding it useful?</span>
+      <form class="d-inline" hx-post="{% url 'feedback_vote' %}" hx-target="#feedback-banner" hx-swap="outerHTML">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-link text-warning-emphasis p-0 fs-4 align-middle" name="sentiment" value="up">
+          <span class="bi bi-hand-thumbs-up"></span>
+        </button>
+      </form>
+      <form class="d-inline" hx-post="{% url 'feedback_vote' %}" hx-target="#feedback-banner" hx-swap="outerHTML">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-link text-warning-emphasis p-0 fs-4 align-middle" name="sentiment" value="down">
+          <span class="bi bi-hand-thumbs-down"></span>
+        </button>
+      </form>
+    </div>
+  {% elif current_state == "detail" %}
+    <div id="feedback-banner" class="container py-3 text-center fw-medium d-flex align-items-center justify-content-center gap-1 flex-wrap">
+      <form class="row g-2 justify-content-center align-items-start w-100" hx-post="{% url 'feedback_detail' %}" hx-target="#feedback-banner" hx-swap="outerHTML">
+        {% csrf_token %}
+        <input type="hidden" name="feedback_id" value="{{ feedback.id }}" />
+        <div>Thanks for your feedback. Could you tell us more?</div>
+        <div>
+          <textarea id="feedback-detail" name="comment" class="form-control" rows="3" placeholder="What works well? What needs improvement?"></textarea>
+        </div>
+        <div>
+          <button type="submit" class="btn btn-secondary">Submit</button>
+        </div>
+      </form>
+    </div>
+  {% else %}
+    <div id="feedback-banner" class="container py-3 text-center fw-medium d-flex align-items-center justify-content-center gap-1 flex-wrap">
+      <span>Thanks for helping us improve OpenPrescribing!</span>
+    </div>
+  {% endif %}
+{% endwith %}
