@@ -3,6 +3,7 @@ import re
 import pytest
 
 from openprescribing.web.analysis_presentation import ChartType
+from openprescribing.web.models import Feedback
 
 
 @pytest.mark.django_db(databases=["data"])
@@ -80,3 +81,35 @@ def test_bnf_table_with_generic_products(client, bnf_codes):
 def test_bnf_table_with_no_generic_products(client, bnf_codes):
     rsp = client.get("/bnf/0601060D0/")
     assert rsp.status_code == 200
+
+
+@pytest.mark.django_db
+def test_feedback_vote(client):
+    rsp = client.post("/feedback/vote/", {"sentiment": Feedback.Sentiment.THUMBS_UP})
+
+    assert rsp.status_code == 200
+    assert rsp.context["state"] == "detail"
+    feedback = Feedback.objects.get()
+    assert feedback.sentiment == Feedback.Sentiment.THUMBS_UP
+    assert b"feedback_id" in rsp.content
+
+
+def test_feedback_vote_invalid_sentiment(client):
+    rsp = client.post("/feedback/vote/", {"sentiment": "flat"})
+
+    assert rsp.status_code == 400
+
+
+@pytest.mark.django_db
+def test_feedback_detail(client):
+    feedback = Feedback.objects.create(sentiment=Feedback.Sentiment.THUMBS_DOWN)
+
+    rsp = client.post(
+        "/feedback/detail/",
+        {"feedback_id": feedback.id, "comment": "This is additional detail."},
+    )
+
+    feedback.refresh_from_db()
+
+    assert rsp.status_code == 200
+    assert feedback.comment == "This is additional detail."
