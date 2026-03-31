@@ -1,14 +1,17 @@
 from urllib.parse import urlencode
 
 import altair as alt
+from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
+from django.views.decorators.http import require_POST
 
 from openprescribing.data.analysis import Analysis
 from openprescribing.data.bnf_query import BNFQuery
 from openprescribing.data.models import BNFCode, Org
 
 from .analysis_presentation import AnalysisPresentation
+from .models import Feedback
 from .presenters import (
     make_bnf_table,
     make_bnf_tree,
@@ -157,3 +160,30 @@ def bnf_browser_table(request, code):
 
     ctx = {"headers": headers, "rows": rows}
     return render(request, "bnf_browser_table.html", ctx)
+
+
+@require_POST
+def feedback_vote(request):
+    sentiment = request.POST.get("sentiment")
+    if sentiment not in Feedback.Sentiment.values:
+        return HttpResponseBadRequest("Invalid feedback")
+
+    feedback = Feedback.objects.create(sentiment=sentiment)
+    request.session["feedback_id"] = feedback.id
+    ctx = {"state": "comment", "feedback": feedback}
+    return render(request, "_feedback_banner.html", ctx)
+
+
+@require_POST
+def feedback_comment(request):
+    # prevent reuse of the same session key to update other feedback objects
+    feedback_id = request.session.pop("feedback_id", None)
+    if feedback_id is None:
+        return HttpResponseBadRequest("Invalid feedback")
+
+    feedback = get_object_or_404(Feedback, id=feedback_id)
+    feedback.comment = request.POST.get("comment", "").strip()
+    feedback.save()
+
+    ctx = {"state": "complete", "feedback": feedback}
+    return render(request, "_feedback_banner.html", ctx)
