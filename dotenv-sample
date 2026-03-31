@@ -6,3 +6,4 @@ OTEL_EXPORTER_OTLP_ENDPOINT=https://api.honeycomb.io
 OTEL_EXPORTER_OTLP_HEADERS="x-honeycomb-team=<your-api-key>"
 OTEL_SERVICE_NAME="openprescribing-v2"
 OTEL_SEMCONV_STABILITY_OPT_IN=http
+TRUD_API_KEY=trud-api-key
