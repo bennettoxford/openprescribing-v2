@@ -1,8 +1,10 @@
 import re
 
 import pytest
+from django.urls import reverse
 
 from openprescribing.web.analysis_presentation import ChartType
+from openprescribing.web.models import Feedback
 
 
 @pytest.mark.django_db(databases=["data"])
@@ -80,3 +82,43 @@ def test_bnf_table_with_generic_products(client, bnf_codes):
 def test_bnf_table_with_no_generic_products(client, bnf_codes):
     rsp = client.get("/bnf/0601060D0/")
     assert rsp.status_code == 200
+
+
+@pytest.mark.django_db
+def test_feedback_vote(client):
+    rsp = client.post(
+        reverse("feedback_vote"), {"sentiment": Feedback.Sentiment.THUMBS_UP}
+    )
+
+    assert rsp.status_code == 200
+    assert rsp.context["state"] == "comment"
+    feedback = Feedback.objects.get()
+    assert feedback.sentiment == Feedback.Sentiment.THUMBS_UP
+
+
+def test_feedback_vote_rejects_invalid_sentiment(client):
+    rsp = client.post(reverse("feedback_vote"), {"sentiment": "bored"})
+
+    assert rsp.status_code == 400
+
+
+@pytest.mark.django_db
+def test_feedback_comment(client):
+    client.post(reverse("feedback_vote"), {"sentiment": Feedback.Sentiment.THUMBS_DOWN})
+
+    rsp = client.post(reverse("feedback_comment"), {"comment": "Additional detail"})
+
+    assert rsp.status_code == 200
+    feedback = Feedback.objects.get()
+    assert feedback.comment == "Additional detail"
+
+
+@pytest.mark.django_db
+def test_feedback_comment_rejects_missing_session(client):
+    feedback = Feedback.objects.create(sentiment=Feedback.Sentiment.THUMBS_UP)
+
+    rsp = client.post(reverse("feedback_comment"), {"comment": "Missing session"})
+
+    assert rsp.status_code == 400
+    feedback.refresh_from_db()
+    assert feedback.comment == ""

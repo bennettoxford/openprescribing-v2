@@ -64,6 +64,7 @@ ALLOWED_HOSTS = ["*"]
 INSTALLED_APPS = [
     "openprescribing.web",
     "openprescribing.data",
+    "django.contrib.sessions",
     "django.contrib.staticfiles",
 ]
 
