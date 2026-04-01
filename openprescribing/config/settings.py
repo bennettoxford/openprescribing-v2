@@ -237,3 +237,21 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 #    https://isd.digital.nhs.uk/trud/users/guest/filters/0/home
 
 TRUD_API_KEY = get_env_var("TRUD_API_KEY")
+
+
+# Logging
+# https://docs.djangoproject.com/en/5.2/topics/logging/
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "WARNING",
+    },
+}
