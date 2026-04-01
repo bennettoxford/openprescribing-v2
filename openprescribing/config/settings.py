@@ -229,3 +229,11 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+
+# API key for fetching data from TRUD
+# A key can be obtained by signing up for an account here:
+#
+#    https://isd.digital.nhs.uk/trud/users/guest/filters/0/home
+
+TRUD_API_KEY = get_env_var("TRUD_API_KEY")

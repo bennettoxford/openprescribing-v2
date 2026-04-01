@@ -1,0 +1,6 @@
+This data is derived from an old dm+d release, and contains dm+d objects related to a
+handful of VMPs.
+
+For more details, see the following script from OPv1:
+
+    https://github.com/bennettoxford/openprescribing/blob/main/openprescribing/dmd/tests/data/dmd/gen_test_dmd_data.py
