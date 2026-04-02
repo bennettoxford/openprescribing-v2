@@ -169,6 +169,7 @@ RUN DJANGO_SECRET_KEY=dummy-key \
     DJANGO_DEBUG=False \
     OPENPRESCRIBING_DOWNLOAD_DIR=. \
     OPENPRESCRIBING_DATA_DIR=. \
+    TRUD_API_KEY=. \
     python /app/manage.py collectstatic --no-input
 
 # set the entrypoint to ensure some basic tasks are performed before the cli command
