@@ -255,3 +255,9 @@ LOGGING = {
         "level": "WARNING",
     },
 }
+
+
+# Cross Site Request Forgery (CSRF) protection
+# https://docs.djangoproject.com/en/5.2/ref/csrf/
+
+CSRF_TRUSTED_ORIGINS = [get_env_var("DJANGO_CSRF_TRUSTED_ORIGINS")]

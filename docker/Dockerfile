@@ -170,6 +170,7 @@ RUN DJANGO_SECRET_KEY=dummy-key \
     OPENPRESCRIBING_DOWNLOAD_DIR=. \
     OPENPRESCRIBING_DATA_DIR=. \
     TRUD_API_KEY=. \
+    DJANGO_CSRF_TRUSTED_ORIGINS=. \
     python /app/manage.py collectstatic --no-input
 
 # set the entrypoint to ensure some basic tasks are performed before the cli command
