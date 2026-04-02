@@ -39,14 +39,27 @@ def fetch(directory):
 
     with TemporaryDirectory() as tmp_name:
         tmp_dir = Path(tmp_name)
+        (tmp_dir / "xml").mkdir()
+        (tmp_dir / "csv").mkdir()
+
         zip_path = tmp_dir / release["id"]
 
         rsp = http.download_to_file(release["archiveFileUrl"], zip_path)
         with ZipFile(zip_path) as zf:
-            zf.extractall(tmp_dir)
+            zf.extractall(tmp_dir / "xml")
 
-        for file_id, schemas in SCHEMA.items():
-            extract_data_from_file(tmp_dir, release_dir, file_id, schemas)
+        extract_data_from_directory(tmp_dir, release_dir)
+
+
+def extract_data_from_directory(tmp_dir, release_dir):
+    """Generate parquet files in release_dir from XML files in (tmp_dir / "xml").
+
+    This function is also useful for setting up the filesystem for testing ingestion of
+    dm+d data.
+    """
+
+    for file_id, schemas in SCHEMA.items():
+        extract_data_from_file(tmp_dir, release_dir, file_id, schemas)
 
 
 def extract_data_from_file(tmp_dir, release_dir, file_id, schemas):
@@ -54,7 +67,7 @@ def extract_data_from_file(tmp_dir, release_dir, file_id, schemas):
     file_id.
     """
 
-    xml_file = get_single_item(tmp_dir.glob(f"f_{file_id}2*.xml"))
+    xml_file = get_single_item((tmp_dir / "xml").glob(f"f_{file_id}2*.xml"))
     with xml_file.open() as f:
         tree = ElementTree.parse(f)
 
@@ -155,7 +168,7 @@ def extract_data_for_group(tmp_dir, release_dir, file_id, group_node, schema):
     # </OBJ_TYPE>
     obj_type = group_node.tag if file_id == "lookup" else group_node[0].tag
 
-    csv_path = tmp_dir / f"{obj_type.lower()}.csv"
+    csv_path = tmp_dir / "csv" / f"{obj_type.lower()}.csv"
     parquet_path = release_dir / f"{obj_type.lower()}.parquet"
 
     with open(csv_path, "w") as f:
