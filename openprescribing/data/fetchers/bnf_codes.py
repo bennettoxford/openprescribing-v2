@@ -32,7 +32,6 @@ def fetch(directory):
     http.log = log.info
 
     for url, output_filename in items_to_fetch:
-        print(output_filename)
         remote_csv_to_parquet(
             http, url, dataset_dir / output_filename, encoding="latin-1"
         )
