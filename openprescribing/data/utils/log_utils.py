@@ -29,9 +29,14 @@ class LogHandler:
         return self
 
     def __enter__(self):
+        self._orig_level = self.logger.level
+        self._orig_propagate = self.logger.propagate
         self.logger.setLevel(self.log_level)
+        self.logger.propagate = False
         self.logger.addHandler(self.log_handler)
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         self.logger.removeHandler(self.log_handler)
+        self.logger.propagate = self._orig_propagate
+        self.logger.setLevel(self._orig_level)
