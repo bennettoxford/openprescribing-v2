@@ -21,7 +21,12 @@ def fetch(directory):
     object type."""
 
     url = f"https://isd.digital.nhs.uk/trud/api/v1/keys/{settings.TRUD_API_KEY}/items/24/releases"
-    http = HTTPSession(url, log=log.info)
+    http = HTTPSession(
+        url,
+        # We start with DEBUG level logging while we're checking if there's anything new
+        # to fetch
+        log=log.debug,
+    )
     rsp = http.get("?latest")
 
     release = get_single_item(rsp.json()["releases"])
@@ -34,6 +39,9 @@ def fetch(directory):
     if release_dir.exists():
         log.debug(f"Already fetched a file for this release: {release_id}")
         return
+
+    # Any requests we now make will be to fetch new files so we log at INFO level
+    http.log = log.info
 
     release_dir.mkdir(parents=True)
 
