@@ -6,9 +6,15 @@ import uuid
 import duckdb
 import pyarrow
 import pytest
+from django.conf import settings
 
 from openprescribing.data.ingestors.prescribing import ingest_sources
-from openprescribing.data.rxdb.connection import CursorCacheKeyWrapper
+from openprescribing.data.rxdb.connection import (
+    CREATE_VIEWS_PATH,
+    DUCKDB_EXTENSION_DIR,
+    CursorCacheKeyWrapper,
+)
+from openprescribing.data.utils.duckdb_utils import escape
 
 
 PRESCRIBING_SOURCE_SCHEMA = pyarrow.schema(
@@ -63,25 +69,23 @@ class RXDBFixture:
     """
     Provides a test fixture which can used in place of the default `rxdb` instance
 
-    Note that unlike the real thing this doesn't currently have the SQLite database
-    attached. It is possible to get this working, but it requires a couple of changes:
+    If this fixture is used to work with views created with create_views.sql, then tests
+    need to run in "transaction mode" using:
 
-     * The test SQLite database needs to be on disk, not in memory, as DuckDB can't
-       currently attach to in-memory databases. (I think this might be an easy fix, but
-       I don't know how long it will take to get the patch landed in DuckDB.)
+       @pytest.mark.django_db(databases=["data"], transaction=True)
 
-     * Tests need to run in "transaction mode" using:
-
-           @pytest.mark.django_db(databases=["data"], transaction=True)
-
-       This is because in order for DuckDB to see changes in the SQLite database they
-       need to be commited, rather than held in temporary transactions.
-
-    Given that we don't currently need this feature I'm holding off supporting it.
+    We can and should improve the ergonomics of this.
     """
 
     def __init__(self):
-        self.conn = duckdb.connect()
+        self.conn = duckdb.connect(
+            config={
+                "extension_directory": DUCKDB_EXTENSION_DIR,
+            }
+        )
+        self.conn.execute(
+            f"ATTACH {escape(settings.TEST_SQLITE_DATABASE)} AS sqlite_db (TYPE SQLITE, READ_ONLY);"
+        )
         self.has_data = False
         self.cache_key = None
 
@@ -104,7 +108,10 @@ class RXDBFixture:
 
             """
             raise RuntimeError(textwrap.dedent(msg))
-        wrapped = CursorCacheKeyWrapper(self.conn.cursor(), self.cache_key)
+        cursor = self.conn.cursor()
+        cursor.execute("SET search_path = 'memory,sqlite_db'")
+        cursor.execute(CREATE_VIEWS_PATH.read_text())
+        wrapped = CursorCacheKeyWrapper(cursor, self.cache_key)
         return contextlib.closing(wrapped)
 
     def ingest(self, prescribing_data, list_size_data=()):
