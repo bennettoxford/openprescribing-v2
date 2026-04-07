@@ -2,6 +2,17 @@ import shutil
 from pathlib import Path
 
 from openprescribing.data.fetchers.dmd.fetcher import extract_data_from_directory
+from openprescribing.data.ingestors import dmd
+
+
+def ingest_dmd_data(settings, tmp_path):
+    """Ingest dmd data.
+
+    settings and tmp_path are pytest fixtures.
+    """
+
+    prepare_for_dmd_ingest(settings, tmp_path)
+    dmd.ingest()
 
 
 def prepare_for_dmd_ingest(settings, tmp_path):
