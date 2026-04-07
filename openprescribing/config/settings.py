@@ -121,6 +121,10 @@ BNF_CODE_CHANGES_DIR = BASE_DIR / "openprescribing" / "data" / "bnf_code_changes
 
 SQLITE_DATABASE = DATA_DIR / "data.sqlite"
 
+# DuckDB cannot attach to an in-memory SQLite database, so we need to use an on-disk
+# database in tests.
+TEST_SQLITE_DATABASE = DATA_DIR / "test-data.sqlite"
+
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
@@ -159,9 +163,12 @@ DATABASES = {
             # Note we're deliberately not using transaction mode IMMEDIATE here because
             # we're expecting only a single writer and many readers
         },
-        # Tell Django's test framework that this database doesn't depend on the default
-        # database (which it otherwise assumes that it does)
-        "TEST": {"DEPENDENCIES": []},
+        "TEST": {
+            "NAME": TEST_SQLITE_DATABASE,
+            # Tell Django's test framework that this database doesn't depend on the
+            # default database (which it otherwise assumes that it does)
+            "DEPENDENCIES": [],
+        },
     },
 }
 
