@@ -17,7 +17,10 @@ def ingest_dmd_data(settings, tmp_path):
 
 
 def prepare_for_dmd_ingest(settings, tmp_path):
-    """Set up DOWNLOAD_DIR to be in the state it would be in after dmd fetcher has run."""
+    """Set up DOWNLOAD_DIR to be in the state it would be in after dmd fetcher has run.
+
+    settings and tmp_path are pytest fixtures.
+    """
 
     settings.DOWNLOAD_DIR = tmp_path / "downloads"
     tmp_dir = tmp_path / "tmp"
