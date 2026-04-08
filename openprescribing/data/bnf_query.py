@@ -30,6 +30,26 @@ class BNFQuery:
         product_type = params.get(f"{field}_product_type", "all")
         return cls.build(raw_terms=raw_terms, product_type=product_type)
 
+    @classmethod
+    def from_dict(cls, query_dict):
+        included_terms = tuple(
+            [Term.create(rt, False) for rt in query_dict["included"]]
+        )
+        terms = included_terms
+
+        if "excluded" in query_dict:
+            excluded_terms = tuple(
+                [Term.create(rt, True) for rt in query_dict["excluded"]]
+            )
+            terms += excluded_terms
+
+        product_type = query_dict.get("product_type", "all")
+
+        return cls(
+            terms,
+            ProductType(product_type),
+        )
+
     def to_sql(self):
         """Return SQL that returns items prescribed for codes matching query.
 
@@ -103,14 +123,18 @@ class Term:
     code: str
     negated: bool
 
-    @staticmethod
-    def build(raw_term):
+    @classmethod
+    def build(cls, raw_term):
         if raw_term[0] == "-":
             negated = True
             code = raw_term[1:]
         else:
             negated = False
             code = raw_term
+        return cls.create(code, negated)
+
+    @staticmethod
+    def create(code, negated):
         if "_" in code:
             return StrengthAndFormulationTerm(code, negated)
         else:

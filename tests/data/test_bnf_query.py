@@ -122,3 +122,23 @@ def test_to_params():
         "ntr_codes": "01,-0101",
         "ntr_product_type": "generic",
     }
+
+
+def test_from_dict():
+    query = BNFQuery.from_dict(
+        {
+            "included": ["01"],
+        }
+    )
+    assert query == BNFQuery.build(["01"], ProductType.ALL)
+
+
+def test_from_dict_generic():
+    query = BNFQuery.from_dict(
+        {
+            "included": ["01"],
+            "excluded": ["0101"],
+            "product_type": "generic",
+        }
+    )
+    assert query == BNFQuery.build(["01", "-0101"], ProductType.GENERIC)
