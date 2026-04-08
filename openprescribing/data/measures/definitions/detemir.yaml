@@ -1,0 +1,13 @@
+# loosely based on insulin_detemir measure
+
+metadata:
+  title: Prescribing of Insulin detemir
+output:
+    numerator: bnf_items
+    denominator: list_size
+queries:
+    - numerator:
+        bnf_codes:
+            included:
+                # Insulin detemir
+                - 0601012X0
