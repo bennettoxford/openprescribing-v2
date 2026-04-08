@@ -1,0 +1,16 @@
+metadata:
+  title: Ratio of branded prescribing of a drug to all prescribing of a drug
+output:
+    numerator: bnf_items
+    denominator: bnf_items
+queries:
+    - numerator:
+        product_type: branded
+        bnf_codes:
+            included:
+                - 0302000K0
+      denominator:
+        product_type: all
+        bnf_codes:
+            included:
+                - 0302000K0
