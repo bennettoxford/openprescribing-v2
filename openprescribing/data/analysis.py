@@ -58,3 +58,30 @@ class Analysis:
         if self.org_id:
             params["org_id"] = self.org_id
         return params
+
+    @classmethod
+    def from_dict(cls, analysis_dict):
+        assert len(analysis_dict["queries"]) == 1, (
+            "We only currently support one numerator/denominator pair"
+        )
+
+        numerator = analysis_dict["queries"][0]["numerator"]
+        numerator_bnf_codes = numerator["bnf_codes"]
+        numerator_bnf_codes["product_type"] = numerator.get("product_type", "all")
+        ntr_query = BNFQuery.from_dict(numerator_bnf_codes)
+
+        if "denominator" in analysis_dict["queries"][0]:
+            denominator = analysis_dict["queries"][0]["denominator"]
+            denominator_bnf_codes = denominator["bnf_codes"]
+            denominator_bnf_codes["product_type"] = denominator.get(
+                "product_type", "all"
+            )
+            dtr_query = BNFQuery.from_dict(denominator_bnf_codes)
+        else:
+            dtr_query = ListSizeQuery()
+
+        return cls(
+            ntr_query=ntr_query,
+            dtr_query=dtr_query,
+            org_id=None,
+        )
