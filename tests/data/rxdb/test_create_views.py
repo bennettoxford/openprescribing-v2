@@ -1,6 +1,6 @@
 import pytest
 
-from tests.utils.dmd_utils import ingest_dmd_data
+from tests.utils.ingest_utils import ingest_dmd_data
 
 
 @pytest.mark.django_db(databases=["data"], transaction=True)
