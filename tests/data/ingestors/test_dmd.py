@@ -4,11 +4,11 @@ import pytest
 
 from openprescribing.data.ingestors import dmd
 from openprescribing.data.models.dmd import AMPP, VMP
-from tests.utils.dmd_utils import prepare_for_dmd_ingest
+from tests.utils.ingest_utils import prepare_for_dmd_ingest
 
 
 @pytest.mark.django_db(databases=["data"])
-def test_bnf_codes_ingest(settings, tmp_path):
+def test_dmd_ingest(settings, tmp_path):
     prepare_for_dmd_ingest(settings, tmp_path)
 
     dmd.ingest()

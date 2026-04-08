@@ -46,6 +46,7 @@ from .dmd import (
     VirtualProductNonAvail,
     VirtualProductPresStatus,
 )
+from .dmd_bnf_map import DmdBnfMap
 from .org import Org, OrgRelation
 
 
@@ -65,6 +66,7 @@ __all__ = [
     "DfIndicator",
     "Dform",
     "DiscontinuedInd",
+    "DmdBnfMap",
     "Dnd",
     "Droute",
     "DtPaymentCategory",
