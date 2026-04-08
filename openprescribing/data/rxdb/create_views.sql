@@ -6,6 +6,7 @@
 CREATE VIEW medications AS
 SELECT
     id,
+    bnf_code,
     name,
     is_amp,
     vmp_id,
@@ -26,17 +27,20 @@ SELECT
 FROM (
     SELECT
         vmp.vpid AS id,
+        dmd_bnf_map.bnf_code,
         vmp.nm AS name,
         false AS is_amp,
         vmp.vpid AS vmp_id,
         vmp.vtmid AS vtm_id,
 	vmp.invalid AS invalid,
     FROM vmp
+    LEFT JOIN dmd_bnf_map ON vmp.vpid = dmd_bnf_map.dmd_id
 
     UNION ALL
 
     SELECT
         amp.apid AS id,
+        dmd_bnf_map.bnf_code,
         amp.descr AS name,
         true AS is_amp,
         vmp.vpid AS vmp_id,
@@ -44,4 +48,5 @@ FROM (
 	amp.invalid AS invalid,
     FROM amp
     JOIN vmp ON amp.vpid = vmp.vpid
+    LEFT JOIN dmd_bnf_map ON amp.apid = dmd_bnf_map.dmd_id
 );
