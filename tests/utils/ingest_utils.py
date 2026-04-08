@@ -3,6 +3,7 @@ from pathlib import Path
 
 from openprescribing.data.fetchers.dmd.fetcher import extract_data_from_directory
 from openprescribing.data.ingestors import dmd
+from openprescribing.data.utils.csv_to_parquet import csv_to_parquet
 
 
 def ingest_dmd_data(settings, tmp_path):
@@ -25,3 +26,16 @@ def prepare_for_dmd_ingest(settings, tmp_path):
     release_dir = settings.DOWNLOAD_DIR / "dmd" / "dmd_2026-03-30_3.4.0_20260330000001"
     release_dir.mkdir(parents=True)
     extract_data_from_directory(tmp_dir, release_dir)
+
+
+def prepare_for_dmd_bnf_map_ingest(settings, tmp_path):
+    """Set up DOWNLOAD_DIR to be in the state it would be in after dmd_bnf_map fetcher
+    has run.
+
+    settings and tmp_path are pytest fixtures.
+    """
+
+    settings.DOWNLOAD_DIR = tmp_path / "downloads"
+    release_dir = settings.DOWNLOAD_DIR / "dmd_bnf_map"
+    release_dir.mkdir(parents=True)
+    csv_to_parquet(Path("tests/fixtures/dmd_bnf_map.csv"), release_dir / "map.parquet")
