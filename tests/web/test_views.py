@@ -122,3 +122,9 @@ def test_feedback_comment_rejects_missing_session(client):
     assert rsp.status_code == 400
     feedback.refresh_from_db()
     assert feedback.comment == ""
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_measure(client, sample_data):
+    rsp = client.get("/measures/detemir/")
+    assert rsp.status_code == 200

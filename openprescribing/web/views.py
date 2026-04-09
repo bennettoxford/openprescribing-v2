@@ -8,6 +8,7 @@ from django.views.decorators.http import require_POST
 
 from openprescribing.data.analysis import Analysis
 from openprescribing.data.bnf_query import BNFQuery
+from openprescribing.data.measures import load_measure
 from openprescribing.data.models import BNFCode, Org
 
 from .analysis_presentation import AnalysisPresentation
@@ -21,14 +22,7 @@ from .presenters import (
 )
 
 
-def analysis(request):
-    analysis_presentation = AnalysisPresentation.from_params(request.GET)
-
-    if "ntr_codes" in request.GET:
-        analysis = Analysis.from_params(request.GET)
-    else:
-        analysis = None
-
+def _build_analysis_context(analysis):
     deciles_api_url = None
     all_orgs_api_url = None
     org = None
@@ -106,7 +100,6 @@ def analysis(request):
 
     ctx = {
         "analysis": analysis,
-        "analysis_presentation": analysis_presentation,
         "code_to_name": code_to_name,
         "ntr_dtr_intersection_table": ntr_dtr_intersection_table,
         "org": org,
@@ -117,6 +110,32 @@ def analysis(request):
         "tree": tree,
         "deciles_chart": deciles_chart.to_dict(),
     }
+
+    return ctx
+
+
+def analysis(request):
+    analysis_presentation = AnalysisPresentation.from_params(request.GET)
+
+    if "ntr_codes" in request.GET:
+        analysis = Analysis.from_params(request.GET)
+    else:
+        analysis = None
+
+    ctx = _build_analysis_context(analysis)
+    ctx["measure"] = False
+    ctx["analysis_presentation"] = analysis_presentation
+
+    return render(request, "analysis.html", ctx)
+
+
+def measure(request, measure_name):
+    analysis_dict = load_measure(measure_name)
+    analysis = Analysis.from_dict(analysis_dict)
+
+    ctx = _build_analysis_context(analysis)
+    ctx["measure"] = True
+    ctx["analysis_presentation"] = None
 
     return render(request, "analysis.html", ctx)
 
