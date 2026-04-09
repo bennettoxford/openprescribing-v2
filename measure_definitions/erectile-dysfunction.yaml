@@ -1,5 +1,11 @@
 metadata:
     title: High cost drugs for erectile dysfunction
+    tags:
+      - demo
+    why_it_matters: |
+      Phosphodiesterase-5 (PDE-5) inhibitors are the recommended as the [first line treatment for erectile dysfunction](https://cks.nice.org.uk/erectile-dysfunction).
+      Most of these are now generic and inexpensive, and should ideally be considered before more expensive treatments.  Other treatments are also available, usually following specialist referral.
+
 output:
     numerator: bnf_items
     denominator: list_size
