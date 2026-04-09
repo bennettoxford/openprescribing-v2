@@ -135,6 +135,7 @@ def measure(request, measure_name):
 
     ctx = _build_analysis_context(analysis)
     ctx["measure"] = True
+    ctx["measure_title"] = analysis_dict["metadata"]["title"]
     ctx["analysis_presentation"] = None
 
     return render(request, "analysis.html", ctx)

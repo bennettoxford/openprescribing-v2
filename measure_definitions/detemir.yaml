@@ -1,7 +1,7 @@
 # loosely based on insulin_detemir measure
 
 metadata:
-  title: Prescribing of Insulin detemir
+  title: Insulin detemir
 output:
     numerator: bnf_items
     denominator: list_size

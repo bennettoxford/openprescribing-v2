@@ -5,7 +5,7 @@ def test_load_measure():
     m = load_measure("detemir")
     assert m == {
         "metadata": {
-            "title": "Prescribing of Insulin detemir",
+            "title": "Insulin detemir",
         },
         "output": {
             "denominator": "list_size",
