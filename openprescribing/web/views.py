@@ -8,7 +8,7 @@ from django.views.decorators.http import require_POST
 
 from openprescribing.data.analysis import Analysis
 from openprescribing.data.bnf_query import BNFQuery
-from openprescribing.data.measures import load_measure
+from openprescribing.data.measures import all_measure_details, load_measure
 from openprescribing.data.models import BNFCode, Org
 
 from .analysis_presentation import AnalysisPresentation
@@ -139,6 +139,10 @@ def measure(request, measure_name):
     ctx["analysis_presentation"] = None
 
     return render(request, "analysis.html", ctx)
+
+
+def all_measures(request):
+    return render(request, "measure_list.html", {"measures": all_measure_details()})
 
 
 def bnf_browser_tree(request):
