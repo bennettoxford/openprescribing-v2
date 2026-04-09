@@ -19,7 +19,8 @@ class BNFQuery:
     @classmethod
     def build(cls, raw_terms, product_type):
         return cls(
-            tuple([Term.build(rt) for rt in raw_terms]), ProductType(product_type)
+            tuple([Term.from_param_value(rt) for rt in raw_terms]),
+            ProductType(product_type),
         )
 
     @classmethod
@@ -124,7 +125,7 @@ class Term:
     negated: bool
 
     @classmethod
-    def build(cls, raw_term):
+    def from_param_value(cls, raw_term):
         if raw_term[0] == "-":
             negated = True
             code = raw_term[1:]
