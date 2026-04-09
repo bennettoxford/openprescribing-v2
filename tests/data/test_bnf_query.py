@@ -1,6 +1,7 @@
 import pytest
 
 from openprescribing.data.bnf_query import BNFQuery, ProductType
+from tests.utils.ingest_utils import ingest_dmd_bnf_map_data, ingest_dmd_data
 
 
 @pytest.mark.django_db(databases=["data"])
@@ -67,6 +68,16 @@ def test_get_matching_presentation_codes_for_branded_with_strength_and_formulati
     assert query.get_matching_presentation_codes() == [
         "1001030U0BDAAAB",
     ]
+
+
+@pytest.mark.django_db(databases=["data"], transaction=True)
+def test_get_matching_presentation_codes_for_form_route_ids(
+    rxdb, settings, tmp_path, bnf_codes
+):
+    rxdb.ingest([{}])
+    ingest_dmd_data(settings, tmp_path)
+    ingest_dmd_bnf_map_data(settings, tmp_path)
+    assert False
 
 
 @pytest.mark.django_db(databases=["data"])
