@@ -67,15 +67,15 @@ class Analysis:
 
         numerator = analysis_dict["queries"][0]["numerator"]
         numerator_bnf_codes = numerator["bnf_codes"]
-        numerator_bnf_codes["product_type"] = numerator.get("product_type", "all")
+        if "product_type" in numerator:
+            numerator_bnf_codes["product_type"] = numerator["product_type"]
         ntr_query = BNFQuery.from_dict(numerator_bnf_codes)
 
         if "denominator" in analysis_dict["queries"][0]:
             denominator = analysis_dict["queries"][0]["denominator"]
             denominator_bnf_codes = denominator["bnf_codes"]
-            denominator_bnf_codes["product_type"] = denominator.get(
-                "product_type", "all"
-            )
+            if "product_type" in denominator:
+                denominator_bnf_codes["product_type"] = denominator["product_type"]
             dtr_query = BNFQuery.from_dict(denominator_bnf_codes)
         else:
             dtr_query = ListSizeQuery()
