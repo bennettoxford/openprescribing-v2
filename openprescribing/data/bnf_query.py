@@ -16,6 +16,8 @@ class BNFQuery:
     terms: tuple[Term]
     product_type: ProductType
 
+    PRODUCT_TYPE_DEFAULT = "all"
+
     @classmethod
     def build(cls, raw_terms, product_type):
         return cls(
@@ -28,7 +30,7 @@ class BNFQuery:
         """Build a BNFQuery from URL query parameters for a field."""
 
         raw_terms = tuple(params[f"{field}_codes"].split(","))
-        product_type = params.get(f"{field}_product_type", "all")
+        product_type = params.get(f"{field}_product_type", cls.PRODUCT_TYPE_DEFAULT)
         return cls.build(raw_terms=raw_terms, product_type=product_type)
 
     @classmethod
@@ -44,7 +46,7 @@ class BNFQuery:
             )
             terms += excluded_terms
 
-        product_type = query_dict.get("product_type", "all")
+        product_type = query_dict.get("product_type", cls.PRODUCT_TYPE_DEFAULT)
 
         return cls(
             terms,
