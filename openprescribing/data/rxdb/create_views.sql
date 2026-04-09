@@ -16,13 +16,13 @@ SELECT
         SELECT ont.formcd
         FROM ont
         WHERE ont.vpid = vmp_id
-	ORDER BY ont.formcd
+        ORDER BY ont.formcd
     ) AS form_route_ids,
     array(
         SELECT vpi.isid
         FROM vpi
         WHERE vpi.vpid = vmp_id
-	ORDER BY vpi.vpid
+        ORDER BY vpi.vpid
     ) AS ingredient_ids,
 FROM (
     SELECT
@@ -32,7 +32,7 @@ FROM (
         false AS is_amp,
         vmp.vpid AS vmp_id,
         vmp.vtmid AS vtm_id,
-	vmp.invalid AS invalid,
+        vmp.invalid AS invalid,
     FROM vmp
     LEFT JOIN dmd_bnf_map ON vmp.vpid = dmd_bnf_map.dmd_id
 
@@ -45,7 +45,7 @@ FROM (
         true AS is_amp,
         vmp.vpid AS vmp_id,
         vmp.vtmid AS vtm_id,
-	amp.invalid AS invalid,
+        amp.invalid AS invalid,
     FROM amp
     JOIN vmp ON amp.vpid = vmp.vpid
     LEFT JOIN dmd_bnf_map ON amp.apid = dmd_bnf_map.dmd_id
