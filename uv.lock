@@ -1012,6 +1012,7 @@ dependencies = [
     { name = "opentelemetry-instrumentation-django" },
     { name = "opentelemetry-sdk" },
     { name = "pyarrow" },
+    { name = "pyyaml" },
     { name = "requests" },
     { name = "scipy" },
     { name = "whitenoise" },
@@ -1026,7 +1027,6 @@ dev = [
     { name = "pytest-django" },
     { name = "pytest-freezer" },
     { name = "pytest-playwright" },
-    { name = "pyyaml" },
     { name = "responses" },
     { name = "ruff" },
 ]
@@ -1045,6 +1045,7 @@ requires-dist = [
     { name = "opentelemetry-instrumentation-django", specifier = ">=0.59b0" },
     { name = "opentelemetry-sdk", specifier = ">=1.38.0" },
     { name = "pyarrow", specifier = ">=22.0.0" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "requests", specifier = ">=2.32.5" },
     { name = "scipy", specifier = ">=1.16.2" },
     { name = "whitenoise", specifier = ">=6.11.0" },
@@ -1059,7 +1060,6 @@ dev = [
     { name = "pytest-django", specifier = ">=4.11.1" },
     { name = "pytest-freezer", specifier = ">=0.4.9" },
     { name = "pytest-playwright", specifier = ">=0.7.1" },
-    { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "responses", specifier = ">=0.25.8" },
     { name = "ruff", specifier = ">=0.12.11" },
 ]
