@@ -4,7 +4,9 @@ import yaml
 
 
 def load_measure(measure_name):
-    with open(Path(__file__).parent / "definitions" / f"{measure_name}.yaml") as f:
+    with open(
+        Path(__file__).parents[3] / "measure_definitions" / f"{measure_name}.yaml"
+    ) as f:
         measure_yaml = yaml.safe_load(f)
     return measure_yaml
 
