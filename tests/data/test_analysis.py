@@ -65,7 +65,6 @@ def test_from_dict():
         "queries": [
             {
                 "numerator": {
-                    "product_type": "branded",
                     "bnf_codes": {
                         "included": ["01"],
                         "excluded": ["0101"],
@@ -74,7 +73,6 @@ def test_from_dict():
                 "denominator": {
                     "bnf_codes": {
                         "included": ["01"],
-                        "excluded": ["0101"],
                     }
                 },
             }
@@ -83,9 +81,38 @@ def test_from_dict():
     analysis = Analysis.from_dict(analysis_dict)
     assert analysis.to_params() == {
         "ntr_codes": "01,-0101",
-        "ntr_product_type": "branded",
-        "dtr_codes": "01,-0101",
+        "ntr_product_type": "all",
+        "dtr_codes": "01",
         "dtr_product_type": "all",
+    }
+
+
+def test_from_dict_branded():
+    analysis_dict = {
+        "queries": [
+            {
+                "numerator": {
+                    "product_type": "branded",
+                    "bnf_codes": {
+                        "included": ["01"],
+                        "excluded": ["0101"],
+                    },
+                },
+                "denominator": {
+                    "product_type": "branded",
+                    "bnf_codes": {
+                        "included": ["01"],
+                    },
+                },
+            }
+        ]
+    }
+    analysis = Analysis.from_dict(analysis_dict)
+    assert analysis.to_params() == {
+        "ntr_codes": "01,-0101",
+        "ntr_product_type": "branded",
+        "dtr_codes": "01",
+        "dtr_product_type": "branded",
     }
 
 
