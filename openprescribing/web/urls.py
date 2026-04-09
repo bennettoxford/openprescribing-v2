@@ -19,5 +19,6 @@ urlpatterns = [
     path("feedback/comment/", views.feedback_comment, name="feedback_comment"),
     path("bnf/", views.bnf_browser_tree),
     path("bnf/<slug:code>/", views.bnf_browser_table),
+    path("measures/", views.all_measures),
     path("measures/<slug:measure_name>/", views.measure),
 ]
