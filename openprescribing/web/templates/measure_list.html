@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col-lg-5 {% if measure %} d-none {% endif %}">
+        <div class="card">
+            <div class="card-body">
+                <h1 class="h4">List of measures</h1>
+                <ul>
+                    {% for measure in measures  %}
+                    <li><a href="/measures/{{ measure.name }}/">{{ measure.title }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
