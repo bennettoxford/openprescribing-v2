@@ -1,6 +1,7 @@
 from urllib.parse import urlencode
 
 import altair as alt
+import markdown
 from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -136,6 +137,10 @@ def measure(request, measure_name):
     ctx = _build_analysis_context(analysis)
     ctx["measure"] = True
     ctx["measure_title"] = analysis_dict["metadata"]["title"]
+    ctx["why_it_matters"] = markdown.markdown(
+        analysis_dict["metadata"]["why_it_matters"]
+    )
+    ctx["tags"] = analysis_dict["metadata"]["tags"]
     ctx["analysis_presentation"] = None
 
     return render(request, "analysis.html", ctx)
