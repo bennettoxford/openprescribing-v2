@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .bnf_query import BNFQuery
+from .dmd_query import search_routes
 from .list_size_query import ListSizeQuery
 
 
@@ -69,6 +70,15 @@ class Analysis:
         numerator_bnf_codes = numerator["bnf_codes"]
         if "product_type" in numerator:
             numerator_bnf_codes["product_type"] = numerator["product_type"]
+
+        if "route" in numerator:
+            form_route_ids = search_routes(route_list=numerator["route"])
+            if form_route_ids:
+                numerator_bnf_codes["form_routes_ids"] = form_route_ids
+            else:
+                # invalid form_route_id, so that invalid routes result in no matches
+                numerator_bnf_codes["form_routes_ids"] = ["99999999999"]
+
         ntr_query = BNFQuery.from_dict(numerator_bnf_codes)
 
         if "denominator" in analysis_dict["queries"][0]:
