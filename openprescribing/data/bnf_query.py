@@ -73,9 +73,14 @@ class BNFQuery:
 
         product_type = query_dict.get("product_type", cls.PRODUCT_TYPE_DEFAULT)
 
+        form_routes = query_dict.get("form_routes_ids", [])
+        form_route_ids = [str(form_route.cd) for form_route in form_routes]
+        # this seems correct?
+        # breakpoint()
         return cls(
             terms,
             ProductType(product_type),
+            form_route_ids=form_route_ids,
         )
 
     def to_sql(self):

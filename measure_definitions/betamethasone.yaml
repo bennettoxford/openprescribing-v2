@@ -1,0 +1,20 @@
+metadata:
+  title: Betamethasone sodium phosphate
+output:
+    numerator: bnf_items
+    denominator: list_size
+queries:
+    - numerator:
+      # includes
+      # │    10 │ solutiondrops.ophthalmic │
+      # │    47 │ solutiondrops.auricular  │
+      # │    48 │ solutiondrops.nasal
+        route:
+          # - nasal
+          # - oral
+          - rectal
+          # an invalid route does not function
+          # - blarge
+        bnf_codes:
+            included:
+                - 1104010D0
