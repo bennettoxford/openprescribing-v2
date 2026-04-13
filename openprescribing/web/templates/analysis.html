@@ -67,14 +67,14 @@
                 </div>
             </div>
         </div>
+        {% if measure %}
+        {% include "./_measure_info.html"  %}
+        {% endif %}
         <div class="col-lg-7">
             <div class="card h-100">
                 <div class="card-body">
                     {% if analysis %}
                     <h1 class="h3">Prescribing data</h1>
-                    {% if measure %}
-                    <h1 class="h4">{{ measure_title }}</h1>
-                    {% endif %}
                     <div id="deciles-chart-outer" style="height: 400px;">
                         <div id="deciles-chart-loading" class="py-3 position-absolute">
                             Loading chart...

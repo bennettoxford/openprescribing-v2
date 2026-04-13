@@ -11,6 +11,7 @@ dependencies = [
     "duckdb>=1.4.2",
     "gunicorn>=23.0.0",
     "html5lib>=1.1",
+    "markdown>=3.10.2",
     "numpy>=2.3.4",
     "openpyxl>=3.1.5",
     "opentelemetry-exporter-otlp-proto-http>=1.38.0",
