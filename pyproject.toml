@@ -97,7 +97,7 @@ numpy = "np"
 # See https://github.com/opensafely-core/repo-template/blob/main/DEVELOPERS.md for details
 [tool.uv]
 required-version = ">=0.9"
-exclude-newer = "2026-03-31T00:00:00Z"
+exclude-newer = "2026-04-05T00:00:00Z"
 exclude-newer-package = {}
 
 [dependency-groups]
