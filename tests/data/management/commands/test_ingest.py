@@ -2,6 +2,7 @@ import io
 import logging
 from unittest.mock import Mock
 
+import django.conf
 import django.db
 import pytest
 from django.core.management import call_command
@@ -109,16 +110,16 @@ def test_ingest_logging_quiet(monkeypatch, freezer):
     assert stdout.getvalue() == "2025-01-02T03:04:05 [ingestor] but this should\n"
 
 
-def test_ingest_ensures_main_database_file_is_updated(tmp_path, monkeypatch, settings):
-    # Create a test database which exists as a file on disk (the default test database
-    # is in-memory which is no good for our purposes here)
-    sqlite_path = tmp_path / "data.sqlite"
-    settings.DATABASES["data"]["NAME"] = sqlite_path
+def test_ingest_ensures_main_database_file_is_updated(monkeypatch):
+    # This test has database access (see pytestmark, above). We don't want
+    # the transaction machinery getting in the way, so we temporarily delete
+    # the connection.
     monkeypatch.delattr(django.db.connections._connections, "data")
 
     with django.db.connections["data"].cursor() as cursor:
         cursor.execute("CREATE TABLE t (v INT)")
 
+    sqlite_path = django.conf.settings.DATABASES["data"]["NAME"]
     initial_mtime = sqlite_path.stat().st_mtime
 
     def ingestor(*_, **__):
