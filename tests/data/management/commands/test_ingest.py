@@ -2,6 +2,7 @@ import io
 import logging
 from unittest.mock import Mock
 
+import django.conf
 import django.db
 import pytest
 from django.core.management import call_command
@@ -109,8 +110,8 @@ def test_ingest_logging_quiet(monkeypatch, freezer):
     assert stdout.getvalue() == "2025-01-02T03:04:05 [ingestor] but this should\n"
 
 
-def test_ingest_ensures_main_database_file_is_updated(monkeypatch, settings):
-    sqlite_path = settings.DATABASES["data"]["NAME"]
+def test_ingest_ensures_main_database_file_is_updated(monkeypatch):
+    sqlite_path = django.conf.settings.DATABASES["data"]["NAME"]
     monkeypatch.delattr(django.db.connections._connections, "data")
 
     with django.db.connections["data"].cursor() as cursor:
