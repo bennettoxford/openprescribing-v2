@@ -112,6 +112,9 @@ def test_ingest_logging_quiet(monkeypatch, freezer):
 
 def test_ingest_ensures_main_database_file_is_updated(monkeypatch):
     sqlite_path = django.conf.settings.DATABASES["data"]["NAME"]
+    # This test has database access (see pytestmark, above). We don't want
+    # the transaction machinery getting in the way, so we temporarily delete
+    # the connection.
     monkeypatch.delattr(django.db.connections._connections, "data")
 
     with django.db.connections["data"].cursor() as cursor:
