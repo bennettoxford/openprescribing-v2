@@ -117,11 +117,8 @@ def test_pre():
     )
 
 
-def test_ingest_ensures_main_database_file_is_updated(tmp_path, monkeypatch, settings):
-    # Create a test database which exists as a file on disk (the default test database
-    # is in-memory which is no good for our purposes here)
-    sqlite_path = tmp_path / "data.sqlite"
-    settings.DATABASES["data"]["NAME"] = sqlite_path
+def test_ingest_ensures_main_database_file_is_updated(monkeypatch, settings):
+    sqlite_path = settings.DATABASES["data"]["NAME"]
     monkeypatch.delattr(django.db.connections._connections, "data")
 
     with django.db.connections["data"].cursor() as cursor:
@@ -149,7 +146,6 @@ def test_ingest_ensures_main_database_file_is_updated(tmp_path, monkeypatch, set
     assert sqlite_path.stat().st_mtime > initial_mtime
 
 
-@pytest.mark.xfail(reason="The settings object was not unpatched correctly")
 def test_post():
     assert (
         django_settings.DATABASES["data"]["NAME"]
