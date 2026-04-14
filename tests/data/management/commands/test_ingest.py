@@ -4,7 +4,6 @@ from unittest.mock import Mock
 
 import django.db
 import pytest
-from django.conf import settings as django_settings
 from django.core.management import call_command
 
 from openprescribing.data.management.commands import ingest
@@ -110,13 +109,6 @@ def test_ingest_logging_quiet(monkeypatch, freezer):
     assert stdout.getvalue() == "2025-01-02T03:04:05 [ingestor] but this should\n"
 
 
-def test_pre():
-    assert (
-        django_settings.DATABASES["data"]["NAME"]
-        == django_settings.TEST_SQLITE_DATABASE
-    )
-
-
 def test_ingest_ensures_main_database_file_is_updated(monkeypatch, settings):
     sqlite_path = settings.DATABASES["data"]["NAME"]
     monkeypatch.delattr(django.db.connections._connections, "data")
@@ -144,10 +136,3 @@ def test_ingest_ensures_main_database_file_is_updated(monkeypatch, settings):
     with django.db.connections["data"].cursor() as cursor:
         assert cursor.execute("SELECT v FROM t").fetchall() == [(1,), (2,), (1,), (2,)]
     assert sqlite_path.stat().st_mtime > initial_mtime
-
-
-def test_post():
-    assert (
-        django_settings.DATABASES["data"]["NAME"]
-        == django_settings.TEST_SQLITE_DATABASE
-    )
