@@ -1,12 +1,12 @@
 import pytest
-from playwright.sync_api import Page, expect
+from playwright.sync_api import expect
 
 
 pytestmark = pytest.mark.functional
 
 
 @pytest.mark.django_db(databases=["data"], transaction=True)
-def test_analysis(live_server, page: Page, sample_data):
+def test_analysis(live_server, page, sample_data):
     # This is a limited smoke test that checks that codes can be selected from the table
     # (numerator) and the tree (denominator), and that on form submission we're directed
     # to the expected URL.
