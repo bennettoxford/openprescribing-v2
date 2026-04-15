@@ -21,19 +21,6 @@
                         {% include "./_bnf_query_form_controls.html" with field="ntr" query=analysis.ntr_query %}
                         <h2 class="h5">Denominator</h2>
                         {% include "./_bnf_query_form_controls.html" with field="dtr" query=analysis.dtr_query %}
-                        <input
-                            type="hidden"
-                            id="prescribing-query-chart-type"
-                            name="chart_type"
-                            value="{{ analysis_presentation.chart_type }}"
-                        >
-                        <input
-                            type="hidden"
-                            id="prescribing-query-org-id"
-                            name="org_id"
-                            value="{{ analysis.org_id|default:'' }}"
-                            {% if not analysis.org_id %}disabled{% endif %}
-                        >
                         <button
                             type="submit"
                             id="prescribing-query-submit"

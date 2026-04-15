@@ -9,9 +9,6 @@ const setupOrgSearch = () => {
   const prescribingQueryForm = document.getElementById(
     "prescribing-query-form",
   );
-  const prescribingQueryOrgIdInput = document.getElementById(
-    "prescribing-query-org-id",
-  );
   const prescribingQueryNtrCodesInput =
     prescribingQueryForm?.querySelector('[name="ntr_codes"]');
 
@@ -31,19 +28,9 @@ const setupOrgSearch = () => {
             <div class="text-muted small">${org.id} - ${orgTypes[org.org_type]}</div>
         `,
     onSelect: (org) => {
-      prescribingQueryOrgIdInput.disabled = false;
-      prescribingQueryOrgIdInput.value = org.id;
-
-      if (!prescribingQueryNtrCodesInput.value) {
-        // Don't submit when no numerator has been selected yet.
-        return;
-      }
-
-      prescribingQueryForm.requestSubmit();
-    },
-    onEmpty: () => {
-      prescribingQueryOrgIdInput.disabled = true;
-      prescribingQueryOrgIdInput.value = "";
+      const url = new URL(window.location.href);
+      url.searchParams.set("org_id", org.id);
+      window.location.assign(url);
     },
   });
 };
@@ -55,14 +42,12 @@ const createTypeahead = ({
   getMatches,
   renderItem,
   onSelect,
-  onEmpty,
 }) => {
   input.addEventListener("input", () => {
     const query = input.value.trim().toLowerCase();
     if (query.length < minChars) {
       results.innerHTML = "";
       results.classList.add("d-none");
-      onEmpty();
       return;
     }
 
@@ -223,10 +208,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const setChartType = (chartType, pushHistory = false) => {
       chartConfigs[chartType].radio.checked = true;
-      const queryFormChartTypeInput = document.getElementById(
-        "prescribing-query-chart-type",
-      );
-      queryFormChartTypeInput.value = chartType;
       renderChartType(chartType);
 
       if (!pushHistory) {
