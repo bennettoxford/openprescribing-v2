@@ -30,23 +30,86 @@
 
             <div class="card">
                 <div class="card-body">
-                    <h1 class="h4">Highlight organisation</h1>
-                    <div class="position-relative mb-2">
-                        <label class="form-label" for="org-search">Name or code of organisation to highlight</label>
-                        <input
-                            id="org-search"
-                            type="search"
-                            class="form-control form-control-lg"
-                            {% if org %}value="{{ org.name }}"{% endif %}
-                            autocomplete="off"
-                        />
-                        <ul
-                            class="list-group position-absolute top-100 start-0 end-0 mt-2 shadow d-none z-3"
-                            id="org-results"
-                            style="max-height: 18rem; overflow-y: auto;"
-                        ></ul>
-                    </div>
-                    <div class="form-text">Start typing an organisation name or code to highlight a single organisation.</div>
+                    <section>
+                        <h1 class="h4">Highlight organisation</h1>
+                        <div class="position-relative mb-2">
+                            <label class="form-label" for="org-search">Name or code of organisation to highlight</label>
+                            <input
+                                id="org-search"
+                                type="search"
+                                class="form-control form-control-lg"
+                                {% if org %}value="{{ org.name }}"{% endif %}
+                                autocomplete="off"
+                            />
+                            <ul
+                                class="list-group position-absolute top-100 start-0 end-0 mt-2 shadow d-none z-3"
+                                id="org-results"
+                                style="max-height: 18rem; overflow-y: auto;"
+                            ></ul>
+                        </div>
+                        <div class="form-text">Start typing an organisation name or code to highlight a single organisation.</div>
+                    </section>
+
+		    <hr />
+
+                    <section>
+                         <fieldset>
+                             <h2 class="h5">Show prescribing</h2>
+                             <input
+                                 type="radio"
+                                 id="decile"
+                                 name="chart_type"
+                                 value="deciles"
+                                 {% if analysis_presentation.chart_type == "deciles" %}checked{% endif %}
+                             >
+                             <label for="decile">Deciles
+                                 <a href="#deciles-help" class="link-secondary d-inline-flex align-items-center" data-bs-toggle="modal">
+                                     <svg
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         width="16"
+                                         height="16"
+                                         fill="currentColor"
+                                         class="bi bi-info-circle"
+                                         viewBox="0 0 16 16"
+                                         focusable="false"
+                                     >
+                                         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                         <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533z" />
+                                         <circle cx="8" cy="4.5" r="1" />
+                                     </svg>
+                                 </a>
+                                 <span id="decile_org_type">
+                                     for selected org type
+                                 </span>
+                             </label>
+                             <br>
+                             <input
+                                 type="radio"
+                                 id="all_orgs_line_chart"
+                                 name="chart_type"
+                                 value="all-orgs-line"
+                                 {% if analysis_presentation.chart_type == "all-orgs-line" %}checked{% endif %}
+                             >
+                             <label for="all_orgs_line_chart">All
+                                 <span id="line_chart_org_types">
+                                     organisations
+                                 </span>
+                                 (line chart)
+                             </label><br>
+                             <input
+                                 type="radio"
+                                 id="all_orgs_dots_chart"
+                                 name="chart_type"
+                                 value="all-orgs-dots"
+                                 {% if analysis_presentation.chart_type == "all-orgs-dots" %}checked{% endif %}
+                             >
+                             <label for="all_orgs_dots_chart">All
+                                 <span id="dots_chart_org_types">
+                                 organisations
+                             </span>
+                             (dots chart)</label><br>
+                         </fieldset>
+                    </section>
                 </div>
             </div>
         </div>
@@ -66,62 +129,6 @@
                     <div>
                         <div class="row">
                             <div class="col-12">
-                                <fieldset>
-                                    <h2 class="h5">Show prescribing</h2>
-                                    <input
-                                        type="radio"
-                                        id="decile"
-                                        name="chart_type"
-                                        value="deciles"
-                                        {% if analysis_presentation.chart_type == "deciles" %}checked{% endif %}
-                                    >
-                                    <label for="decile">Deciles
-                                        <a href="#deciles-help" class="link-secondary d-inline-flex align-items-center" data-bs-toggle="modal">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="16"
-                                                height="16"
-                                                fill="currentColor"
-                                                class="bi bi-info-circle"
-                                                viewBox="0 0 16 16"
-                                                focusable="false"
-                                            >
-                                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533z" />
-                                                <circle cx="8" cy="4.5" r="1" />
-                                            </svg>
-                                        </a>
-                                        <span id="decile_org_type">
-                                            for selected org type
-                                        </span>
-                                    </label>
-                                    <br>
-                                    <input
-                                        type="radio"
-                                        id="all_orgs_line_chart"
-                                        name="chart_type"
-                                        value="all-orgs-line"
-                                        {% if analysis_presentation.chart_type == "all-orgs-line" %}checked{% endif %}
-                                    >
-                                    <label for="all_orgs_line_chart">All
-                                        <span id="line_chart_org_types">
-                                            organisations
-                                        </span>
-                                        (line chart)
-                                    </label><br>
-                                    <input
-                                        type="radio"
-                                        id="all_orgs_dots_chart"
-                                        name="chart_type"
-                                        value="all-orgs-dots"
-                                        {% if analysis_presentation.chart_type == "all-orgs-dots" %}checked{% endif %}
-                                    >
-                                    <label for="all_orgs_dots_chart">All
-                                        <span id="dots_chart_org_types">
-                                        organisations
-                                    </span>
-                                    (dots chart)</label><br>
-                                </fieldset>
                             </div>
                         </div>
                         <div class="row mt-3">
