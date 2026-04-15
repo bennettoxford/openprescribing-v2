@@ -1,0 +1,45 @@
+metadata:
+  title: Methotrexate 10 mg tablets
+  tags:
+    - core
+    - safety
+  why_it_matters: |
+    [The BNF states](https://bnf.nice.org.uk/drugs/methotrexate/#important-safety-information):
+
+    *Note that the dose is a **weekly dose**. To avoid error with low-dose methotrexate, it is recommended that:*
+
+    - *the patient is carefully advised of the **dose** and **frequency** and the reason for taking methotrexate and any other prescribed medicine (e.g. folic acid);*
+    - *Prescribe only if no other item or intervention is clinically appropriate.*
+    - *Prescribe only if no other item or intervention is available.*
+    - *the prescription and the dispensing label clearly show the dose and frequency of methotrexate administration;*
+    - *the patient or their carer is warned to report immediately the onset of any feature of blood disorders (e.g. sore throat, bruising, and mouth ulcers), liver toxicity (e.g. nausea, vomiting, abdominal discomfort, and dark urine), and respiratory effects (e.g. shortness of breath).*
+
+    You can read more in our paper on [trends and variation in unsafe prescribing of methotrexate](https://doi.org/10.3399/bjgp20X710993).
+  description: Prescribing of methotrexate 10mg tablets as a percentage of prescribing of all methotrexate tablets
+  numerator_short: Items for 10mg methotrexate tablets
+  denominator_short: Items for 2.5mg and 10mg methotrexate tablets
+  low_is_good: true
+  authored_by: caroline.acuda@phc.ox.ac.uk
+  checked_by: 
+  date_reviewed: 2024-02-12
+  next_review: 2026-02-12
+  measure_complexity: low
+  radar_exclude: false
+
+output:
+  numerator: items
+  denominator: items
+
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          # Methotrexate_Tab 10mg
+          - 1001030U0_AC 
+    denominator:
+      bnf_codes:
+        included:
+          # Methotrexate_Tab 10mg
+          - 1001030U0_AC 
+          # Methotrexate_Tab 2.5mg
+          - 1001030U0_AB
