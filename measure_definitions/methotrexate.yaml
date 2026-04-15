@@ -27,19 +27,19 @@ metadata:
   radar_exclude: false
 
 output:
-  numerator: bnf_items
-  denominator: bnf_items
+  numerator: items
+  denominator: items
 
 queries:
   - numerator:
       bnf_codes:
         included:
           # Methotrexate_Tab 10mg
-          - 1001030U0%AC 
+          - 1001030U0_AC 
     denominator:
       bnf_codes:
         included:
           # Methotrexate_Tab 10mg
-          - 1001030U0%AC 
+          - 1001030U0_AC 
           # Methotrexate_Tab 2.5mg
-          - 1001030U0%AB
+          - 1001030U0_AB
