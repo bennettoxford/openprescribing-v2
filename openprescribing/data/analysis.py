@@ -66,17 +66,11 @@ class Analysis:
         )
 
         numerator = analysis_dict["queries"][0]["numerator"]
-        numerator_bnf_codes = numerator["bnf_codes"]
-        if "product_type" in numerator:
-            numerator_bnf_codes["product_type"] = numerator["product_type"]
-        ntr_query = BNFQuery.from_dict(numerator_bnf_codes)
+        ntr_query = BNFQuery.from_dict(numerator)
 
         if "denominator" in analysis_dict["queries"][0]:
             denominator = analysis_dict["queries"][0]["denominator"]
-            denominator_bnf_codes = denominator["bnf_codes"]
-            if "product_type" in denominator:
-                denominator_bnf_codes["product_type"] = denominator["product_type"]
-            dtr_query = BNFQuery.from_dict(denominator_bnf_codes)
+            dtr_query = BNFQuery.from_dict(denominator)
         else:
             dtr_query = ListSizeQuery()
 
