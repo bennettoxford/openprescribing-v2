@@ -3,7 +3,7 @@
 -- here. These are initialised dynamically when the RXDB connection is created so
 -- there's no need for any migrations.
 
-CREATE VIEW medications AS
+CREATE OR REPLACE VIEW medications AS
 SELECT
     id,
     bnf_code,
