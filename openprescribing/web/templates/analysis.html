@@ -10,6 +10,7 @@
 
 <div class="d-none d-lg-block">
     <div class="row">
+        {% if analysis %}
         <div class="col-lg-5">
             {% if measure %}
             <div class="card mb-4">
@@ -123,7 +124,6 @@
         <div class="col-lg-7">
             <div class="card h-100">
                 <div class="card-body">
-                    {% if analysis %}
                     <h1 class="h3">Prescribing data</h1>
                     <div id="deciles-chart-outer" style="height: 400px;">
                         <div id="deciles-chart-loading" class="py-3 position-absolute">
@@ -177,14 +177,18 @@
                         </div>
                         {% endif %}
                     </div>
-                    {% else %}
-                    <div class="text-center text-muted py-5">
-                        <p>Search for BNF codes to see prescribing data.</p>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
+        {% else %}
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-center text-muted py-5">
+                    <a class="btn btn-primary" href="{% url 'build-analysis' %}">Start analysing prescribing data</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 
