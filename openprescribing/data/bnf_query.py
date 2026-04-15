@@ -54,6 +54,19 @@ class BNFQuery:
             ProductType(product_type),
         )
 
+    def to_dict(self):
+        included_codes = [term.code for term in self.terms if not term.negated]
+        excluded_codes = [term.code for term in self.terms if term.negated]
+        bnf_query_dict = {
+            "bnf_codes": {"included": included_codes},
+        }
+        if excluded_codes:
+            bnf_query_dict["bnf_codes"]["excluded"] = excluded_codes
+        if not self.product_type == ProductType.ALL:
+            bnf_query_dict["product_type"] = self.product_type.value
+
+        return bnf_query_dict
+
     def to_sql(self):
         """Return SQL that returns items prescribed for codes matching query.
 

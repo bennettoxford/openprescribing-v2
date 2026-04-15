@@ -80,13 +80,7 @@ def test_from_dict():
         "org_id": "PRAC01",
     }
     analysis = Analysis.from_dict(analysis_dict)
-    assert analysis.to_params() == {
-        "ntr_codes": "01,-0101",
-        "ntr_product_type": "all",
-        "dtr_codes": "01",
-        "dtr_product_type": "all",
-        "org_id": "PRAC01",
-    }
+    assert analysis.to_dict() == analysis_dict
 
 
 def test_from_dict_branded():
@@ -110,12 +104,7 @@ def test_from_dict_branded():
         ]
     }
     analysis = Analysis.from_dict(analysis_dict)
-    assert analysis.to_params() == {
-        "ntr_codes": "01,-0101",
-        "ntr_product_type": "branded",
-        "dtr_codes": "01",
-        "dtr_product_type": "branded",
-    }
+    assert analysis.to_dict() == analysis_dict
 
 
 def test_from_dict_numerator_only():
@@ -133,7 +122,4 @@ def test_from_dict_numerator_only():
         ]
     }
     analysis = Analysis.from_dict(analysis_dict)
-    assert analysis.to_params() == {
-        "ntr_codes": "01,-0101",
-        "ntr_product_type": "branded",
-    }
+    assert analysis.to_dict() == analysis_dict
