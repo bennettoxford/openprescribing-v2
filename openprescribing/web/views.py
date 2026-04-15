@@ -24,6 +24,7 @@ from .presenters import (
 
 
 def _build_analysis_context(analysis):
+    build_analysis_url = reverse("build-analysis")
     deciles_api_url = None
     all_orgs_api_url = None
     org = None
@@ -43,6 +44,7 @@ def _build_analysis_context(analysis):
             )
 
         url_parameters = urlencode(analysis.to_params(), safe=",")
+        build_analysis_url = f"{reverse('build-analysis')}?{url_parameters}"
         deciles_api_url = f"{reverse('api_prescribing_deciles')}?{url_parameters}"
         all_orgs_api_url = f"{reverse('api_prescribing_all_orgs')}?{url_parameters}"
 
@@ -101,6 +103,7 @@ def _build_analysis_context(analysis):
         "org": org,
         "orgs": orgs,
         "org_types": Org.OrgType.choices,
+        "build_analysis_url": build_analysis_url,
         "prescribing_deciles_url": deciles_api_url,
         "prescribing_all_orgs_url": all_orgs_api_url,
         "deciles_chart": deciles_chart.to_dict(),
