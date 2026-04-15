@@ -17,9 +17,11 @@ metadata:
   next_review: 2026-02-12
   measure_complexity: low
   radar_exclude: false
+  
 output:
     numerator: items
     denominator: list_size
+    
 queries:
     - numerator:
         bnf_codes:
