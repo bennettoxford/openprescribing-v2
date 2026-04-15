@@ -8,7 +8,7 @@ from openprescribing.web.models import Feedback
 
 
 @pytest.mark.django_db(databases=["data"])
-def test_query(client, sample_data):
+def test_analysis(client, sample_data):
     rsp = client.get("")
     assert rsp.status_code == 200
 
