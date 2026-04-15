@@ -144,6 +144,7 @@ def build_analysis(request):
 
 def measure(request, measure_name):
     analysis_dict = load_measure(measure_name)
+    analysis_dict["org_id"] = request.GET.get("org_id")
     analysis = Analysis.from_dict(analysis_dict)
 
     ctx = _build_analysis_context(analysis)

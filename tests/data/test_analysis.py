@@ -76,7 +76,8 @@ def test_from_dict():
                     }
                 },
             }
-        ]
+        ],
+        "org_id": "PRAC01",
     }
     analysis = Analysis.from_dict(analysis_dict)
     assert analysis.to_params() == {
@@ -84,6 +85,7 @@ def test_from_dict():
         "ntr_product_type": "all",
         "dtr_codes": "01",
         "dtr_product_type": "all",
+        "org_id": "PRAC01",
     }
 
 

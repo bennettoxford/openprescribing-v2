@@ -83,5 +83,5 @@ class Analysis:
         return cls(
             ntr_query=ntr_query,
             dtr_query=dtr_query,
-            org_id=None,
+            org_id=analysis_dict.get("org_id"),
         )
