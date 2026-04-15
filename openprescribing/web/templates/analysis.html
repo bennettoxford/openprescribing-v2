@@ -12,26 +12,6 @@
     <div class="row">
 
         <div class="col-lg-5 {% if measure %} d-none {% endif %}">
-
-            <div class="card">
-                <div class="card-body">
-                    <h1 class="h4">Prescribing query</h1>
-                    <form id="prescribing-query-form">
-                        <h2 class="h5">Numerator</h2>
-                        {% include "./_bnf_query_form_controls.html" with field="ntr" query=analysis.ntr_query %}
-                        <h2 class="h5">Denominator</h2>
-                        {% include "./_bnf_query_form_controls.html" with field="dtr" query=analysis.dtr_query %}
-                        <button
-                            type="submit"
-                            id="prescribing-query-submit"
-                            class="btn btn-primary"
-                            {% if not analysis %}disabled{% endif %}
-                        >
-                            Submit
-                        </button>
-                    </form>
-                </div>
-            </div>
             <div class="card mt-3">
                 <div class="card-body">
                     <h1 class="h4">Highlight organisation</h1>
@@ -250,32 +230,9 @@
         </div>
     </div>
 </div>
-
-<div class="modal" id="bnf-tree-modal" tabindex="-1">
-  <div class="modal-dialog modal-xl modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="bnf-tree-modal-title"></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        {% include "_bnf_tree.html" %}
-      </div>
-      <div class="modal-footer">
-        <div class="me-auto text-muted small">
-          Control-click (command-click on Mac) on an item to include or exclude it.
-        </div>
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Update Query</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-{% include "_bnf_table_modal.html" with include_footer=True %}
 {% endblock %}
 
 {% block extra_js %}
-{{ code_to_name|json_script:"code-to-name" }}
 {{ orgs|json_script:"orgs" }}
 {{ org_types|json_script:"org-types" }}
 {{ prescribing_deciles_url|json_script:"prescribing-deciles-url" }}
@@ -285,5 +242,4 @@
 <script src="https://cdn.jsdelivr.net/npm/vega-lite@6.4.1"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-embed@7.0.2"></script>
 <script type="module" src="{% static 'js/prescribing-chart.js' %}"></script>
-<script type="module" src="{% static 'js/prescribing-query.js' %}"></script>
 {% endblock %}

@@ -6,11 +6,6 @@ const setupOrgSearch = () => {
 
   const orgSearch = document.getElementById("org-search");
   const orgResults = document.getElementById("org-results");
-  const prescribingQueryForm = document.getElementById(
-    "prescribing-query-form",
-  );
-  const prescribingQueryNtrCodesInput =
-    prescribingQueryForm?.querySelector('[name="ntr_codes"]');
 
   createTypeahead({
     input: orgSearch,
@@ -153,10 +148,8 @@ const updateDecilesChart = (
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Only initialise the Typeahead search on pages that use it
-  if (document.getElementById("orgs")) {
-    setupOrgSearch();
-  }
+  setupOrgSearch();
+
   const prescribingDecilesUrl = JSON.parse(
     document.getElementById("prescribing-deciles-url").textContent,
   );

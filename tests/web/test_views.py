@@ -59,6 +59,15 @@ def test_analysis(client, sample_data):
 
 
 @pytest.mark.django_db(databases=["data"])
+def test_analysis_build(client, sample_data):
+    rsp = client.get("/analysis/build/")
+    assert rsp.status_code == 200
+
+    rsp = client.get("/analysis/build/?ntr_codes=1001030U0")
+    assert rsp.status_code == 200
+
+
+@pytest.mark.django_db(databases=["data"])
 def test_bnf_tree(client, bnf_codes):
     rsp = client.get("/bnf/")
     assert rsp.status_code == 200

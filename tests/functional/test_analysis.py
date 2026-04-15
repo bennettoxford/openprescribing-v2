@@ -10,7 +10,7 @@ def test_analysis(live_server, page, sample_data):
     # This is a limited smoke test that checks that codes can be selected from the table
     # (numerator) and the tree (denominator), and that on form submission we're directed
     # to the expected URL.
-    page.goto(live_server.url)
+    page.goto(f"{live_server.url}/analysis/build/")
     page.get_by_role("button", name="Select BNF codes for numerator").click()
     page.get_by_role("textbox", name="Search by name or code").click()
     page.get_by_role("textbox", name="Search by name or code").fill("metho")
@@ -28,10 +28,11 @@ def test_analysis(live_server, page, sample_data):
     )
     page.locator("#bnf-tree-modal").get_by_role("button", name="Update Query").click()
     page.get_by_role("button", name="Submit").click()
+    page.wait_for_load_state("domcontentloaded")
 
     expect(page).to_have_url(
         live_server.url
-        + "/?ntr_codes=1001030U0_AC&ntr_product_type=all&dtr_codes=1001030U0&dtr_product_type=all&chart_type=deciles"
+        + "/?ntr_codes=1001030U0_AC&ntr_product_type=all&dtr_codes=1001030U0&dtr_product_type=all"
     )
 
     # Test org search
@@ -41,9 +42,10 @@ def test_analysis(live_server, page, sample_data):
     page.get_by_role(
         "searchbox", name="Name or code of organisation to highlight"
     ).fill("ICB 1")
+
     page.get_by_role("button", name="ICB 1 ICB01 - ICB").click()
 
     expect(page).to_have_url(
         live_server.url
-        + "/?ntr_codes=1001030U0_AC&ntr_product_type=all&dtr_codes=1001030U0&dtr_product_type=all&chart_type=deciles&org_id=ICB01"
+        + "/?ntr_codes=1001030U0_AC&ntr_product_type=all&dtr_codes=1001030U0&dtr_product_type=all&org_id=ICB01"
     )
