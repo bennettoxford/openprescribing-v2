@@ -10,70 +10,120 @@
 
 <div class="d-none d-lg-block">
     <div class="row">
-
-        <div class="col-lg-5 {% if measure %} d-none {% endif %}">
+        {% if analysis %}
+        <div class="col-lg-5">
+            {% if measure %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h1 class="h3">{{ measure_title }}</h1>
+                    {{ why_it_matters|safe }}
+                    <h4 class="h4">Tags</h4>
+                    <ul>
+                        {% for tag in tags %}
+                        <li>
+                            {{ tag }}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+	    {% endif %}
 
             <div class="card">
                 <div class="card-body">
-                    <h1 class="h4">Prescribing query</h1>
-                    <form id="prescribing-query-form">
-                        <h2 class="h5">Numerator</h2>
-                        {% include "./_bnf_query_form_controls.html" with field="ntr" query=analysis.ntr_query %}
-                        <h2 class="h5">Denominator</h2>
-                        {% include "./_bnf_query_form_controls.html" with field="dtr" query=analysis.dtr_query %}
-                        <input
-                            type="hidden"
-                            id="prescribing-query-chart-type"
-                            name="chart_type"
-                            value="{{ analysis_presentation.chart_type }}"
-                        >
-                        <input
-                            type="hidden"
-                            id="prescribing-query-org-id"
-                            name="org_id"
-                            value="{{ analysis.org_id|default:'' }}"
-                            {% if not analysis.org_id %}disabled{% endif %}
-                        >
-                        <button
-                            type="submit"
-                            id="prescribing-query-submit"
-                            class="btn btn-primary"
-                            {% if not analysis %}disabled{% endif %}
-                        >
-                            Submit
-                        </button>
-                    </form>
-                </div>
-            </div>
-            <div class="card mt-3">
-                <div class="card-body">
-                    <h1 class="h4">Highlight organisation</h1>
-                    <div class="position-relative mb-2">
-                        <label class="form-label" for="org-search">Name or code of organisation to highlight</label>
-                        <input
-                            id="org-search"
-                            type="search"
-                            class="form-control form-control-lg"
-                            {% if org %}value="{{ org.name }}"{% endif %}
-                            autocomplete="off"
-                        />
-                        <ul
-                            class="list-group position-absolute top-100 start-0 end-0 mt-2 shadow d-none z-3"
-                            id="org-results"
-                            style="max-height: 18rem; overflow-y: auto;"
-                        ></ul>
-                    </div>
-                    <div class="form-text">Start typing an organisation name or code to highlight a single organisation.</div>
+                    <section>
+                        <h1 class="h4">Highlight organisation</h1>
+                        <div class="position-relative mb-2">
+                            <label class="form-label" for="org-search">Name or code of organisation to highlight</label>
+                            <input
+                                id="org-search"
+                                type="search"
+                                class="form-control form-control-lg"
+                                {% if org %}value="{{ org.name }}"{% endif %}
+                                autocomplete="off"
+                            />
+                            <ul
+                                class="list-group position-absolute top-100 start-0 end-0 mt-2 shadow d-none z-3"
+                                id="org-results"
+                                style="max-height: 18rem; overflow-y: auto;"
+                            ></ul>
+                        </div>
+                        <div class="form-text">Start typing an organisation name or code to highlight a single organisation.</div>
+                    </section>
+
+		    <hr />
+
+                    <section>
+                         <fieldset>
+                             <h2 class="h5">Show prescribing</h2>
+                             <input
+                                 type="radio"
+                                 id="decile"
+                                 name="chart_type"
+                                 value="deciles"
+                                 {% if analysis_presentation.chart_type == "deciles" %}checked{% endif %}
+                             >
+                             <label for="decile">Deciles
+                                 <a href="#deciles-help" class="link-secondary d-inline-flex align-items-center" data-bs-toggle="modal">
+                                     <svg
+                                         xmlns="http://www.w3.org/2000/svg"
+                                         width="16"
+                                         height="16"
+                                         fill="currentColor"
+                                         class="bi bi-info-circle"
+                                         viewBox="0 0 16 16"
+                                         focusable="false"
+                                     >
+                                         <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
+                                         <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533z" />
+                                         <circle cx="8" cy="4.5" r="1" />
+                                     </svg>
+                                 </a>
+                                 <span id="decile_org_type">
+                                     for selected org type
+                                 </span>
+                             </label>
+                             <br>
+                             <input
+                                 type="radio"
+                                 id="all_orgs_line_chart"
+                                 name="chart_type"
+                                 value="all-orgs-line"
+                                 {% if analysis_presentation.chart_type == "all-orgs-line" %}checked{% endif %}
+                             >
+                             <label for="all_orgs_line_chart">All
+                                 <span id="line_chart_org_types">
+                                     organisations
+                                 </span>
+                                 (line chart)
+                             </label><br>
+                             <input
+                                 type="radio"
+                                 id="all_orgs_dots_chart"
+                                 name="chart_type"
+                                 value="all-orgs-dots"
+                                 {% if analysis_presentation.chart_type == "all-orgs-dots" %}checked{% endif %}
+                             >
+                             <label for="all_orgs_dots_chart">All
+                                 <span id="dots_chart_org_types">
+                                 organisations
+                             </span>
+                             (dots chart)</label><br>
+                         </fieldset>
+                    </section>
+
+		    <hr />
+
+                    <section>
+                        <a class="btn btn-primary" href="{{ build_analysis_url }}">Edit analysis</a>
+                    </section>
                 </div>
             </div>
         </div>
-        {% if measure %}
-        {% include "./_measure_info.html"  %}
-        {% endif %}
+
         <div class="col-lg-7">
             <div class="card h-100">
                 <div class="card-body">
-                    {% if analysis %}
                     <h1 class="h3">Prescribing data</h1>
                     <div id="deciles-chart-outer" style="height: 400px;">
                         <div id="deciles-chart-loading" class="py-3 position-absolute">
@@ -85,62 +135,6 @@
                     <div>
                         <div class="row">
                             <div class="col-12">
-                                <fieldset>
-                                    <h2 class="h5">Show prescribing</h2>
-                                    <input
-                                        type="radio"
-                                        id="decile"
-                                        name="chart_type"
-                                        value="deciles"
-                                        {% if analysis_presentation.chart_type == "deciles" %}checked{% endif %}
-                                    >
-                                    <label for="decile">Deciles
-                                        <a href="#deciles-help" class="link-secondary d-inline-flex align-items-center" data-bs-toggle="modal">
-                                            <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width="16"
-                                                height="16"
-                                                fill="currentColor"
-                                                class="bi bi-info-circle"
-                                                viewBox="0 0 16 16"
-                                                focusable="false"
-                                            >
-                                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16" />
-                                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533z" />
-                                                <circle cx="8" cy="4.5" r="1" />
-                                            </svg>
-                                        </a>
-                                        <span id="decile_org_type">
-                                            for selected org type
-                                        </span>
-                                    </label>
-                                    <br>
-                                    <input
-                                        type="radio"
-                                        id="all_orgs_line_chart"
-                                        name="chart_type"
-                                        value="all-orgs-line"
-                                        {% if analysis_presentation.chart_type == "all-orgs-line" %}checked{% endif %}
-                                    >
-                                    <label for="all_orgs_line_chart">All
-                                        <span id="line_chart_org_types">
-                                            organisations
-                                        </span>
-                                        (line chart)
-                                    </label><br>
-                                    <input
-                                        type="radio"
-                                        id="all_orgs_dots_chart"
-                                        name="chart_type"
-                                        value="all-orgs-dots"
-                                        {% if analysis_presentation.chart_type == "all-orgs-dots" %}checked{% endif %}
-                                    >
-                                    <label for="all_orgs_dots_chart">All
-                                        <span id="dots_chart_org_types">
-                                        organisations
-                                    </span>
-                                    (dots chart)</label><br>
-                                </fieldset>
                             </div>
                         </div>
                         <div class="row mt-3">
@@ -181,16 +175,20 @@
                                 </div>
                             </div>
                         </div>
+                        {% endif %}
                     </div>
-                    {% endif %}
-                    {% else %}
-                    <div class="text-center text-muted py-5">
-                        <p>Search for BNF codes to see prescribing data.</p>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
+        {% else %}
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="text-center text-muted py-5">
+                    <a class="btn btn-primary" href="{% url 'build-analysis' %}">Start analysing prescribing data</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 
@@ -263,32 +261,9 @@
         </div>
     </div>
 </div>
-
-<div class="modal" id="bnf-tree-modal" tabindex="-1">
-  <div class="modal-dialog modal-xl modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="bnf-tree-modal-title"></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        {% include "_bnf_tree.html" %}
-      </div>
-      <div class="modal-footer">
-        <div class="me-auto text-muted small">
-          Control-click (command-click on Mac) on an item to include or exclude it.
-        </div>
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Update Query</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-{% include "_bnf_table_modal.html" with include_footer=True %}
 {% endblock %}
 
 {% block extra_js %}
-{{ code_to_name|json_script:"code-to-name" }}
 {{ orgs|json_script:"orgs" }}
 {{ org_types|json_script:"org-types" }}
 {{ prescribing_deciles_url|json_script:"prescribing-deciles-url" }}
@@ -298,5 +273,4 @@
 <script src="https://cdn.jsdelivr.net/npm/vega-lite@6.4.1"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-embed@7.0.2"></script>
 <script type="module" src="{% static 'js/prescribing-chart.js' %}"></script>
-<script type="module" src="{% static 'js/prescribing-query.js' %}"></script>
 {% endblock %}

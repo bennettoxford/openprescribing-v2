@@ -24,6 +24,7 @@ from .presenters import (
 
 
 def _build_analysis_context(analysis):
+    build_analysis_url = reverse("build-analysis")
     deciles_api_url = None
     all_orgs_api_url = None
     org = None
@@ -43,12 +44,9 @@ def _build_analysis_context(analysis):
             )
 
         url_parameters = urlencode(analysis.to_params(), safe=",")
+        build_analysis_url = f"{reverse('build-analysis')}?{url_parameters}"
         deciles_api_url = f"{reverse('api_prescribing_deciles')}?{url_parameters}"
         all_orgs_api_url = f"{reverse('api_prescribing_all_orgs')}?{url_parameters}"
-
-    codes = BNFCode.objects.exclude(code__startswith="2")
-    tree = make_bnf_tree(codes)
-    code_to_name = make_code_to_name(codes)
 
     orgs = make_orgs()
 
@@ -101,14 +99,13 @@ def _build_analysis_context(analysis):
 
     ctx = {
         "analysis": analysis,
-        "code_to_name": code_to_name,
         "ntr_dtr_intersection_table": ntr_dtr_intersection_table,
         "org": org,
         "orgs": orgs,
         "org_types": Org.OrgType.choices,
+        "build_analysis_url": build_analysis_url,
         "prescribing_deciles_url": deciles_api_url,
         "prescribing_all_orgs_url": all_orgs_api_url,
-        "tree": tree,
         "deciles_chart": deciles_chart.to_dict(),
     }
 
@@ -130,8 +127,27 @@ def analysis(request):
     return render(request, "analysis.html", ctx)
 
 
+def build_analysis(request):
+    if "ntr_codes" in request.GET:
+        analysis = Analysis.from_params(request.GET)
+    else:
+        analysis = None
+
+    codes = BNFCode.objects.exclude(code__startswith="2")
+    tree = make_bnf_tree(codes)
+    code_to_name = make_code_to_name(codes)
+
+    ctx = {
+        "analysis": analysis,
+        "code_to_name": code_to_name,
+        "tree": tree,
+    }
+    return render(request, "build_analysis.html", ctx)
+
+
 def measure(request, measure_name):
     analysis_dict = load_measure(measure_name)
+    analysis_dict["org_id"] = request.GET.get("org_id")
     analysis = Analysis.from_dict(analysis_dict)
 
     ctx = _build_analysis_context(analysis)

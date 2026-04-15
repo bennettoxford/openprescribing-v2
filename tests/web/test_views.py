@@ -8,7 +8,7 @@ from openprescribing.web.models import Feedback
 
 
 @pytest.mark.django_db(databases=["data"])
-def test_query(client, sample_data):
+def test_analysis(client, sample_data):
     rsp = client.get("")
     assert rsp.status_code == 200
 
@@ -19,10 +19,6 @@ def test_query(client, sample_data):
         == "/api/prescribing-deciles/?ntr_codes=1001030U0&ntr_product_type=all"
     )
     assert rsp.context["analysis_presentation"].chart_type == ChartType.DECILES
-    assert re.search(
-        r'id="prescribing-query-org-id"[^>]*name="org_id"[^>]*disabled',
-        rsp.content.decode(),
-    )
 
     rsp = client.get("?ntr_codes=1001030U0&dtr_codes=1001")
     assert rsp.status_code == 200
@@ -51,10 +47,6 @@ def test_query(client, sample_data):
         rsp.context["prescribing_deciles_url"]
         == "/api/prescribing-deciles/?ntr_codes=1001030U0AA,-1001030U0AAABAB&ntr_product_type=all&org_id=PRA00"
     )
-    assert re.search(
-        r'id="prescribing-query-org-id"[^>]*name="org_id"[^>]*value="PRA00"',
-        rsp.content.decode(),
-    )
 
     rsp = client.get("?ntr_codes=1001030U0&chart_type=all-orgs-line")
     assert rsp.status_code == 200
@@ -64,6 +56,15 @@ def test_query(client, sample_data):
     rsp = client.get("?ntr_codes=1001030U0&chart_type=invalid")
     assert rsp.status_code == 200
     assert rsp.context["analysis_presentation"].chart_type == ChartType.DECILES
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_analysis_build(client, sample_data):
+    rsp = client.get("/analysis/build/")
+    assert rsp.status_code == 200
+
+    rsp = client.get("/analysis/build/?ntr_codes=1001030U0")
+    assert rsp.status_code == 200
 
 
 @pytest.mark.django_db(databases=["data"])
