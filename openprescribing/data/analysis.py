@@ -79,3 +79,14 @@ class Analysis:
             dtr_query=dtr_query,
             org_id=analysis_dict.get("org_id"),
         )
+
+    def to_dict(self):
+        analysis_dict = {"queries": []}
+
+        analysis_dict["queries"].append({"numerator": self.ntr_query.to_dict()})
+        if not isinstance(self.dtr_query, ListSizeQuery):
+            analysis_dict["queries"][0]["denominator"] = self.dtr_query.to_dict()
+        if self.org_id:
+            analysis_dict["org_id"] = self.org_id
+
+        return analysis_dict
