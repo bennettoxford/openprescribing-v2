@@ -35,14 +35,15 @@ class BNFQuery:
 
     @classmethod
     def from_dict(cls, query_dict):
+        bnf_codes_dict = query_dict["bnf_codes"]
         included_terms = tuple(
-            [Term.create(rt, False) for rt in query_dict["included"]]
+            [Term.create(rt, False) for rt in bnf_codes_dict["included"]]
         )
         terms = included_terms
 
-        if "excluded" in query_dict:
+        if "excluded" in bnf_codes_dict:
             excluded_terms = tuple(
-                [Term.create(rt, True) for rt in query_dict["excluded"]]
+                [Term.create(rt, True) for rt in bnf_codes_dict["excluded"]]
             )
             terms += excluded_terms
 
