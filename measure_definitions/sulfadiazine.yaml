@@ -4,8 +4,7 @@ metadata:
   title: Sulfadiazine items per 1000 patients
     - safety
     - standard
-  why_it_matters: There have been "[case reports](https://academic.oup.com/rheumatology/article-abstract/52/3/578/1774287?redirectedFrom=fulltext&login=false) of selection errors between sulfadiazine and sulfasalazine - two look-alike sound-alike (LASA) drugs. Sulfasalazine is most commonly prescribed in primary care to manage rheumatoid arthritis or inflammatory bowel disease, whereas sulfadiazine is a specialist antibacterial drug not usually prescribed in primary care. Prescribing the wrong drug can lead to ineffective treatment and potential harm, along with unnecessary costs, especially given the high cost of sulfadiazine.
-Any prescribing on this measure could prompt investigation to ascertain if sulfadiazine was prescribed in error.
+  why_it_matters: There have been "[case reports](https://academic.oup.com/rheumatology/article-abstract/52/3/578/1774287?redirectedFrom=fulltext&login=false) of selection errors between sulfadiazine and sulfasalazine - two look-alike sound-alike (LASA) drugs. Sulfasalazine is most commonly prescribed in primary care to manage rheumatoid arthritis or inflammatory bowel disease, whereas sulfadiazine is a specialist antibacterial drug not usually prescribed in primary care. Prescribing the wrong drug can lead to ineffective treatment and potential harm, along with unnecessary costs, especially given the high cost of sulfadiazine. Any prescribing on this measure could prompt investigation to ascertain if sulfadiazine was prescribed in error.
   description: Number of items for sulfadiazine per 1000 patients
   numerator_short: Sulfadiazine items
   denominator_short: 1000 patients
