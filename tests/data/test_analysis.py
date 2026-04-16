@@ -1,3 +1,5 @@
+import pytest
+
 from openprescribing.data.analysis import Analysis
 from openprescribing.data.bnf_query import BNFQuery, ProductType
 from openprescribing.data.list_size_query import ListSizeQuery
@@ -60,6 +62,7 @@ def test_to_params_dtr_list_size():
     }
 
 
+@pytest.mark.django_db(databases=["data"])
 def test_from_dict():
     analysis_dict = {
         "queries": [
@@ -83,6 +86,7 @@ def test_from_dict():
     assert analysis.to_dict() == analysis_dict
 
 
+@pytest.mark.django_db(databases=["data"])
 def test_from_dict_branded():
     analysis_dict = {
         "queries": [
@@ -107,6 +111,7 @@ def test_from_dict_branded():
     assert analysis.to_dict() == analysis_dict
 
 
+@pytest.mark.django_db(databases=["data"])
 def test_from_dict_numerator_only():
     analysis_dict = {
         "queries": [

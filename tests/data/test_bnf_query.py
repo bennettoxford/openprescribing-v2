@@ -107,6 +107,7 @@ def test_describe_search_for_all_product_types(bnf_codes):
                 "description": "Methotrexate 2.5mg tablets (branded and generic)",
             }
         ],
+        "form_routes": [],
     }
 
 
@@ -127,6 +128,7 @@ def test_describe_search_for_generic_products(bnf_codes):
                 "description": "Methotrexate 2.5mg tablets",
             }
         ],
+        "form_routes": [],
     }
 
 
@@ -166,6 +168,7 @@ def test_to_params_with_form_route_ids():
     }
 
 
+@pytest.mark.django_db(databases=["data"])
 def test_from_dict():
     test_dict = {
         "bnf_codes": {
@@ -176,6 +179,7 @@ def test_from_dict():
     assert query.to_dict() == test_dict
 
 
+@pytest.mark.django_db(databases=["data"])
 def test_from_dict_generic():
     test_dict = {
         "bnf_codes": {
@@ -183,6 +187,24 @@ def test_from_dict_generic():
             "excluded": ["0101"],
         },
         "product_type": "generic",
+    }
+    query = BNFQuery.from_dict(test_dict)
+    assert query.to_dict() == test_dict
+
+
+@pytest.mark.django_db(databases=["data"], transaction=True)
+def test_from_dict_form_route(rxdb, settings, tmp_path):
+    rxdb.ingest([{}])
+    ingest_dmd_data(settings, tmp_path)
+    ingest_dmd_bnf_map_data(settings, tmp_path)
+    # The following appears in the dm+d -> BNF data/mapping data
+    BNFCode(code="0203020C0AAAAAA", level=BNFCode.Level.PRESENTATION).save()
+
+    test_dict = {
+        "bnf_codes": {
+            "included": ["0203020C0AAAAAA"],
+        },
+        "form_routes": ["solutioninjection.intravenous"],
     }
     query = BNFQuery.from_dict(test_dict)
     assert query.to_dict() == test_dict
