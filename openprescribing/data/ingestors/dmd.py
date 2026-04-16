@@ -24,13 +24,17 @@ def ingest(force=False):
     log.info(f"Preparing to ingest files: {latest_dir.name}")
 
     conn = duckdb.connect()
-
     with transaction.atomic(using="data"):
+        # For each model, we delete all existing instances, and (re)create new ones
+        # from the data in the parquet files.  We delete all instances first, because if
+        # we delete and create each in turn, objects that have just been created might
+        # be deleted again via cascading model deletion.
+
         for model in get_dmd_models():
-            # For each model, we delete all existing instances, and (re)create new ones
-            # from the data in the parquet files.
-            log.info(f"Ingesting {model.__name__}")
             model.objects.all().delete()
+
+        for model in get_dmd_models():
+            log.info(f"Ingesting {model.__name__}")
             table_name = model._meta.db_table
             latest_file = latest_dir / f"{table_name}.parquet"
             if not latest_file.exists():

@@ -28,8 +28,15 @@ def test_dmd_ingest(settings, tmp_path):
     )
     assert ampp.reimbinfo.dnd.descr == "Discount not deducted - automatic"
 
-    # Attempting to re-ingest the same named file should do nothing. As a simple check for
-    # this we delete tmp_dir and re-ingest. If the code does attempt to load it then this
-    # will fail loudly.
+    # This is a regression test to ensure that we handle object deletion correctly.  We
+    # delete all objects before (re)creating new ones.  Previously we did this
+    # incorrectly, and cascading model deletion led to the deletion of objects that had
+    # only just been created.
+    dmd.ingest(force=True)
+    assert VMP.objects.filter(pk=28946311000001106).exists()
+
+    # Attempting to re-ingest the same named file without forcing should do nothing. As
+    # a simple check for this we delete tmp_dir and re-ingest. If the code does attempt
+    # to load it then this will fail loudly.
     shutil.rmtree(tmp_path / "tmp")
     dmd.ingest()
