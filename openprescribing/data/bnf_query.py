@@ -7,6 +7,7 @@ from functools import reduce
 from django.db.models import Q
 
 from openprescribing.data import rxdb
+from openprescribing.data.models.dmd import OntFormRoute
 
 from .models import BNFCode
 
@@ -153,6 +154,9 @@ class BNFQuery:
             ],
             "excludes": [
                 t.describe(self.product_type) for t in self.terms if t.negated
+            ],
+            "form_routes": [
+                OntFormRoute.objects.get(cd=fr).descr for fr in self.form_route_ids
             ],
         }
 
