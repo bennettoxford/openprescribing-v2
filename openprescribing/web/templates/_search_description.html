@@ -21,5 +21,12 @@
         </ul>
     </li>
     {% endif %}
+    {% if description.form_routes %}
+    <li>Form/Routes
+        {% for form_route in description.form_routes %}
+        <ul>{{ form_route }}</ul>
+        {% endfor %}
+    </li>
+    {% endif %}
 </ul>
 {% endif %}
