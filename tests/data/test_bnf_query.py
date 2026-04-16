@@ -1,6 +1,8 @@
 import pytest
 
 from openprescribing.data.bnf_query import BNFQuery, ProductType
+from openprescribing.data.models import BNFCode
+from tests.utils.ingest_utils import ingest_dmd_bnf_map_data, ingest_dmd_data
 
 
 @pytest.mark.django_db(databases=["data"])
@@ -69,6 +71,25 @@ def test_get_matching_presentation_codes_for_branded_with_strength_and_formulati
     ]
 
 
+@pytest.mark.django_db(databases=["data"], transaction=True)
+def test_get_matching_presentation_codes_for_form_route_ids(rxdb, settings, tmp_path):
+    rxdb.ingest([{}])
+    ingest_dmd_data(settings, tmp_path)
+    ingest_dmd_bnf_map_data(settings, tmp_path)
+    # The following appears in the dm+d -> BNF data/mapping data
+    BNFCode(code="0203020C0AAAAAA", level=BNFCode.Level.PRESENTATION).save()
+    # The following doesn't appear in the dm+d -> BNF data/mapping data
+    BNFCode(code="1001030U0BDABAC", level=BNFCode.Level.PRESENTATION).save()
+    query = BNFQuery.from_params(
+        "ntr",
+        {
+            "ntr_codes": "0203020C0AAAAAA",
+            "ntr_form_route_ids": "0024",
+        },
+    )
+    assert query.get_matching_presentation_codes() == ["0203020C0AAAAAA"]
+
+
 @pytest.mark.django_db(databases=["data"])
 def test_describe_search_for_all_product_types(bnf_codes):
     query = BNFQuery.build(["1001030U0", "-1001030U0_AB"], ProductType.ALL)
@@ -116,11 +137,32 @@ def test_from_params():
     assert query == BNFQuery.build(["01", "-0101"], ProductType.GENERIC)
 
 
+def test_from_params_with_form_route_ids_key_not_val():
+    query = BNFQuery.from_params(
+        "ntr",
+        {
+            "ntr_codes": "01",
+            "ntr_product_type": "generic",
+            "ntr_form_route_ids": "",
+        },
+    )
+    assert query.form_route_ids == ()
+
+
 def test_to_params():
     query = BNFQuery.build(["01", "-0101"], ProductType.GENERIC)
     assert query.to_params("ntr") == {
         "ntr_codes": "01,-0101",
         "ntr_product_type": "generic",
+    }
+
+
+def test_to_params_with_form_route_ids():
+    query = BNFQuery.build(["01", "-0101"], ProductType.GENERIC, ("1", "6"))
+    assert query.to_params("ntr") == {
+        "ntr_codes": "01,-0101",
+        "ntr_product_type": "generic",
+        "ntr_form_route_ids": "1,6",
     }
 
 

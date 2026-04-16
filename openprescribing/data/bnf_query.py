@@ -6,7 +6,21 @@ from functools import reduce
 
 from django.db.models import Q
 
+from openprescribing.data import rxdb
+
 from .models import BNFCode
+
+
+def _get_bnf_codes_for_form_route_ids(form_route_ids):
+    with rxdb.get_cursor() as cursor:
+        results = cursor.execute(
+            f"""
+            SELECT bnf_code
+            FROM medications
+            WHERE list_has_any(form_route_ids, [{", ".join(form_route_ids)}])
+            """
+        )
+        return [x[0] for x in results.fetchall()]
 
 
 @dataclass(frozen=True)
@@ -15,14 +29,16 @@ class BNFQuery:
 
     terms: tuple[Term]
     product_type: ProductType
+    form_route_ids: tuple[str, ...] = ()
 
     PRODUCT_TYPE_DEFAULT = "all"
 
     @classmethod
-    def build(cls, raw_terms, product_type):
+    def build(cls, raw_terms, product_type, form_route_ids=()):
         return cls(
             tuple([Term.from_param_value(rt) for rt in raw_terms]),
             ProductType(product_type),
+            tuple(form_route_ids),
         )
 
     @classmethod
@@ -31,7 +47,17 @@ class BNFQuery:
 
         raw_terms = tuple(params[f"{field}_codes"].split(","))
         product_type = params.get(f"{field}_product_type", cls.PRODUCT_TYPE_DEFAULT)
-        return cls.build(raw_terms=raw_terms, product_type=product_type)
+
+        if ids := params.get(f"{field}_form_route_ids"):
+            form_route_ids = tuple(ids.split(","))
+        else:
+            form_route_ids = ()
+
+        return cls.build(
+            raw_terms=raw_terms,
+            product_type=product_type,
+            form_route_ids=form_route_ids,
+        )
 
     @classmethod
     def from_dict(cls, query_dict):
@@ -97,13 +123,18 @@ class BNFQuery:
         includes = [t.build_q() for t in self.terms if not t.negated]
         excludes = [t.build_q() for t in self.terms if t.negated]
 
-        codes = list(
+        codes = (
             BNFCode.objects.filter(level=BNFCode.Level.PRESENTATION)
             .filter(reduce(Q.__or__, includes, Q()))
             .exclude(reduce(Q.__or__, excludes, Q()))
-            .order_by("code")
-            .values_list("code", flat=True)
         )
+
+        if self.form_route_ids:
+            codes = codes.filter(
+                code__in=_get_bnf_codes_for_form_route_ids(self.form_route_ids)
+            )
+
+        codes = list(codes.order_by("code").values_list("code", flat=True))
 
         if self.product_type == ProductType.ALL:
             return codes
@@ -128,10 +159,14 @@ class BNFQuery:
     def to_params(self, field):
         """Serialize to URL query parameters for a field."""
 
-        return {
+        params = {
             f"{field}_codes": self.to_codes(),
             f"{field}_product_type": self.product_type.value,
         }
+        if self.form_route_ids:
+            params[f"{field}_form_route_ids"] = ",".join(self.form_route_ids)
+
+        return params
 
     def to_codes(self):
         return ",".join(t.to_param_value() for t in self.terms)
