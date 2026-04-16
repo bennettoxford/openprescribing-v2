@@ -99,6 +99,21 @@ def test_get_practice_date_matrix_for_bnf_query(rxdb, sample_data):
 
 
 @pytest.mark.django_db(databases=["data"])
+def test_get_practice_date_matrix_for_bnf_query_no_matching_codes(rxdb, sample_data):
+    invalid_bnf_code = "999999999"
+    query = BNFQuery.build([invalid_bnf_code], "all")
+
+    with rxdb.get_cursor() as cursor:
+        pdm = get_practice_date_matrix(cursor, query, date_count=2)
+
+    expected_pdm = get_practice_date_matrix_alternative(
+        sample_data, query, date_count=2
+    )
+
+    assert_approx_equal(pdm, expected_pdm)
+
+
+@pytest.mark.django_db(databases=["data"])
 def test_get_practice_date_matrix_for_list_sizes(rxdb, sample_data):
     query = ListSizeQuery()
 
