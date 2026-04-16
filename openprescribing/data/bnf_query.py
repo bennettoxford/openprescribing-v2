@@ -76,9 +76,15 @@ class BNFQuery:
 
         product_type = query_dict.get("product_type", cls.PRODUCT_TYPE_DEFAULT)
 
+        form_routes = query_dict.get("form_routes", [])
+        form_route_ids = [
+            str(form_route.cd)
+            for form_route in OntFormRoute.objects.filter(descr__in=form_routes)
+        ]
         return cls(
             terms,
             ProductType(product_type),
+            form_route_ids=form_route_ids,
         )
 
     def to_dict(self):
@@ -91,6 +97,13 @@ class BNFQuery:
             bnf_query_dict["bnf_codes"]["excluded"] = excluded_codes
         if not self.product_type == ProductType.ALL:
             bnf_query_dict["product_type"] = self.product_type.value
+        if self.form_route_ids:
+            bnf_query_dict["form_routes"] = [
+                str(form_route.descr)
+                for form_route in OntFormRoute.objects.filter(
+                    cd__in=self.form_route_ids
+                )
+            ]
 
         return bnf_query_dict
 
