@@ -299,3 +299,15 @@ def test_get_form_route_ids_for_forms_and_routes(rxdb, settings, tmp_path):
     expected_route_ids = ["1"]
 
     assert route_ids == expected_route_ids
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_from_dict_ingredient():
+    test_dict = {
+        "ingredient_ids": ["53034005"],
+    }
+
+    query = BNFQuery.from_dict(test_dict)
+    computed_dict = query.to_dict()
+
+    assert computed_dict["ingredient_ids"] == ["53034005"]

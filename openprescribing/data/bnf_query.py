@@ -131,10 +131,13 @@ class BNFQuery:
             query_dict.get("routes", []),
         )
 
+        ingredient_ids = tuple(str(i) for i in query_dict.get("ingredient_ids", []))
+
         return cls(
             terms,
             ProductType(product_type),
             form_route_ids=form_route_ids,
+            ingredient_ids=ingredient_ids,
         )
 
     def to_dict(self):
@@ -154,6 +157,8 @@ class BNFQuery:
                     cd__in=self.form_route_ids
                 )
             ]
+        if self.ingredient_ids:
+            bnf_query_dict["ingredient_ids"] = list(self.ingredient_ids)
 
         return bnf_query_dict
 
