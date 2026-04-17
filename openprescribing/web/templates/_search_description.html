@@ -23,6 +23,15 @@
         </ul>
     </li>
     {% endif %}
+    {% if description.ingredient_ids %}
+    <li>Ingredients
+        <ul>
+            {% for item in description.ingredient_ids %}
+            <li>{{ item.description }} <code>{{ item.code }}</code></li>
+            {% endfor %}
+        </ul>
+    </li>
+    {% endif %}
     {% if description.form_routes %}
     <p>
         <button

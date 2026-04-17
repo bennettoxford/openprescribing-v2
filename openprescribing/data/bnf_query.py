@@ -8,7 +8,7 @@ from operator import and_
 from django.db.models import Q
 
 from openprescribing.data import rxdb
-from openprescribing.data.models.dmd import OntFormRoute
+from openprescribing.data.models.dmd import Ing, OntFormRoute
 
 from .models import BNFCode
 
@@ -230,6 +230,13 @@ class BNFQuery:
             ],
             "form_routes": [
                 OntFormRoute.objects.get(cd=fr).descr for fr in self.form_route_ids
+            ],
+            "ingredient_ids": [
+                {
+                    "code": ingredient_id,
+                    "description": Ing.objects.get(isid=ingredient_id).nm,
+                }
+                for ingredient_id in self.ingredient_ids
             ],
         }
 

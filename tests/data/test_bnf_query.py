@@ -148,6 +148,7 @@ def test_describe_search_for_all_product_types(bnf_codes):
             }
         ],
         "form_routes": [],
+        "ingredient_ids": [],
     }
 
 
@@ -169,6 +170,27 @@ def test_describe_search_for_generic_products(bnf_codes):
             }
         ],
         "form_routes": [],
+        "ingredient_ids": [],
+    }
+
+
+@pytest.mark.django_db(databases=["data"], transaction=True)
+def test_describe_search_for_ingredients(rxdb, settings, tmp_path):
+    rxdb.ingest([{}])
+    ingest_dmd_data(settings, tmp_path)
+    ingest_dmd_bnf_map_data(settings, tmp_path)
+    query = BNFQuery.build([], ProductType.ALL, ingredient_ids=["53034005"])
+    assert query.describe() == {
+        "product_type": ProductType.ALL,
+        "includes": [],
+        "excludes": [],
+        "form_routes": [],
+        "ingredient_ids": [
+            {
+                "code": "53034005",
+                "description": "Coal tar",
+            }
+        ],
     }
 
 
