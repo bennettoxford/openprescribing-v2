@@ -119,6 +119,32 @@ def test_metadata_dmd(client, settings, tmp_path):
     ]
 
 
+@pytest.mark.django_db(databases=["data"])
+def test_metadata_bnf(client, bnf_codes):
+    rsp = client.get("/api/metadata/bnf/")
+    payload = rsp.json()
+    assert {
+        "code": "10",
+        "level": 1,
+        "name": "Musculoskeletal and Joint Diseases",
+    } in payload["bnf"]
+    assert {
+        "code": "1001030U0",
+        "level": 5,
+        "name": "Methotrexate",
+    } in payload["bnf"]
+    assert {
+        "code": "1001030U0_AB",
+        "level": 6,
+        "name": "Methotrexate 2.5mg tablets (branded and generic)",
+    } in payload["bnf"]
+    assert {
+        "code": "1001030U0BDAAAB",
+        "level": 7,
+        "name": "Maxtrex 2.5mg tablets",
+    } in payload["bnf"]
+
+
 def test_nans_to_nones():
     records = [{"k1": 1.0, "k2": "aaa"}, {"k1": float("NaN"), "k2": "bbb"}]
     api.nans_to_nones(records)

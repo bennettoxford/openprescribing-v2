@@ -4,7 +4,7 @@ from django.http import JsonResponse as DjangoJsonResponse
 
 from openprescribing.data import rxdb
 from openprescribing.data.analysis import Analysis
-from openprescribing.data.models import AMP, VMP, VTM, Ing, OntFormRoute, Org
+from openprescribing.data.models import AMP, VMP, VTM, BNFCode, Ing, OntFormRoute, Org
 from openprescribing.data.queries import get_org_date_ratio_matrix
 
 
@@ -125,6 +125,38 @@ def metadata_dmd(request):
         "ont_form_route": OntFormRoute.objects.api_values(),
     }
     return JsonResponse(payload)
+
+
+def metadata_bnf(request):
+    """Return details of BNF objects that will be used to query and display
+    medications.
+
+    In order to handle strength and formulation equivalents, we replace the records for
+    level 6 objects (ie BNF products) with records for strength and formulation
+    equivalents.
+
+    Chapters 20 to 23 (devices rather than medicines) have a slightly different code
+    structure, and so will need to be handled slightly differently. k
+    """
+
+    base_queryset = BNFCode.objects.exclude(code__startswith="2").order_by(
+        "level", "code"
+    )
+    strength_and_formulation_records = [
+        {
+            "code": code.strength_and_formulation_code,
+            "level": 6,
+            "name": code.strength_and_formulation_name,
+        }
+        for code in base_queryset.filter(level=BNFCode.Level.PRESENTATION)
+        if code.is_generic()
+    ]
+    records = (
+        list(base_queryset.filter(level__lte=BNFCode.Level.CHEMICAL_SUBSTANCE).values())
+        + strength_and_formulation_records
+        + list(base_queryset.filter(level=BNFCode.Level.PRESENTATION).values())
+    )
+    return JsonResponse({"bnf": records})
 
 
 class JsonResponse(DjangoJsonResponse):
