@@ -94,6 +94,42 @@ def test_get_matching_presentation_codes_for_form_route_ids(rxdb, settings, tmp_
     assert query.get_matching_presentation_codes() == ["0203020C0AAAAAA"]
 
 
+@pytest.mark.django_db(databases=["data"], transaction=True)
+def test_get_matching_presentation_codes_for_ingredient_ids(rxdb, settings, tmp_path):
+    rxdb.ingest([{}])
+    ingest_dmd_data(settings, tmp_path)
+    ingest_dmd_bnf_map_data(settings, tmp_path)
+    # The following appears in the dm+d -> BNF data/mapping data
+    BNFCode(code="1305020C0AAFVFV", level=BNFCode.Level.PRESENTATION).save()
+    query = BNFQuery.from_params(
+        "ntr",
+        {
+            "ntr_codes": "1305020C0AAFVFV",
+            "ntr_ingredient_ids": "53034005",
+        },
+    )
+    assert query.get_matching_presentation_codes() == ["1305020C0AAFVFV"]
+
+
+@pytest.mark.django_db(databases=["data"], transaction=True)
+def test_get_matching_presentation_codes_for_ingredient_ids_no_match(
+    rxdb, settings, tmp_path
+):
+    rxdb.ingest([{}])
+    ingest_dmd_data(settings, tmp_path)
+    ingest_dmd_bnf_map_data(settings, tmp_path)
+    # The following appears in the dm+d -> BNF data/mapping data
+    BNFCode(code="1305020C0AAFVFV", level=BNFCode.Level.PRESENTATION).save()
+    query = BNFQuery.from_params(
+        "ntr",
+        {
+            "ntr_codes": "1305020C0AAFVFV",
+            "ntr_ingredient_ids": "999",
+        },
+    )
+    assert query.get_matching_presentation_codes() == []
+
+
 @pytest.mark.django_db(databases=["data"])
 def test_describe_search_for_all_product_types(bnf_codes):
     query = BNFQuery.build(["1001030U0", "-1001030U0_AB"], ProductType.ALL)
@@ -169,6 +205,15 @@ def test_to_params_with_form_route_ids():
         "ntr_codes": "01,-0101",
         "ntr_product_type": "generic",
         "ntr_form_route_ids": "1,6",
+    }
+
+
+def test_to_params_with_ingredient_ids():
+    query = BNFQuery.build(["01", "-0101"], ProductType.GENERIC, ingredient_ids=("1"))
+    assert query.to_params("ntr") == {
+        "ntr_codes": "01,-0101",
+        "ntr_product_type": "generic",
+        "ntr_ingredient_ids": "1",
     }
 
 
