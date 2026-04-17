@@ -1,6 +1,7 @@
 import pytest
 
 from openprescribing.web import api
+from tests.utils.ingest_utils import ingest_dmd_bnf_map_data, ingest_dmd_data
 
 
 @pytest.mark.django_db(databases=["data"])
@@ -56,6 +57,38 @@ def test_prescribing_deciles_with_denominator(client, sample_data):
     assert rsp.status_code == 200
     assert payload["deciles"][-1]["value"] == pytest.approx(27.14, 0.001)
     assert payload["org"] == []
+
+
+@pytest.mark.django_db(databases=["data"], transaction=True)
+def test_metadata_medications(client, rxdb, settings, tmp_path):
+    rxdb.ingest([{"bnf_code": "1106000X0AAA4A4"}])
+    ingest_dmd_data(settings, tmp_path)
+    ingest_dmd_bnf_map_data(settings, tmp_path)
+    rsp = client.get("/api/metadata/medications/")
+    payload = rsp.json()
+
+    assert {
+        "id": 9393711000001102,
+        "bnf_code": "1106000X0AAA4A4",
+        "name": "Pilocarpine hydrochloride 6% eye drops preservative free (Special Order)",
+        "is_amp": True,
+        "vmp_id": 36016311000001102,
+        "vtm_id": 90356005,
+        "invalid": False,
+        "form_route_ids": [173],
+        "ingredient_ids": [387035001],
+    } in payload["medications"]
+    assert {
+        "id": 36016311000001102,
+        "bnf_code": "1106000X0AAA4A4",
+        "name": "Pilocarpine hydrochloride 6% eye drops preservative free",
+        "is_amp": False,
+        "vmp_id": 36016311000001102,
+        "vtm_id": 90356005,
+        "invalid": False,
+        "form_route_ids": [173],
+        "ingredient_ids": [387035001],
+    } in payload["medications"]
 
 
 def test_nans_to_nones():

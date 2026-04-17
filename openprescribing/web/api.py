@@ -80,6 +80,39 @@ def prescribing_deciles(request):
     )
 
 
+def metadata_medications(request):
+    """Return details of all medications that have been prescribed.
+
+    Include VMPs for any prescribed AMPs, even if the VMP itself has not been
+    prescribed.
+    """
+    with rxdb.get_cursor() as cursor:
+        medications = (
+            cursor.sql(
+                """
+                SELECT * FROM medications
+                WHERE bnf_code IN (
+                    SELECT bnf_code FROM presentation
+                )
+                OR (
+                    NOT is_amp
+                    AND id IN (
+                        SELECT DISTINCT vmp_id
+                        FROM medications
+                        WHERE is_amp
+                        AND bnf_code IN (
+                            SELECT bnf_code FROM presentation
+                        )
+                    )
+                )
+                """
+            )
+            .to_arrow_table()
+            .to_pylist()
+        )
+    return JsonResponse({"medications": medications})
+
+
 class JsonResponse(DjangoJsonResponse):
     def __init__(self, *args, **kwargs):
         kwargs["json_dumps_params"] = {"allow_nan": False}
