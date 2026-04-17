@@ -118,11 +118,11 @@ def metadata_dmd(request):
     medications."""
 
     payload = {
-        "vtm": list(VTM.objects.values("vtmid", "nm")),
-        "vmp": list(VMP.objects.values("vpid", "nm")),
-        "amp": list(AMP.objects.values("apid", "descr")),
-        "ingredient": list(Ing.objects.values("isid", "nm")),
-        "ont_form_route": list(OntFormRoute.objects.values("cd", "descr")),
+        "vtm": VTM.objects.api_values(),
+        "vmp": VMP.objects.api_values(),
+        "amp": AMP.objects.api_values(),
+        "ingredient": Ing.objects.api_values(),
+        "ont_form_route": OntFormRoute.objects.api_values(),
     }
     return JsonResponse(payload)
 

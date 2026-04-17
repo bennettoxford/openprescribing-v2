@@ -97,22 +97,24 @@ def test_metadata_dmd(client, settings, tmp_path):
     rsp = client.get("/api/metadata/dmd/")
     payload = rsp.json()
     assert {
-        "vtmid": 108502004,
-        "nm": "Adenosine",
+        "id": 108502004,
+        "name": "Adenosine",
     } in payload["vtm"]
     assert {
-        "vpid": 35894711000001106,
-        "nm": "Adenosine 6mg/2ml solution for injection vials",
+        "id": 35894711000001106,
+        "vtm_id": 108502004,
+        "name": "Adenosine 6mg/2ml solution for injection vials",
     } in payload["vmp"]
     assert {
-        "apid": 4744411000001104,
-        "descr": "Adenocor 6mg/2ml solution for injection vials (Sanofi)",
+        "id": 4744411000001104,
+        "vmp_id": 35894711000001106,
+        "name": "Adenocor 6mg/2ml solution for injection vials (Sanofi)",
     } in payload["amp"]
     assert {
-        "isid": 35431001,
-        "nm": "Adenosine",
+        "id": 35431001,
+        "name": "Adenosine",
     } in payload["ingredient"]
-    assert {"cd": 24, "descr": "solutioninjection.intravenous"} in payload[
+    assert {"id": 24, "descr": "solutioninjection.intravenous"} in payload[
         "ont_form_route"
     ]
 
