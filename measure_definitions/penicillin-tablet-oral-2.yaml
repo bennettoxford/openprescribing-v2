@@ -1,0 +1,18 @@
+metadata:
+  title: Broad spectrum penicillins (tablet.oral)
+  why_it_matters: This is a demo measure which filters by form & route
+  tags:
+    - demo
+output:
+    numerator: items
+    denominator: list_size
+queries:
+    - numerator:
+        # These are ANDed together, so this will match only `tablet.oral`
+        forms:
+          - tablet
+        routes:
+          - oral
+        bnf_codes:
+            included:
+                - "0501013"

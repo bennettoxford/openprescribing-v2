@@ -1,0 +1,15 @@
+metadata:
+  title: Broad spectrum penicillins (*.oral)
+  why_it_matters: This is a demo measure which filters by route
+  tags:
+    - demo
+output:
+    numerator: items
+    denominator: list_size
+queries:
+    - numerator:
+        routes:
+          - oral
+        bnf_codes:
+            included:
+                - "0501013"
