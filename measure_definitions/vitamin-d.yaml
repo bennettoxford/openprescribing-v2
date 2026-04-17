@@ -1,0 +1,12 @@
+metadata:
+  title: DRAFT Vitamin D
+  why_it_matters: This is a partial implementation of the previous Vitamin D measure
+  tags:
+    - demo
+output:
+    numerator: items
+    denominator: list_size
+queries:
+    - numerator:
+        ingredient_ids:
+          - 18414002
