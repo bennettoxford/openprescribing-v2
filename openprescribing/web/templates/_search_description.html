@@ -5,6 +5,7 @@
     {% if description.product_type == "generic" or description.product_type == "branded" %}
     <li>{{ description.product_type|title }} prescribing only</li>
     {% endif %}
+    {% if description.includes %}
     <li>Included codes
         <ul>
             {% for item in description.includes %}
@@ -12,6 +13,7 @@
             {% endfor %}
         </ul>
     </li>
+    {% endif %}
     {% if description.excludes %}
     <li>Excluded codes
         <ul>
