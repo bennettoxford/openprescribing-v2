@@ -115,7 +115,9 @@ def _build_analysis_context(analysis):
 def analysis(request):
     analysis_presentation = AnalysisPresentation.from_params(request.GET)
 
-    if "ntr_codes" in request.GET:
+    search_params_for_analysis = ["ntr_codes", "ntr_ingredient_ids"]
+
+    if any(p in search_params_for_analysis for p in request.GET):
         analysis = Analysis.from_params(request.GET)
     else:
         analysis = None
