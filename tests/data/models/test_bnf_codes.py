@@ -57,7 +57,17 @@ def test_strength_and_formulation_name():
             "1001030U0AAABAB",
             name="Methotrexate 2.5mg tablets",
         ).strength_and_formulation_name
-        == "Methotrexate 2.5mg tablets (branded and generic)"
+        == "Methotrexate 2.5mg tablets"
+    )
+
+
+def test_strength_and_formulation_name_generic():
+    assert (
+        bnf_code(
+            "0101021B0AAAGAG",
+            name="Generic Gaviscon 500mg chewable tablets sugar free",
+        ).strength_and_formulation_name
+        == "Gaviscon 500mg chewable tablets sugar free"
     )
 
 

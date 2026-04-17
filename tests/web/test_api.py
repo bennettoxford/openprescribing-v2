@@ -136,7 +136,7 @@ def test_metadata_bnf(client, bnf_codes):
     assert {
         "code": "1001030U0_AB",
         "level": 6,
-        "name": "Methotrexate 2.5mg tablets (branded and generic)",
+        "name": "Methotrexate 2.5mg tablets",
     } in payload["bnf"]
     assert {
         "code": "1001030U0BDAAAB",

@@ -243,6 +243,6 @@ def test_make_code_to_name(bnf_codes):
         "100103": "Rheumatic disease suppressant drugs",
         "1001030": "Rheumatic disease suppressant drugs",
         "1001030U0": "Methotrexate",
-        "1001030U0_AB": "Methotrexate 2.5mg tablets (branded and generic)",
-        "1001030U0_AC": "Methotrexate 10mg tablets (branded and generic)",
+        "1001030U0_AB": "Methotrexate 2.5mg tablets",
+        "1001030U0_AC": "Methotrexate 10mg tablets",
     }

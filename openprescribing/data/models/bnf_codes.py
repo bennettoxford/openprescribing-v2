@@ -70,4 +70,13 @@ class BNFCode(models.Model):
     def strength_and_formulation_name(self):
         assert self.level == BNFCode.Level.PRESENTATION
         assert self.is_generic()
-        return f"{self.name} (branded and generic)"
+        if self.name.startswith("Generic "):
+            # We show this name when a user has selected all presentations -- generic
+            # and branded -- with equivalent strength and formulation.  Some generic
+            # presentations are called "Generic X", eg "Generic Gaviscon 500mg chewable
+            # tablets".  It would be misleading to show the "Generic", given that this
+            # represents all presentations with equivalent strength and formulation, so
+            # we remove it
+            return self.name.removeprefix("Generic ")
+        else:
+            return self.name
