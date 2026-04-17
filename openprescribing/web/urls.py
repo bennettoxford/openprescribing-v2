@@ -6,6 +6,7 @@ from . import api, views
 urlpatterns = [
     path("", views.analysis, name="analysis"),
     path("analysis/build/", views.build_analysis, name="build-analysis"),
+    path("analysis/build2/", views.build_analysis_2, name="build-analysis-2"),
     path(
         "api/prescribing-deciles/",
         api.prescribing_deciles,

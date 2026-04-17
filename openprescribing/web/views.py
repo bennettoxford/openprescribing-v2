@@ -145,6 +145,11 @@ def build_analysis(request):
     return render(request, "build_analysis.html", ctx)
 
 
+def build_analysis_2(request):  # pragma: no cover
+    # This will replace build_analysis when it is finished
+    return render(request, "build_analysis_2.html")
+
+
 def measure(request, measure_name):
     analysis_dict = load_measure(measure_name)
     analysis_dict["org_id"] = request.GET.get("org_id")
