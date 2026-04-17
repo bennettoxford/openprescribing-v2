@@ -85,7 +85,11 @@ class BNFQuery:
     def from_params(cls, field, params):
         """Build a BNFQuery from URL query parameters for a field."""
 
-        raw_terms = tuple(params[f"{field}_codes"].split(","))
+        if params.get(f"{field}_codes", ""):
+            raw_terms = tuple(params[f"{field}_codes"].split(","))
+        else:
+            raw_terms = ()
+
         product_type = params.get(f"{field}_product_type", cls.PRODUCT_TYPE_DEFAULT)
 
         if ids := params.get(f"{field}_form_route_ids"):
@@ -107,7 +111,7 @@ class BNFQuery:
 
     @classmethod
     def from_dict(cls, query_dict):
-        bnf_codes_dict = query_dict["bnf_codes"]
+        bnf_codes_dict = query_dict.get("bnf_codes", {"included": [], "excluded": []})
         included_terms = tuple(
             [Term.create(rt, False) for rt in bnf_codes_dict["included"]]
         )
