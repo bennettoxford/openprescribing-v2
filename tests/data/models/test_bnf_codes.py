@@ -1,10 +1,7 @@
-import pytest
-
 from openprescribing.data.models import BNFCode
 
 
-@pytest.mark.django_db(databases=["data"])
-def test_parts(bnf_codes):
+def test_parts():
     parts_of_chapter = bnf_code("10").parts
     assert parts_of_chapter.chapter == "10"
     assert parts_of_chapter.section is None
@@ -26,16 +23,14 @@ def test_parts(bnf_codes):
     assert parts_of_presentation.generic_equivalent == "AC"
 
 
-@pytest.mark.django_db(databases=["data"])
-def test_is_generic(bnf_codes):
+def test_is_generic():
     assert bnf_code("1001030U0AA").is_generic()
     assert not bnf_code("1001030U0BD").is_generic()
     assert bnf_code("1001030U0AAABAB").is_generic()
     assert not bnf_code("1001030U0BDAAAB").is_generic()
 
 
-@pytest.mark.django_db(databases=["data"])
-def test_is_ancestor_of(bnf_codes):
+def test_is_ancestor_of():
     assert bnf_code("1001").is_ancestor_of(bnf_code("100103"))
     assert bnf_code("1001030U0").is_ancestor_of(bnf_code("1001030U0AA"))
     assert bnf_code("1001030U0AA").is_ancestor_of(bnf_code("1001030U0AAABAB"))
@@ -43,8 +38,7 @@ def test_is_ancestor_of(bnf_codes):
     assert not bnf_code("1001030U0AA").is_ancestor_of(bnf_code("1001030U0AA"))
 
 
-@pytest.mark.django_db(databases=["data"])
-def test_is_generic_equivalent_of(bnf_codes):
+def test_is_generic_equivalent_of():
     assert bnf_code("1001030U0AAABAB").is_generic_equivalent_of(
         bnf_code("1001030U0BDAAAB")
     )
@@ -53,18 +47,28 @@ def test_is_generic_equivalent_of(bnf_codes):
     )
 
 
-@pytest.mark.django_db(databases=["data"])
-def test_strength_and_formulation_code(bnf_codes):
+def test_strength_and_formulation_code():
     assert bnf_code("1001030U0AAABAB").strength_and_formulation_code == "1001030U0_AB"
 
 
-@pytest.mark.django_db(databases=["data"])
-def test_strength_and_formulation_name(bnf_codes):
+def test_strength_and_formulation_name():
     assert (
-        bnf_code("1001030U0AAABAB").strength_and_formulation_name
+        bnf_code(
+            "1001030U0AAABAB",
+            name="Methotrexate 2.5mg tablets",
+        ).strength_and_formulation_name
         == "Methotrexate 2.5mg tablets (branded and generic)"
     )
 
 
-def bnf_code(code):
-    return BNFCode.objects.get(code=code)
+def bnf_code(code, name=""):
+    level = {
+        2: BNFCode.Level.CHAPTER,
+        4: BNFCode.Level.SECTION,
+        6: BNFCode.Level.PARAGRAPH,
+        8: BNFCode.Level.SUBPARAGRAPH,
+        9: BNFCode.Level.CHEMICAL_SUBSTANCE,
+        11: BNFCode.Level.PRODUCT,
+        15: BNFCode.Level.PRESENTATION,
+    }[len(code)]
+    return BNFCode(code=code, level=level, name=name)
