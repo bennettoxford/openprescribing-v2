@@ -91,6 +91,32 @@ def test_metadata_medications(client, rxdb, settings, tmp_path):
     } in payload["medications"]
 
 
+@pytest.mark.django_db(databases=["data"])
+def test_metadata_dmd(client, settings, tmp_path):
+    ingest_dmd_data(settings, tmp_path)
+    rsp = client.get("/api/metadata/dmd/")
+    payload = rsp.json()
+    assert {
+        "vtmid": 108502004,
+        "nm": "Adenosine",
+    } in payload["vtm"]
+    assert {
+        "vpid": 35894711000001106,
+        "nm": "Adenosine 6mg/2ml solution for injection vials",
+    } in payload["vmp"]
+    assert {
+        "apid": 4744411000001104,
+        "descr": "Adenocor 6mg/2ml solution for injection vials (Sanofi)",
+    } in payload["amp"]
+    assert {
+        "isid": 35431001,
+        "nm": "Adenosine",
+    } in payload["ingredient"]
+    assert {"cd": 24, "descr": "solutioninjection.intravenous"} in payload[
+        "ont_form_route"
+    ]
+
+
 def test_nans_to_nones():
     records = [{"k1": 1.0, "k2": "aaa"}, {"k1": float("NaN"), "k2": "bbb"}]
     api.nans_to_nones(records)

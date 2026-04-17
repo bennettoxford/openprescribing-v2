@@ -21,6 +21,11 @@ urlpatterns = [
         api.metadata_medications,
         name="api_metadata_medications",
     ),
+    path(
+        "api/metadata/dmd/",
+        api.metadata_dmd,
+        name="api_metadata_dmd",
+    ),
     path("feedback/vote/", views.feedback_vote, name="feedback_vote"),
     path("feedback/comment/", views.feedback_comment, name="feedback_comment"),
     path("bnf/", views.bnf_browser_tree),

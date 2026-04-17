@@ -4,7 +4,7 @@ from django.http import JsonResponse as DjangoJsonResponse
 
 from openprescribing.data import rxdb
 from openprescribing.data.analysis import Analysis
-from openprescribing.data.models import Org
+from openprescribing.data.models import AMP, VMP, VTM, Ing, OntFormRoute, Org
 from openprescribing.data.queries import get_org_date_ratio_matrix
 
 
@@ -111,6 +111,20 @@ def metadata_medications(request):
             .to_pylist()
         )
     return JsonResponse({"medications": medications})
+
+
+def metadata_dmd(request):
+    """Return details of dm+d objects that will be used to query and display
+    medications."""
+
+    payload = {
+        "vtm": list(VTM.objects.values("vtmid", "nm")),
+        "vmp": list(VMP.objects.values("vpid", "nm")),
+        "amp": list(AMP.objects.values("apid", "descr")),
+        "ingredient": list(Ing.objects.values("isid", "nm")),
+        "ont_form_route": list(OntFormRoute.objects.values("cd", "descr")),
+    }
+    return JsonResponse(payload)
 
 
 class JsonResponse(DjangoJsonResponse):
