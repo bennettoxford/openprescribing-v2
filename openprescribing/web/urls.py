@@ -6,6 +6,7 @@ from . import api, views
 urlpatterns = [
     path("", views.analysis, name="analysis"),
     path("analysis/build/", views.build_analysis, name="build-analysis"),
+    path("analysis/build2/", views.build_analysis_2, name="build-analysis-2"),
     path(
         "api/prescribing-deciles/",
         api.prescribing_deciles,
@@ -15,6 +16,21 @@ urlpatterns = [
         "api/prescribing-all-orgs/",
         api.prescribing_all_orgs,
         name="api_prescribing_all_orgs",
+    ),
+    path(
+        "api/metadata/medications/",
+        api.metadata_medications,
+        name="api_metadata_medications",
+    ),
+    path(
+        "api/metadata/dmd/",
+        api.metadata_dmd,
+        name="api_metadata_dmd",
+    ),
+    path(
+        "api/metadata/bnf/",
+        api.metadata_bnf,
+        name="api_metadata_bnf",
     ),
     path("feedback/vote/", views.feedback_vote, name="feedback_vote"),
     path("feedback/comment/", views.feedback_comment, name="feedback_comment"),

@@ -59,7 +59,9 @@ def get_dmd_models():
     return [
         model
         for model in vars(dmd_models_module).values()
-        if isinstance(model, type) and issubclass(model, models.Model)
+        if isinstance(model, type)
+        and issubclass(model, models.Model)
+        and not model._meta.abstract
     ]
 
 

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<section
+  data-container
+  data-medications-url="{% url 'api_metadata_medications' %}"
+  data-dmd-url="{% url 'api_metadata_dmd' %}"
+  data-bnf-url="{% url 'api_metadata_bnf' %}"
+>
+  <p data-loading>Loading metadata...</p>
+  <p data-error hidden role="alert"></p>
+  <div data-app hidden>
+    <h1>Metadata record counts</h1>
+    <div data-summary></div>
+  </div>
+</section>
+
+{% block extra_js %}
+<script type="module" src="{% static 'js/build-analysis.js' %}"></script>
+{% endblock %}
+{% endblock %}

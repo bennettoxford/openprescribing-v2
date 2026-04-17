@@ -11,7 +11,7 @@ SELECT
     is_amp,
     vmp_id,
     vtm_id,
-    cast(invalid AS boolean),
+    cast(invalid AS boolean) AS invalid,
     array(
         SELECT ont.formcd
         FROM ont
