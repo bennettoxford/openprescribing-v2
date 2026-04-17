@@ -1,6 +1,6 @@
 metadata:
-  title: Broad spectrum penicillins (capsules)
-  why_it_matters: This is a demo measure which filters by form_route
+  title: Broad spectrum penicillins (capsules.*)
+  why_it_matters: This is a demo measure which filters by forms
   tags:
     - demo
 output:
@@ -8,8 +8,8 @@ output:
     denominator: list_size
 queries:
     - numerator:
-        form_routes:
-          - capsule.oral
+        forms:
+          - capsule
         bnf_codes:
             included:
                 - "0501013"
