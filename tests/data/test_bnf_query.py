@@ -1,6 +1,10 @@
 import pytest
 
-from openprescribing.data.bnf_query import BNFQuery, ProductType
+from openprescribing.data.bnf_query import (
+    BNFQuery,
+    ProductType,
+    _get_form_route_ids_for_forms_and_routes,
+)
 from openprescribing.data.models import BNFCode
 from tests.utils.ingest_utils import ingest_dmd_bnf_map_data, ingest_dmd_data
 
@@ -208,3 +212,38 @@ def test_from_dict_form_route(rxdb, settings, tmp_path):
     }
     query = BNFQuery.from_dict(test_dict)
     assert query.to_dict() == test_dict
+
+
+@pytest.mark.django_db(databases=["data"], transaction=True)
+def test_from_dict_separate_form_route(rxdb, settings, tmp_path):
+    rxdb.ingest([{}])
+    ingest_dmd_data(settings, tmp_path)
+
+    test_dict = {
+        "bnf_codes": {
+            "included": ["0203020C0AAAAAA"],
+        },
+        "forms": ["solutioninjection"],
+        "routes": ["intravenous"],
+    }
+    query = BNFQuery.from_dict(test_dict)
+    expected_dict = {
+        "bnf_codes": {
+            "included": ["0203020C0AAAAAA"],
+        },
+        "form_routes": ["solutioninjection.intravenous"],
+    }
+    assert query.to_dict() == expected_dict
+
+
+@pytest.mark.django_db(databases=["data"], transaction=True)
+def test_get_form_route_ids_for_forms_and_routes(rxdb, settings, tmp_path):
+    rxdb.ingest([{}])
+    ingest_dmd_data(settings, tmp_path)
+
+    route_ids = _get_form_route_ids_for_forms_and_routes(
+        form_routes=[], forms=["tablet"], routes=["oral"]
+    )
+    expected_route_ids = ["1"]
+
+    assert route_ids == expected_route_ids

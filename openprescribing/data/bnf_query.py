@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 from functools import reduce
+from operator import and_
 
 from django.db.models import Q
 
@@ -22,6 +23,30 @@ def _get_bnf_codes_for_form_route_ids(form_route_ids):
             """
         )
         return [x[0] for x in results.fetchall()]
+
+
+def _get_form_route_ids_for_forms_and_routes(form_routes, forms, routes):
+    query = Q()
+    if form_routes:
+        assert not routes and not forms, (
+            "We do not currently support mixing form_routes with routes / forms individually"
+        )
+        query = Q(descr__in=form_routes)
+    else:
+        conditions = []
+        if routes:
+            for route in routes:
+                conditions.append(Q(descr__endswith=f".{route}"))
+        if forms:
+            for form in forms:
+                conditions.append(Q(descr__startswith=f"{form}."))
+        if conditions:
+            query = reduce(and_, conditions)
+
+    form_route_ids = [
+        str(form_route.cd) for form_route in OntFormRoute.objects.filter(query)
+    ]
+    return form_route_ids
 
 
 @dataclass(frozen=True)
@@ -76,11 +101,12 @@ class BNFQuery:
 
         product_type = query_dict.get("product_type", cls.PRODUCT_TYPE_DEFAULT)
 
-        form_routes = query_dict.get("form_routes", [])
-        form_route_ids = [
-            str(form_route.cd)
-            for form_route in OntFormRoute.objects.filter(descr__in=form_routes)
-        ]
+        form_route_ids = _get_form_route_ids_for_forms_and_routes(
+            query_dict.get("form_routes", []),
+            query_dict.get("forms", []),
+            query_dict.get("routes", []),
+        )
+
         return cls(
             terms,
             ProductType(product_type),
