@@ -128,3 +128,21 @@ def test_from_dict_numerator_only():
     }
     analysis = Analysis.from_dict(analysis_dict)
     assert analysis.to_dict() == analysis_dict
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_from_dict_ingredients():
+    analysis_dict = {
+        "queries": [
+            {
+                "numerator": {
+                    "bnf_codes": {
+                        "included": ["01"],
+                    },
+                    "ingredient_ids": ["01"],
+                },
+            }
+        ],
+    }
+    analysis = Analysis.from_dict(analysis_dict)
+    assert analysis.to_dict() == analysis_dict
