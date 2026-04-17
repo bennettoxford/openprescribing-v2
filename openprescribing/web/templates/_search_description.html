@@ -22,11 +22,23 @@
     </li>
     {% endif %}
     {% if description.form_routes %}
-    <li>Form/Routes
-        {% for form_route in description.form_routes %}
-        <ul>{{ form_route }}</ul>
-        {% endfor %}
-    </li>
+    <p>
+        <button
+            class="btn btn-secondary"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#collapseFormRoutes"
+        >
+        Form / Routes
+        </button>
+    </p>
+    <div class="collapse" id="collapseFormRoutes">
+        <ul>
+            {% for form_route in description.form_routes %}
+            <li>{{ form_route }}</li>
+            {% endfor %}
+        </ul>
+    </div>
     {% endif %}
 </ul>
 {% endif %}
