@@ -49,6 +49,18 @@ def _get_form_route_ids_for_forms_and_routes(form_routes, forms, routes):
     return form_route_ids
 
 
+def _get_bnf_codes_for_ingredient_ids(ingredient_ids):
+    with rxdb.get_cursor() as cursor:
+        results = cursor.execute(
+            f"""
+            SELECT bnf_code
+            FROM medications
+            WHERE list_has_any(ingredient_ids, [{", ".join(ingredient_ids)}])
+            """
+        )
+        return [x[0] for x in results.fetchall()]
+
+
 @dataclass(frozen=True)
 class BNFQuery:
     """Represents a query returning codes for BNF presentations."""
@@ -56,15 +68,17 @@ class BNFQuery:
     terms: tuple[Term]
     product_type: ProductType
     form_route_ids: tuple[str, ...] = ()
+    ingredient_ids: tuple[str, ...] = ()
 
     PRODUCT_TYPE_DEFAULT = "all"
 
     @classmethod
-    def build(cls, raw_terms, product_type, form_route_ids=()):
+    def build(cls, raw_terms, product_type, form_route_ids=(), ingredient_ids=()):
         return cls(
             tuple([Term.from_param_value(rt) for rt in raw_terms]),
             ProductType(product_type),
             tuple(form_route_ids),
+            tuple(ingredient_ids),
         )
 
     @classmethod
@@ -79,10 +93,16 @@ class BNFQuery:
         else:
             form_route_ids = ()
 
+        if ids := params.get(f"{field}_ingredient_ids"):
+            ingredient_ids = tuple(ids.split(","))
+        else:
+            ingredient_ids = ()
+
         return cls.build(
             raw_terms=raw_terms,
             product_type=product_type,
             form_route_ids=form_route_ids,
+            ingredient_ids=ingredient_ids,
         )
 
     @classmethod
@@ -174,6 +194,11 @@ class BNFQuery:
                 code__in=_get_bnf_codes_for_form_route_ids(self.form_route_ids)
             )
 
+        if self.ingredient_ids:
+            codes = codes.filter(
+                code__in=_get_bnf_codes_for_ingredient_ids(self.ingredient_ids)
+            )
+
         codes = list(codes.order_by("code").values_list("code", flat=True))
 
         if self.product_type == ProductType.ALL:
@@ -208,6 +233,8 @@ class BNFQuery:
         }
         if self.form_route_ids:
             params[f"{field}_form_route_ids"] = ",".join(self.form_route_ids)
+        if self.ingredient_ids:
+            params[f"{field}_ingredient_ids"] = ",".join(self.ingredient_ids)
 
         return params
 
