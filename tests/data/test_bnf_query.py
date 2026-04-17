@@ -191,6 +191,13 @@ def test_from_params_with_form_route_ids_key_not_val():
     assert query.form_route_ids == ()
 
 
+def test_from_params_ingredients():
+    query = BNFQuery.from_params("ntr", {"ntr_ingredient_ids": "01"})
+    assert query == BNFQuery.build(
+        [], BNFQuery.PRODUCT_TYPE_DEFAULT, ingredient_ids=["01"]
+    )
+
+
 def test_to_params():
     query = BNFQuery.build(["01", "-0101"], ProductType.GENERIC)
     assert query.to_params("ntr") == {
