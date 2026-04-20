@@ -3,17 +3,142 @@
 
 {% block content %}
 <section
-  data-container
-  data-medications-url="{% url 'api_metadata_medications' %}"
-  data-dmd-url="{% url 'api_metadata_dmd' %}"
-  data-bnf-url="{% url 'api_metadata_bnf' %}"
+    data-container
+    data-medications-url="{% url 'api_metadata_medications' %}"
+    data-dmd-url="{% url 'api_metadata_dmd' %}"
+    data-bnf-url="{% url 'api_metadata_bnf' %}"
 >
-  <p data-loading>Loading metadata...</p>
-  <p data-error hidden role="alert"></p>
-  <div data-app hidden>
-    <h1>Metadata record counts</h1>
-    <div data-summary></div>
-  </div>
+    <p data-loading>Loading metadata...</p>
+    <p data-error hidden></p>
+    <div data-app hidden>
+        <ul class="nav nav-tabs mb-4">
+            {% for panel in panels %}
+            <li class="nav-item">
+                <button
+                    class="nav-link{% if forloop.first %} active{% endif %}"
+                    id="{{ panel.prefix }}-tab"
+                    type="button"
+                    data-bs-toggle="tab"
+                    data-bs-target="#{{ panel.prefix }}-panel"
+                >
+                    {{ panel.label }}
+                </button>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <div class="tab-content">
+            {% for panel in panels %}
+            {% include "./_build_analysis_2_query_panel.html" with prefix=panel.prefix active=forloop.first %}
+            {% endfor %}
+        </div>
+    </div>
+
+    {# Templates below are shared across all panels; build-analysis.js resolves them once. #}
+    <template data-vtm-row-template>
+        <tr>
+            <td colspan="2">
+                <strong data-name></strong>
+            </td>
+        </tr>
+    </template>
+
+    <template data-vmp-row-template>
+        <tr>
+            <td>
+                <div class="d-flex align-items-center gap-2 ps-4">
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-link p-0 text-decoration-none"
+                        data-amp-toggle
+                        style="visibility: hidden"
+                    >
+                        <i class="bi bi-caret-right-fill"></i>
+                    </button>
+                    <span data-name></span>
+                </div>
+            </td>
+            <td data-form-route></td>
+        </tr>
+    </template>
+
+    <template data-amp-row-template>
+        <tr data-amp-row hidden>
+            <td>
+                <div class="ps-5">
+                    <em data-name></em>
+                </div>
+            </td>
+            <td data-form-route></td>
+        </tr>
+    </template>
+
+    <template data-dropdown-template>
+        <div class="dropdown-component border rounded bg-body mb-3" data-dropdown>
+            <div
+                class="dropdown-component-header d-flex align-items-center gap-2 px-3 py-2"
+                data-dropdown-header
+            >
+                <button
+                    type="button"
+                    class="btn btn-sm btn-link p-0 text-decoration-none text-body"
+                    data-dropdown-toggle
+                >
+                    <i
+                        class="dropdown-component-caret bi bi-caret-right-fill"
+                        data-dropdown-caret
+                    ></i>
+                </button>
+                <span
+                    class="dropdown-component-title fw-semibold flex-grow-1"
+                    data-dropdown-label
+                ></span>
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-dropdown-remove
+                ></button>
+            </div>
+            <ul
+                class="dropdown-component-selected list-unstyled mb-0 px-3 pb-3"
+                data-dropdown-summary
+            ></ul>
+            <div
+                class="dropdown-component-panel px-3 pb-3"
+                data-dropdown-body
+                hidden
+            >
+                <div class="input-group input-group-sm">
+                    <input
+                        type="text"
+                        class="form-control"
+                        autocomplete="off"
+                        placeholder="Search..."
+                        data-dropdown-input
+                    />
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        data-clear-search
+                    >
+                        Clear
+                    </button>
+                </div>
+                <select
+                    class="dropdown-component-options form-select form-select-sm mt-2"
+                    data-dropdown-options
+                    multiple
+                    size="10"
+                    style="max-height: 12rem"
+                ></select>
+            </div>
+        </div>
+    </template>
+
+    <template data-dropdown-option-template>
+        <option></option>
+    </template>
+
 </section>
 
 {% block extra_js %}
