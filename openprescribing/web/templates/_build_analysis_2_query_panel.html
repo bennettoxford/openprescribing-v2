@@ -1,0 +1,74 @@
+<div
+    class="tab-pane{% if active %} show active{% endif %}"
+    id="{{ prefix }}-panel"
+    tabindex="0"
+    data-query-panel
+    data-panel-prefix="{{ prefix }}"
+>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h2 class="h4 card-title">Filters</h2>
+                    <div data-filter-list></div>
+                    <div class="mb-3">
+                        <label for="{{ prefix }}-add-filter" class="form-label">Add filter</label>
+                        <select
+                            id="{{ prefix }}-add-filter"
+                            class="form-select"
+                            data-add-filter
+                        ></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start gap-3">
+                        <h2 class="h4 card-title mb-0">Results</h2>
+                        <div class="form-check">
+                            <input
+                                id="{{ prefix }}-show-only-matching"
+                                type="checkbox"
+                                class="form-check-input"
+                                checked
+                                data-show-only-matching
+                            />
+                            <label for="{{ prefix }}-show-only-matching" class="form-check-label">
+                                Show only matching
+                            </label>
+                        </div>
+                    </div>
+                    <div data-results>
+                        <p class="text-body-secondary" data-results-prompt>
+                            Enter one or more filters to show results.
+                        </p>
+                        <p class="text-body-secondary" data-results-counts hidden></p>
+                        <p data-results-empty hidden>
+                            No medications matched this query.
+                        </p>
+                        <table
+                            class="table table-sm align-middle mb-0"
+                            style="table-layout: fixed; width: 100%"
+                            data-results-table
+                            hidden
+                        >
+                            <colgroup>
+                                <col style="width: 80%" />
+                                <col style="width: 20%" />
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th scope="col"></th>
+                                    <th scope="col">Form/route</th>
+                                </tr>
+                            </thead>
+                            <tbody data-results-body></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

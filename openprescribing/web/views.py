@@ -149,7 +149,11 @@ def build_analysis(request):
 
 def build_analysis_2(request):  # pragma: no cover
     # This will replace build_analysis when it is finished
-    return render(request, "build_analysis_2.html")
+    panels = [
+        {"prefix": "ntr", "label": "Numerator"},
+        {"prefix": "dtr", "label": "Denominator"},
+    ]
+    return render(request, "build_analysis_2.html", {"panels": panels})
 
 
 def measure(request, measure_name):
