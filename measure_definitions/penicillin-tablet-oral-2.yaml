@@ -4,15 +4,15 @@ metadata:
   tags:
     - demo
 output:
-    numerator: items
-    denominator: list_size
+  numerator: items
+  denominator: list_size
 queries:
-    - numerator:
-        # These are ANDed together, so this will match only `tablet.oral`
-        forms:
-          - tablet
-        routes:
-          - oral
-        bnf_codes:
-            included:
-                - "0501013"
+  - numerator:
+      # These are ANDed together, so this will match only `tablet.oral`
+      forms:
+        - tablet
+      routes:
+        - oral
+      bnf_codes:
+          included:
+              - "0501013"
