@@ -4,9 +4,9 @@ metadata:
   tags:
     - demo
 output:
-    numerator: items
-    denominator: list_size
+  numerator: items
+  denominator: list_size
 queries:
-    - numerator:
-        ingredient_ids:
-          - 18414002
+  - numerator:
+      ingredient_ids:
+        - 18414002

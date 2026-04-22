@@ -4,12 +4,12 @@ metadata:
   tags:
     - demo
 output:
-    numerator: items
-    denominator: list_size
+  numerator: items
+  denominator: list_size
 queries:
-    - numerator:
-        forms:
-          - tablet
-        bnf_codes:
-            included:
-                - "0501013"
+  - numerator:
+      forms:
+        - tablet
+      bnf_codes:
+          included:
+              - "0501013"
