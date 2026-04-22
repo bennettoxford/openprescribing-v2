@@ -49,6 +49,8 @@ def all_measure_details():
     return measure_details
 
 
+# At the time of writing, this schema only validates measure features which have
+# been implemented.
 def schema():
 
     NUMERATOR_KEY = "numerator"
