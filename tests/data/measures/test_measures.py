@@ -33,7 +33,7 @@ def test_load_measure():
         },
         "output": {
             "denominator": "list_size",
-            "numerator": "bnf_items",
+            "numerator": "items",
         },
         "queries": [
             {

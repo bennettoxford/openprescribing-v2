@@ -4,8 +4,8 @@ metadata:
     - demo
   why_it_matters: This one doesn't really matter!
 output:
-  numerator: bnf_items
-  denominator: bnf_items
+  numerator: items
+  denominator: items
 queries:
   - numerator:
       product_type: branded
