@@ -1,4 +1,8 @@
-from openprescribing.data.measures import load_measure
+from pathlib import Path
+
+import pytest
+
+from openprescribing.data.measures import load_measure, measures
 
 
 def test_load_measure():
@@ -43,3 +47,11 @@ def test_load_measure():
             },
         ],
     }
+
+
+def test_load_measure_validation_fail():
+    with pytest.raises(measures.MeasureValidationError) as excinfo:
+        load_measure(
+            "invalid-measure", measures_path=Path(__file__).parent / "fixtures"
+        )
+    assert "'invalid-measure' failed to validate" in str(excinfo.value)
