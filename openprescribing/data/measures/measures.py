@@ -33,7 +33,7 @@ def load_measure(measure_name, measures_path=MEASURE_DEFINITIONS_PATH):
         try:
             measure_yaml = load(f.read(), schema())
         except YAMLValidationError as e:
-            raise MeasureValidationError(measure_name, e)
+            raise MeasureValidationError(measure_name, e) from e
 
     # Return a dict rather than strictyaml's `YAML` - this would continue
     # to apply validation & we don't necessarily want that (e.g. `org_id`)
