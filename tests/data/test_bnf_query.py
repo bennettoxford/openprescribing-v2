@@ -323,6 +323,27 @@ def test_get_form_route_ids_for_forms_and_routes(rxdb, settings, tmp_path):
     assert route_ids == expected_route_ids
 
 
+@pytest.mark.django_db(databases=["data"], transaction=True)
+def test_get_form_route_ids_for_invalid_form_routes(rxdb, settings, tmp_path):
+    rxdb.ingest([{}])
+    ingest_dmd_data(settings, tmp_path)
+
+    with pytest.raises(ValueError):
+        _get_form_route_ids_for_forms_and_routes(
+            form_routes=[], forms=["unicorn"], routes=[]
+        )
+
+    with pytest.raises(ValueError):
+        _get_form_route_ids_for_forms_and_routes(
+            form_routes=["unicorn.nasal"], forms=[], routes=[]
+        )
+
+    with pytest.raises(ValueError):
+        _get_form_route_ids_for_forms_and_routes(
+            form_routes=[], forms=[], routes=["interstellar"]
+        )
+
+
 @pytest.mark.django_db(databases=["data"])
 def test_from_dict_ingredient():
     test_dict = {
