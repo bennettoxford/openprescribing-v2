@@ -46,6 +46,12 @@ def _get_form_route_ids_for_forms_and_routes(form_routes, forms, routes):
     form_route_ids = [
         str(form_route.cd) for form_route in OntFormRoute.objects.filter(query)
     ]
+
+    if not form_route_ids and (form_routes or routes or forms):
+        raise ValueError(
+            f"No matching form_routes for form_routes={form_routes}, routes={routes}, forms={forms}"
+        )
+
     return form_route_ids
 
 
