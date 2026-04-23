@@ -42,10 +42,16 @@ def load_measure(measure_name, measures_path=MEASURE_DEFINITIONS_PATH):
 
 def all_measure_details():
     measure_names = [f.stem for f in MEASURE_DEFINITIONS_PATH.iterdir()]
-    measure_details = [
-        {"name": f, "title": load_measure(f)["metadata"]["title"]}
-        for f in measure_names
-    ]
+    measure_details = []
+    for f in measure_names:
+        measure = load_measure(f)
+        measure_details.append(
+            {
+                "name": f,
+                "title": measure["metadata"]["title"],
+                "tags": measure["metadata"]["tags"],
+            }
+        )
     return measure_details
 
 
