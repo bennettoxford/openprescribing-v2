@@ -10,7 +10,14 @@
                 <h1 class="h4">List of measures</h1>
                 <ul>
                     {% for measure in measures  %}
-                    <li><a href="/measures/{{ measure.name }}/">{{ measure.title }}</a></li>
+                    <li>
+                        <a href="/measures/{{ measure.name }}/">
+                            {{ measure.title }}
+                        </a>
+                        {% for tag in measure.tags %}
+                        <span class="badge text-bg-secondary ms-1">{{ tag }}</span>
+                        {% endfor %}
+                    </li>
                     {% endfor %}
                 </ul>
             </div>
