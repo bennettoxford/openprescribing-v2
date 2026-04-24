@@ -1,0 +1,18 @@
+metadata:
+  title: Broad spectrum penicillins (capsules)
+  why_it_matters: This is a demo measure with an invalid combination of form_routes & routes
+  tags:
+    - demo
+output:
+  numerator: items
+  denominator: list_size
+queries:
+  - numerator:
+      form_routes:
+        - tablet.oral
+        - capsule.oral
+      routes:
+        - nasal
+      bnf_codes:
+          included:
+              - "0501013"

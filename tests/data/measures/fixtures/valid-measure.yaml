@@ -1,0 +1,16 @@
+  metadata:
+    title: Broad spectrum penicillins (tablet.oral)
+    why_it_matters: This is a demo measure which uses all BNFQuery params correctly
+    tags:
+      - demo
+  output:
+    numerator: items
+    denominator: list_size
+  queries:
+    - numerator:
+        product_type: generic
+        form_routes:
+          - tablet.oral
+        bnf_codes:
+            included:
+                - "0501013"

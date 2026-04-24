@@ -1,6 +1,7 @@
 from typing import Literal
 
 from pydantic import BaseModel, field_validator, model_validator
+from pydantic_core import ValidationError
 from strictyaml import (
     Any,
     Int,
@@ -88,6 +89,13 @@ class Measure(BaseModel):
     def only_one_query(cls, v):
         if v and len(v) > 1:
             raise ValueError("only one simultaneous query is currently supported")
+
+
+def validate_dict(measure_name, measure_dict):
+    try:
+        Measure.model_validate(measure_dict)
+    except ValidationError as e:
+        raise MeasureValidationError(measure_name, e) from e
 
 
 # At the time of writing, this schema only validates measure features which have

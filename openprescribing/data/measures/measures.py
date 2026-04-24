@@ -4,7 +4,7 @@ from strictyaml import (
     load,
 )
 
-from .validation import MeasureValidationError, schema
+from .validation import MeasureValidationError, schema, validate_dict
 
 
 def load_measure(measure_name):
@@ -15,6 +15,8 @@ def load_measure(measure_name):
             measure_dict = load(f.read(), schema()).data
         except YAMLValidationError as e:
             raise MeasureValidationError(measure_name, e) from e
+
+    validate_dict(measure_name, measure_dict)
 
     return measure_dict
 
