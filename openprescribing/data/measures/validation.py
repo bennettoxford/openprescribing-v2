@@ -1,3 +1,6 @@
+from typing import Literal
+
+from pydantic import BaseModel, field_validator, model_validator
 from strictyaml import (
     Any,
     Int,
@@ -7,6 +10,8 @@ from strictyaml import (
     Seq,
     Str,
 )
+
+from openprescribing.data.models.dmd import OntFormRoute
 
 
 class MeasureValidationError(Exception):
@@ -19,6 +24,70 @@ class MeasureValidationError(Exception):
         return (
             f"Measure '{self.measure_name}' failed to validate: {self.validation_error}"
         )
+
+
+class Metadata(BaseModel):
+    title: str
+    tags: list[str]
+    why_it_matters: str
+
+
+class BNFCode(BaseModel):
+    included: list[str]
+    excluded: list[str] | None = None
+
+
+class BNFQuery(BaseModel):
+    bnf_codes: BNFCode | None = None
+    form_routes: list[str] | None = None
+    forms: list[str] | None = None
+    routes: list[str] | None = None
+    product_type: Literal["all", "generic", "branded"] = "all"
+    ingredient_ids: list[int] | None = None
+
+    @field_validator("form_routes")
+    @classmethod
+    def form_routes_must_be_valid(cls, v):
+        valid_form_route_names = [fr.descr for fr in OntFormRoute.objects.all()]
+
+        for fr in v:
+            if fr not in valid_form_route_names:
+                raise ValueError(f"Invalid form_route specified {fr}")
+        return v
+
+    @model_validator(mode="after")
+    def check_xor_form_routes_forms_routes(self) -> "BNFQuery":
+        if self.form_routes:
+            if self.forms or self.routes:
+                raise ValueError(
+                    "`form_routes` cannot be used at the same time as `forms` or `routes`"
+                )
+        return self
+
+
+class Query(BaseModel):
+    numerator: BNFQuery
+    denominator: BNFQuery | None = None
+
+
+output_types = Literal["items"]
+
+
+class Output(BaseModel):
+    numerator: output_types
+    denominator: output_types | Literal["list_size"]
+
+
+class Measure(BaseModel):
+    metadata: Metadata
+    output: Output
+    queries: list[Query]
+
+    @field_validator("queries")
+    @classmethod
+    def only_one_query(cls, v):
+        if v and len(v) > 1:
+            raise ValueError("only one simultaneous query is currently supported")
 
 
 # At the time of writing, this schema only validates measure features which have
