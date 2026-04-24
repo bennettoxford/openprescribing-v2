@@ -125,6 +125,8 @@ SQLITE_DATABASE = DATA_DIR / "data.sqlite"
 # database in tests.
 TEST_SQLITE_DATABASE = DATA_DIR / "test-data.sqlite"
 
+MEASURE_DEFINITIONS_PATH = BASE_DIR / "measure_definitions"
+
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
