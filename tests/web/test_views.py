@@ -143,8 +143,7 @@ queries:
           - "0501013"
 
 """
-    with open(tmp_path / "test-measure.yaml", "w", encoding="utf-8") as f:
-        f.write(test_yaml)
+    (tmp_path / "test-measure.yaml").write_text(test_yaml)
     settings.MEASURE_DEFINITIONS_PATH = tmp_path
 
     rsp = client.get("/measures/")
