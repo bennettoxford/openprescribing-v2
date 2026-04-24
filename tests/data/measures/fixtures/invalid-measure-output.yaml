@@ -1,0 +1,16 @@
+metadata:
+  title: Broad spectrum penicillins (tablet.*)
+  why_it_matters: This is a demo measure which filters by form
+  tags:
+    - demo
+output:
+  # invalid numerator type
+  numerator: bnf_items
+  denominator: list_size
+queries:
+  - numerator:
+      forms:
+        - tablet
+      bnf_codes:
+          included:
+              - "0501013"

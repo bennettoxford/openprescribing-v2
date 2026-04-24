@@ -1,0 +1,14 @@
+metadata:
+  title: Broad spectrum penicillins (tablet.*)
+  why_it_matters: Invalid product_type
+  tags:
+    - demo
+output:
+  numerator: items
+  denominator: list_size
+queries:
+  - numerator:
+      product_type: neither_generic_nor_branded
+      bnf_codes:
+          included:
+              - "0501013"
