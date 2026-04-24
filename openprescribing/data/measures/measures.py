@@ -27,13 +27,13 @@ class MeasureValidationError(Exception):
 def load_measure(measure_name):
     with open(settings.MEASURE_DEFINITIONS_PATH / f"{measure_name}.yaml") as f:
         try:
-            measure_yaml = load(f.read(), schema())
+            # Take forward a dict rather than strictyaml's `YAML` - this would continue
+            # to apply validation & we don't necessarily want that (e.g. `org_id`)
+            measure_dict = load(f.read(), schema()).data
         except YAMLValidationError as e:
             raise MeasureValidationError(measure_name, e) from e
 
-    # Return a dict rather than strictyaml's `YAML` - this would continue
-    # to apply validation & we don't necessarily want that (e.g. `org_id`)
-    return measure_yaml.data
+    return measure_dict
 
 
 def all_measure_details():
