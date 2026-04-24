@@ -1,5 +1,4 @@
-from pathlib import Path
-
+from django.conf import settings
 from strictyaml import (
     Any,
     Int,
@@ -11,9 +10,6 @@ from strictyaml import (
     YAMLValidationError,
     load,
 )
-
-
-MEASURE_DEFINITIONS_PATH = Path(__file__).parents[3] / "measure_definitions"
 
 
 class MeasureValidationError(Exception):
@@ -28,8 +24,8 @@ class MeasureValidationError(Exception):
         )
 
 
-def load_measure(measure_name, measures_path=MEASURE_DEFINITIONS_PATH):
-    with open(measures_path / f"{measure_name}.yaml") as f:
+def load_measure(measure_name):
+    with open(settings.MEASURE_DEFINITIONS_PATH / f"{measure_name}.yaml") as f:
         try:
             measure_yaml = load(f.read(), schema())
         except YAMLValidationError as e:
@@ -41,7 +37,7 @@ def load_measure(measure_name, measures_path=MEASURE_DEFINITIONS_PATH):
 
 
 def all_measure_details():
-    measure_names = [f.stem for f in MEASURE_DEFINITIONS_PATH.iterdir()]
+    measure_names = [f.stem for f in settings.MEASURE_DEFINITIONS_PATH.iterdir()]
     measure_details = []
     for f in measure_names:
         measure = load_measure(f)

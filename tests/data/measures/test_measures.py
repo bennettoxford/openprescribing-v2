@@ -49,9 +49,8 @@ def test_load_measure():
     }
 
 
-def test_load_measure_validation_fail():
+def test_load_measure_validation_fail(settings):
+    settings.MEASURE_DEFINITIONS_PATH = Path(__file__).parent / "fixtures"
     with pytest.raises(measures.MeasureValidationError) as excinfo:
-        load_measure(
-            "invalid-measure", measures_path=Path(__file__).parent / "fixtures"
-        )
+        load_measure("invalid-measure")
     assert "'invalid-measure' failed to validate" in str(excinfo.value)
