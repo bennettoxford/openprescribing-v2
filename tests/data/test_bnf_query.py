@@ -106,7 +106,7 @@ def test_get_matching_presentation_codes_for_form_route_ids(rxdb, settings, tmp_
     query = BNFQuery.from_params(
         "ntr",
         {
-            "ntr_codes": "0203020C0AAAAAA",
+            "ntr_bnf_codes": "0203020C0AAAAAA",
             "ntr_form_route_ids": "0024",
         },
     )
@@ -123,7 +123,7 @@ def test_get_matching_presentation_codes_for_ingredient_ids(rxdb, settings, tmp_
     query = BNFQuery.from_params(
         "ntr",
         {
-            "ntr_codes": "1305020C0AAFVFV",
+            "ntr_bnf_codes": "1305020C0AAFVFV",
             "ntr_ingredient_ids": "53034005",
         },
     )
@@ -142,7 +142,7 @@ def test_get_matching_presentation_codes_for_ingredient_ids_no_match(
     query = BNFQuery.from_params(
         "ntr",
         {
-            "ntr_codes": "1305020C0AAFVFV",
+            "ntr_bnf_codes": "1305020C0AAFVFV",
             "ntr_ingredient_ids": "999",
         },
     )
@@ -219,7 +219,12 @@ def test_describe_search_for_ingredients(rxdb, settings, tmp_path):
 
 def test_from_params():
     query = BNFQuery.from_params(
-        "ntr", {"ntr_codes": "01,-0101", "ntr_product_type": "generic"}
+        "ntr",
+        {
+            "ntr_bnf_codes": "01",
+            "ntr_bnf_codes_excluded": "0101",
+            "ntr_product_type": "generic",
+        },
     )
     assert query == BNFQuery(
         bnf_codes=["01"], bnf_codes_excluded=["0101"], product_type=ProductType.GENERIC
@@ -237,7 +242,7 @@ def test_from_params_with_form_route_ids_key_not_val():
     query = BNFQuery.from_params(
         "ntr",
         {
-            "ntr_codes": "01",
+            "ntr_bnf_codes": "01",
             "ntr_product_type": "generic",
             "ntr_form_route_ids": "",
         },
@@ -257,8 +262,17 @@ def test_to_params():
         bnf_codes=["01"], bnf_codes_excluded=["0101"], product_type=ProductType.GENERIC
     )
     assert query.to_params("ntr") == {
-        "ntr_codes": "01,-0101",
+        "ntr_bnf_codes": "01",
+        "ntr_bnf_codes_excluded": "0101",
         "ntr_product_type": "generic",
+    }
+
+
+def test_to_params_excluded_only():
+    query = BNFQuery(bnf_codes_excluded=["0101"])
+    assert query.to_params("ntr") == {
+        "ntr_bnf_codes_excluded": "0101",
+        "ntr_product_type": "all",
     }
 
 
@@ -270,7 +284,8 @@ def test_to_params_with_form_route_ids():
         form_route_ids=("1", "6"),
     )
     assert query.to_params("ntr") == {
-        "ntr_codes": "01,-0101",
+        "ntr_bnf_codes": "01",
+        "ntr_bnf_codes_excluded": "0101",
         "ntr_product_type": "generic",
         "ntr_form_route_ids": "1,6",
     }
@@ -284,7 +299,8 @@ def test_to_params_with_ingredient_ids():
         ingredient_ids=("1"),
     )
     assert query.to_params("ntr") == {
-        "ntr_codes": "01,-0101",
+        "ntr_bnf_codes": "01",
+        "ntr_bnf_codes_excluded": "0101",
         "ntr_product_type": "generic",
         "ntr_ingredient_ids": "1",
     }

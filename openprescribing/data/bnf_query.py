@@ -106,10 +106,15 @@ class BNFQuery:
     def from_params(cls, field, params):
         """Build a BNFQuery from URL query parameters for a field."""
 
-        if params.get(f"{field}_codes", ""):
-            codes = tuple(params[f"{field}_codes"].split(","))
+        if ids := params.get(f"{field}_bnf_codes"):
+            bnf_codes = tuple(ids.split(","))
         else:
-            codes = ()
+            bnf_codes = ()
+
+        if ids := params.get(f"{field}_bnf_codes_excluded"):
+            bnf_codes_excluded = tuple(ids.split(","))
+        else:
+            bnf_codes_excluded = ()
 
         product_type = params.get(f"{field}_product_type", cls.PRODUCT_TYPE_DEFAULT)
 
@@ -124,8 +129,8 @@ class BNFQuery:
             ingredient_ids = ()
 
         return cls(
-            bnf_codes=tuple(c for c in codes if c[0] != "-"),
-            bnf_codes_excluded=tuple(c[1:] for c in codes if c[0] == "-"),
+            bnf_codes=bnf_codes,
+            bnf_codes_excluded=bnf_codes_excluded,
             product_type=ProductType(product_type),
             form_route_ids=form_route_ids,
             ingredient_ids=ingredient_ids,
@@ -251,10 +256,11 @@ class BNFQuery:
     def to_params(self, field):
         """Serialize to URL query parameters for a field."""
 
-        params = {
-            f"{field}_codes": self.to_codes(),
-            f"{field}_product_type": self.product_type.value,
-        }
+        params = {f"{field}_product_type": self.product_type.value}
+        if self.bnf_codes:
+            params[f"{field}_bnf_codes"] = ",".join(self.bnf_codes)
+        if self.bnf_codes_excluded:
+            params[f"{field}_bnf_codes_excluded"] = ",".join(self.bnf_codes_excluded)
         if self.form_route_ids:
             params[f"{field}_form_route_ids"] = ",".join(self.form_route_ids)
         if self.ingredient_ids:

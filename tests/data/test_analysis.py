@@ -8,9 +8,11 @@ from openprescribing.data.list_size_query import ListSizeQuery
 def test_from_params():
     analysis = Analysis.from_params(
         {
-            "ntr_codes": "01,-0101",
+            "ntr_bnf_codes": "01",
+            "ntr_bnf_codes_excluded": "0101",
             "ntr_product_type": "generic",
-            "dtr_codes": "01,-0101",
+            "dtr_bnf_codes": "01",
+            "dtr_bnf_codes_excluded": "0101",
             "dtr_product_type": "all",
             "org_id": "PRAC01",
         }
@@ -26,7 +28,8 @@ def test_from_params():
 def test_from_params_ntr_codes_only():
     analysis = Analysis.from_params(
         {
-            "ntr_codes": "01,-0101",
+            "ntr_bnf_codes": "01",
+            "ntr_bnf_codes_excluded": "0101",
         }
     )
 
@@ -47,9 +50,11 @@ def test_to_params():
     )
 
     assert analysis.to_params() == {
-        "ntr_codes": "01,-0101",
+        "ntr_bnf_codes": "01",
+        "ntr_bnf_codes_excluded": "0101",
         "ntr_product_type": "branded",
-        "dtr_codes": "01,-0101",
+        "dtr_bnf_codes": "01",
+        "dtr_bnf_codes_excluded": "0101",
         "dtr_product_type": "all",
         "org_id": "PRAC01",
     }
@@ -67,7 +72,8 @@ def test_to_params_dtr_list_size():
     )
 
     assert analysis.to_params() == {
-        "ntr_codes": "01,-0101",
+        "ntr_bnf_codes": "01",
+        "ntr_bnf_codes_excluded": "0101",
         "ntr_product_type": "branded",
     }
 

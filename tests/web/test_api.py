@@ -8,10 +8,13 @@ from tests.utils.ingest_utils import ingest_dmd_bnf_map_data, ingest_dmd_data
 @pytest.mark.parametrize(
     "params, expected_last_value",
     [
-        ("?ntr_codes=1001030U0", 65.09),
-        ("?ntr_codes=1001030U0&org_id=PRA00", 68.40),
-        ("?ntr_codes=1001030U0,-1001030U0AAABAB", 59.67),
-        ("?ntr_codes=1001030U0AA&dtr_codes=1001030U0", 27.77),
+        ("?ntr_bnf_codes=1001030U0", 65.09),
+        ("?ntr_bnf_codes=1001030U0&org_id=PRA00", 68.40),
+        (
+            "?ntr_bnf_codes=1001030U0&ntr_bnf_codes_excluded=1001030U0AAABAB",
+            59.67,
+        ),
+        ("?ntr_bnf_codes=1001030U0AA&dtr_bnf_codes=1001030U0", 27.77),
     ],
 )
 def test_prescribing_all_orgs(client, sample_data, params, expected_last_value):
@@ -23,7 +26,7 @@ def test_prescribing_all_orgs(client, sample_data, params, expected_last_value):
 
 @pytest.mark.django_db(databases=["data"])
 def test_prescribing_deciles(client, sample_data):
-    rsp = client.get("/api/prescribing-deciles/?ntr_codes=1001030U0")
+    rsp = client.get("/api/prescribing-deciles/?ntr_bnf_codes=1001030U0")
     payload = rsp.json()
     assert rsp.status_code == 200
     assert payload["deciles"][-1]["value"] == pytest.approx(64.15, 0.001)
@@ -32,7 +35,7 @@ def test_prescribing_deciles(client, sample_data):
 
 @pytest.mark.django_db(databases=["data"])
 def test_prescribing_deciles_with_practice(client, sample_data):
-    rsp = client.get("/api/prescribing-deciles/?ntr_codes=1001030U0&org_id=PRA00")
+    rsp = client.get("/api/prescribing-deciles/?ntr_bnf_codes=1001030U0&org_id=PRA00")
     payload = rsp.json()
     assert rsp.status_code == 200
     assert payload["deciles"][-1]["value"] == pytest.approx(66.41, 0.001)
@@ -41,7 +44,9 @@ def test_prescribing_deciles_with_practice(client, sample_data):
 
 @pytest.mark.django_db(databases=["data"])
 def test_prescribing_deciles_with_exclusion(client, sample_data):
-    rsp = client.get("/api/prescribing-deciles/?ntr_codes=1001030U0,-1001030U0AAABAB")
+    rsp = client.get(
+        "/api/prescribing-deciles/?ntr_bnf_codes=1001030U0&ntr_bnf_codes_excluded=1001030U0AAABAB"
+    )
     payload = rsp.json()
     assert rsp.status_code == 200
     assert payload["deciles"][-1]["value"] == pytest.approx(59.07, 0.001)
@@ -51,7 +56,7 @@ def test_prescribing_deciles_with_exclusion(client, sample_data):
 @pytest.mark.django_db(databases=["data"])
 def test_prescribing_deciles_with_denominator(client, sample_data):
     rsp = client.get(
-        "/api/prescribing-deciles/?ntr_codes=1001030U0AA&dtr_codes=1001030U0"
+        "/api/prescribing-deciles/?ntr_bnf_codes=1001030U0AA&dtr_bnf_codes=1001030U0"
     )
     payload = rsp.json()
     assert rsp.status_code == 200
