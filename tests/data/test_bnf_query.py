@@ -383,6 +383,15 @@ def test_get_form_route_ids_for_forms_and_routes(rxdb, settings, tmp_path):
     assert route_ids == expected_route_ids
 
 
+def test_get_form_route_ids_for_no_forms_or_routes(rxdb, settings, tmp_path):
+    route_ids = _get_form_route_ids_for_forms_and_routes(
+        form_routes=[], forms=[], routes=[]
+    )
+    expected_route_ids = []
+
+    assert route_ids == expected_route_ids
+
+
 @pytest.mark.django_db(databases=["data"], transaction=True)
 def test_get_form_route_ids_for_invalid_form_routes(rxdb, settings, tmp_path):
     rxdb.ingest([{}])

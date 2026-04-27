@@ -32,6 +32,9 @@ def _get_bnf_codes_for_form_route_ids(form_route_ids):
 
 
 def _get_form_route_ids_for_forms_and_routes(form_routes, forms, routes):
+    if not form_routes and not forms and not routes:
+        return []
+
     query = Q()
     if form_routes:
         assert not routes and not forms, (
@@ -46,8 +49,7 @@ def _get_form_route_ids_for_forms_and_routes(form_routes, forms, routes):
         if forms:
             for form in forms:
                 conditions.append(Q(descr__startswith=f"{form}."))
-        if conditions:
-            query = reduce(and_, conditions)
+        query = reduce(and_, conditions)
 
     form_route_ids = [
         str(form_route.cd) for form_route in OntFormRoute.objects.filter(query)
