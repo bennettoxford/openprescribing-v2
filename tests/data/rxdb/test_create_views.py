@@ -1,12 +1,8 @@
 import pytest
 
-from tests.utils.ingest_utils import ingest_dmd_bnf_map_data, ingest_dmd_data
-
 
 @pytest.mark.django_db(databases=["data"], transaction=True)
-def test_medications(rxdb, settings, tmp_path):
-    ingest_dmd_data(settings, tmp_path)
-    ingest_dmd_bnf_map_data(settings, tmp_path)
+def test_medications(rxdb, dmd_data):
 
     # Confirm that we can query the medications table.
     with rxdb.get_cursor() as cursor:
