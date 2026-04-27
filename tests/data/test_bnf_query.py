@@ -15,14 +15,18 @@ def test_init_normalizes_lists_to_tuples():
         bnf_codes_excluded=["0101"],
         product_type=ProductType.GENERIC,
         form_route_ids=["1", "6"],
+        form_route_ids_excluded=["7"],
         ingredient_ids=["2"],
+        ingredient_ids_excluded=["3"],
     )
     assert query == BNFQuery(
         bnf_codes=("01",),
         bnf_codes_excluded=("0101",),
         product_type=ProductType.GENERIC,
         form_route_ids=("1", "6"),
+        form_route_ids_excluded=("7",),
         ingredient_ids=("2",),
+        ingredient_ids_excluded=("3",),
     )
 
 
@@ -150,6 +154,175 @@ def test_get_matching_presentation_codes_for_ingredient_ids_no_match(
 
 
 @pytest.mark.django_db(databases=["data"])
+def test_get_matching_presentation_codes_for_form_route_ids_excluded(
+    bnf_codes, monkeypatch
+):
+    monkeypatch.setattr(
+        "openprescribing.data.bnf_query._get_bnf_codes_for_form_route_ids",
+        lambda ids: {
+            ("24",): ["1001030U0AAABAB", "1001030U0BDAAAB"],
+        }[tuple(ids)],
+    )
+    query = BNFQuery(
+        bnf_codes=["1001030U0"],
+        form_route_ids_excluded=["24"],
+    )
+    assert query.get_matching_presentation_codes() == [
+        "1001030U0AAACAC",
+        "1001030U0BDABAC",
+    ]
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_get_matching_presentation_codes_for_form_route_ids_include_and_exclude(
+    bnf_codes, monkeypatch
+):
+    monkeypatch.setattr(
+        "openprescribing.data.bnf_query._get_bnf_codes_for_form_route_ids",
+        lambda ids: {
+            ("1",): [
+                "1001030U0AAABAB",
+                "1001030U0AAACAC",
+                "1001030U0BDAAAB",
+                "1001030U0BDABAC",
+            ],
+            ("24",): ["1001030U0AAABAB", "1001030U0BDAAAB"],
+        }[tuple(ids)],
+    )
+    query = BNFQuery(
+        bnf_codes=["1001030U0"],
+        form_route_ids=["1"],
+        form_route_ids_excluded=["24"],
+    )
+    assert query.get_matching_presentation_codes() == [
+        "1001030U0AAACAC",
+        "1001030U0BDABAC",
+    ]
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_get_matching_presentation_codes_for_form_route_ids_excluded_no_match(
+    bnf_codes, monkeypatch
+):
+    monkeypatch.setattr(
+        "openprescribing.data.bnf_query._get_bnf_codes_for_form_route_ids",
+        lambda ids: [],
+    )
+    query = BNFQuery(
+        bnf_codes=["1001030U0AA"],
+        form_route_ids_excluded=["999"],
+    )
+    assert query.get_matching_presentation_codes() == [
+        "1001030U0AAABAB",
+        "1001030U0AAACAC",
+    ]
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_get_matching_presentation_codes_for_ingredient_ids_excluded(
+    bnf_codes, monkeypatch
+):
+    monkeypatch.setattr(
+        "openprescribing.data.bnf_query._get_bnf_codes_for_ingredient_ids",
+        lambda ids: {
+            ("53034005",): ["1001030U0AAACAC", "1001030U0BDABAC"],
+        }[tuple(ids)],
+    )
+    query = BNFQuery(
+        bnf_codes=["1001030U0"],
+        ingredient_ids_excluded=["53034005"],
+    )
+    assert query.get_matching_presentation_codes() == [
+        "1001030U0AAABAB",
+        "1001030U0BDAAAB",
+    ]
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_get_matching_presentation_codes_for_ingredient_ids_include_and_exclude(
+    bnf_codes, monkeypatch
+):
+    monkeypatch.setattr(
+        "openprescribing.data.bnf_query._get_bnf_codes_for_ingredient_ids",
+        lambda ids: {
+            ("methotrexate",): [
+                "1001030U0AAABAB",
+                "1001030U0AAACAC",
+                "1001030U0BDAAAB",
+                "1001030U0BDABAC",
+            ],
+            ("53034005",): ["1001030U0AAACAC", "1001030U0BDABAC"],
+        }[tuple(ids)],
+    )
+    query = BNFQuery(
+        bnf_codes=["1001030U0"],
+        ingredient_ids=["methotrexate"],
+        ingredient_ids_excluded=["53034005"],
+    )
+    assert query.get_matching_presentation_codes() == [
+        "1001030U0AAABAB",
+        "1001030U0BDAAAB",
+    ]
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_get_matching_presentation_codes_for_ingredient_ids_excluded_no_match(
+    bnf_codes, monkeypatch
+):
+    monkeypatch.setattr(
+        "openprescribing.data.bnf_query._get_bnf_codes_for_ingredient_ids",
+        lambda ids: [],
+    )
+    query = BNFQuery(
+        bnf_codes=["1001030U0AA"],
+        ingredient_ids_excluded=["missing"],
+    )
+    assert query.get_matching_presentation_codes() == [
+        "1001030U0AAABAB",
+        "1001030U0AAACAC",
+    ]
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_get_matching_presentation_codes_with_combined_exclusions(
+    bnf_codes, monkeypatch
+):
+    monkeypatch.setattr(
+        "openprescribing.data.bnf_query._get_bnf_codes_for_form_route_ids",
+        lambda ids: {
+            ("tablet",): [
+                "1001030U0AAABAB",
+                "1001030U0AAACAC",
+                "1001030U0BDAAAB",
+                "1001030U0BDABAC",
+            ],
+            ("24",): ["1001030U0AAABAB", "1001030U0BDAAAB"],
+        }[tuple(ids)],
+    )
+    monkeypatch.setattr(
+        "openprescribing.data.bnf_query._get_bnf_codes_for_ingredient_ids",
+        lambda ids: {
+            ("methotrexate",): [
+                "1001030U0AAABAB",
+                "1001030U0AAACAC",
+                "1001030U0BDAAAB",
+                "1001030U0BDABAC",
+            ],
+            ("53034005",): ["1001030U0BDABAC"],
+        }[tuple(ids)],
+    )
+    query = BNFQuery(
+        bnf_codes=["1001030U0"],
+        bnf_codes_excluded=["1001030U0AAABAB"],
+        form_route_ids=["tablet"],
+        form_route_ids_excluded=["24"],
+        ingredient_ids=["methotrexate"],
+        ingredient_ids_excluded=["53034005"],
+    )
+    assert query.get_matching_presentation_codes() == ["1001030U0AAACAC"]
+
+
+@pytest.mark.django_db(databases=["data"])
 def test_describe_search_for_all_product_types(bnf_codes):
     query = BNFQuery(bnf_codes=["1001030U0"], bnf_codes_excluded=["1001030U0_AB"])
     assert query.describe() == {
@@ -224,10 +397,20 @@ def test_from_params():
             "ntr_bnf_codes": "01",
             "ntr_bnf_codes_excluded": "0101",
             "ntr_product_type": "generic",
+            "ntr_form_route_ids": "1",
+            "ntr_form_route_ids_excluded": "2",
+            "ntr_ingredient_ids": "3",
+            "ntr_ingredient_ids_excluded": "4",
         },
     )
     assert query == BNFQuery(
-        bnf_codes=["01"], bnf_codes_excluded=["0101"], product_type=ProductType.GENERIC
+        bnf_codes=["01"],
+        bnf_codes_excluded=["0101"],
+        product_type=ProductType.GENERIC,
+        form_route_ids=["1"],
+        form_route_ids_excluded=["2"],
+        ingredient_ids=["3"],
+        ingredient_ids_excluded=["4"],
     )
 
 
@@ -282,12 +465,14 @@ def test_to_params_with_form_route_ids():
         bnf_codes_excluded=["0101"],
         product_type=ProductType.GENERIC,
         form_route_ids=("1", "6"),
+        form_route_ids_excluded=("2", "7"),
     )
     assert query.to_params("ntr") == {
         "ntr_bnf_codes": "01",
         "ntr_bnf_codes_excluded": "0101",
         "ntr_product_type": "generic",
         "ntr_form_route_ids": "1,6",
+        "ntr_form_route_ids_excluded": "2,7",
     }
 
 
@@ -296,13 +481,15 @@ def test_to_params_with_ingredient_ids():
         bnf_codes=["01"],
         bnf_codes_excluded=["0101"],
         product_type=ProductType.GENERIC,
-        ingredient_ids=("1"),
+        ingredient_ids=("1",),
+        ingredient_ids_excluded=("2",),
     )
     assert query.to_params("ntr") == {
         "ntr_bnf_codes": "01",
         "ntr_bnf_codes_excluded": "0101",
         "ntr_product_type": "generic",
         "ntr_ingredient_ids": "1",
+        "ntr_ingredient_ids_excluded": "2",
     }
 
 

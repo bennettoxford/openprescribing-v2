@@ -10,18 +10,27 @@ def test_from_params():
         {
             "ntr_bnf_codes": "01",
             "ntr_bnf_codes_excluded": "0101",
+            "ntr_form_route_ids_excluded": "2",
             "ntr_product_type": "generic",
             "dtr_bnf_codes": "01",
             "dtr_bnf_codes_excluded": "0101",
+            "dtr_ingredient_ids_excluded": "4",
             "dtr_product_type": "all",
             "org_id": "PRAC01",
         }
     )
 
     assert analysis.ntr_query == BNFQuery(
-        bnf_codes=["01"], bnf_codes_excluded=["0101"], product_type=ProductType.GENERIC
+        bnf_codes=["01"],
+        bnf_codes_excluded=["0101"],
+        product_type=ProductType.GENERIC,
+        form_route_ids_excluded=["2"],
     )
-    assert analysis.dtr_query == BNFQuery(bnf_codes=["01"], bnf_codes_excluded=["0101"])
+    assert analysis.dtr_query == BNFQuery(
+        bnf_codes=["01"],
+        bnf_codes_excluded=["0101"],
+        ingredient_ids_excluded=["4"],
+    )
     assert analysis.org_id == "PRAC01"
 
 
@@ -44,8 +53,13 @@ def test_to_params():
             bnf_codes=["01"],
             bnf_codes_excluded=["0101"],
             product_type=ProductType.BRANDED,
+            form_route_ids_excluded=["2"],
         ),
-        dtr_query=BNFQuery(bnf_codes=["01"], bnf_codes_excluded=["0101"]),
+        dtr_query=BNFQuery(
+            bnf_codes=["01"],
+            bnf_codes_excluded=["0101"],
+            ingredient_ids_excluded=["4"],
+        ),
         org_id="PRAC01",
     )
 
@@ -53,9 +67,11 @@ def test_to_params():
         "ntr_bnf_codes": "01",
         "ntr_bnf_codes_excluded": "0101",
         "ntr_product_type": "branded",
+        "ntr_form_route_ids_excluded": "2",
         "dtr_bnf_codes": "01",
         "dtr_bnf_codes_excluded": "0101",
         "dtr_product_type": "all",
+        "dtr_ingredient_ids_excluded": "4",
         "org_id": "PRAC01",
     }
 

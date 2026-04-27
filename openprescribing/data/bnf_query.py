@@ -83,7 +83,9 @@ class BNFQuery:
     bnf_codes_excluded: tuple[str] = ()
     product_type: ProductType = ProductType.ALL
     form_route_ids: tuple[str] = ()
+    form_route_ids_excluded: tuple[str] = ()
     ingredient_ids: tuple[str] = ()
+    ingredient_ids_excluded: tuple[str] = ()
 
     PRODUCT_TYPE_DEFAULT = "all"
 
@@ -96,7 +98,13 @@ class BNFQuery:
         object.__setattr__(self, "bnf_codes", tuple(self.bnf_codes))
         object.__setattr__(self, "bnf_codes_excluded", tuple(self.bnf_codes_excluded))
         object.__setattr__(self, "form_route_ids", tuple(self.form_route_ids))
+        object.__setattr__(
+            self, "form_route_ids_excluded", tuple(self.form_route_ids_excluded)
+        )
         object.__setattr__(self, "ingredient_ids", tuple(self.ingredient_ids))
+        object.__setattr__(
+            self, "ingredient_ids_excluded", tuple(self.ingredient_ids_excluded)
+        )
 
     @staticmethod
     def has_params(field, params):
@@ -112,14 +120,22 @@ class BNFQuery:
         bnf_codes_excluded = _get_tuple_param(params, f"{field}_bnf_codes_excluded")
         product_type = params.get(f"{field}_product_type", cls.PRODUCT_TYPE_DEFAULT)
         form_route_ids = _get_tuple_param(params, f"{field}_form_route_ids")
+        form_route_ids_excluded = _get_tuple_param(
+            params, f"{field}_form_route_ids_excluded"
+        )
         ingredient_ids = _get_tuple_param(params, f"{field}_ingredient_ids")
+        ingredient_ids_excluded = _get_tuple_param(
+            params, f"{field}_ingredient_ids_excluded"
+        )
 
         return cls(
             bnf_codes=bnf_codes,
             bnf_codes_excluded=bnf_codes_excluded,
             product_type=ProductType(product_type),
             form_route_ids=form_route_ids,
+            form_route_ids_excluded=form_route_ids_excluded,
             ingredient_ids=ingredient_ids,
+            ingredient_ids_excluded=ingredient_ids_excluded,
         )
 
     @classmethod
@@ -203,10 +219,18 @@ class BNFQuery:
             codes = codes.filter(
                 code__in=_get_bnf_codes_for_form_route_ids(self.form_route_ids)
             )
+        if self.form_route_ids_excluded:
+            codes = codes.exclude(
+                code__in=_get_bnf_codes_for_form_route_ids(self.form_route_ids_excluded)
+            )
 
         if self.ingredient_ids:
             codes = codes.filter(
                 code__in=_get_bnf_codes_for_ingredient_ids(self.ingredient_ids)
+            )
+        if self.ingredient_ids_excluded:
+            codes = codes.exclude(
+                code__in=_get_bnf_codes_for_ingredient_ids(self.ingredient_ids_excluded)
             )
 
         codes = list(codes.order_by("code").values_list("code", flat=True))
@@ -249,8 +273,16 @@ class BNFQuery:
             params[f"{field}_bnf_codes_excluded"] = ",".join(self.bnf_codes_excluded)
         if self.form_route_ids:
             params[f"{field}_form_route_ids"] = ",".join(self.form_route_ids)
+        if self.form_route_ids_excluded:
+            params[f"{field}_form_route_ids_excluded"] = ",".join(
+                self.form_route_ids_excluded
+            )
         if self.ingredient_ids:
             params[f"{field}_ingredient_ids"] = ",".join(self.ingredient_ids)
+        if self.ingredient_ids_excluded:
+            params[f"{field}_ingredient_ids_excluded"] = ",".join(
+                self.ingredient_ids_excluded
+            )
 
         return params
 
