@@ -2,62 +2,199 @@
 {% load static %}
 
 {% block content %}
-<div class="d-lg-none">
-    <div class="alert alert-warning mb-0" role="alert">
-        We're sorry, this site does not yet work on mobile or small screens.
-    </div>
-</div>
+<section
+    data-container
+    data-analysis-url="{% url 'analysis' %}"
+    data-medications-url="{% url 'api_metadata_medications' %}"
+    data-dmd-url="{% url 'api_metadata_dmd' %}"
+    data-bnf-url="{% url 'api_metadata_bnf' %}"
+>
+    <p data-loading>Loading metadata...</p>
+    <p data-error hidden></p>
+    <div data-app hidden>
+        <ul class="nav nav-tabs mb-4">
+            {% for panel in panels %}
+            <li class="nav-item">
+                <button
+                    class="nav-link{% if forloop.first %} active{% endif %}"
+                    id="{{ panel.prefix }}-tab"
+                    type="button"
+                    data-bs-toggle="tab"
+                    data-bs-target="#{{ panel.prefix }}-panel"
+                >
+                    {{ panel.label }}
+                </button>
+            </li>
+            {% endfor %}
+            <li class="nav-item">
+                <button
+                    class="nav-link"
+                    id="summary-tab"
+                    type="button"
+                    data-bs-toggle="tab"
+                    data-bs-target="#summary-panel"
+                >
+                    Summary
+                </button>
+            </li>
+        </ul>
 
-<div class="d-none d-lg-block">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="card">
-                <div class="card-body">
-                    <h1 class="h4">Prescribing query</h1>
-                    <form id="prescribing-query-form" action="{% url 'analysis' %}">
-                        <h2 class="h5">Numerator</h2>
-                        {% include "./_bnf_query_form_controls.html" with field="ntr" query=analysis.ntr_query %}
-                        <h2 class="h5">Denominator</h2>
-                        {% include "./_bnf_query_form_controls.html" with field="dtr" query=analysis.dtr_query %}
-                        <button
-                            type="submit"
-                            id="prescribing-query-submit"
+        <div class="tab-content">
+            {% for panel in panels %}
+            {% include "./_build_analysis_query_panel.html" with prefix=panel.prefix active=forloop.first %}
+            {% endfor %}
+            <div
+                class="tab-pane"
+                id="summary-panel"
+                tabindex="0"
+                data-summary-tab
+            >
+                <div class="row mt-3">
+                    {% for panel in panels %}
+                    <div class="col-12{% if not forloop.first %} mt-3{% endif %}">
+                        <h2 class="h5">{{ panel.label }}</h2>
+                        <div data-summary-section="{{ panel.prefix }}">
+                            <ul><li>No filters selected.</li></ul>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <div class="col-12 mt-3">
+                        <a
                             class="btn btn-primary"
-                            {% if not analysis %}disabled{% endif %}
+                            href="{% url 'analysis' %}"
+                            data-summary-submit
                         >
                             Submit
-                        </button>
-                    </form>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="modal" id="bnf-tree-modal" tabindex="-1">
-  <div class="modal-dialog modal-xl modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="bnf-tree-modal-title"></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        {% include "_bnf_tree.html" %}
-      </div>
-      <div class="modal-footer">
-        <div class="me-auto text-muted small">
-          Control-click (command-click on Mac) on an item to include or exclude it.
+    {# Templates below are shared across all panels; build-analysis.js resolves them once. #}
+    <template data-vtm-row-template>
+        <tr>
+            <td colspan="2">
+                <strong data-name></strong>
+            </td>
+        </tr>
+    </template>
+
+    <template data-vmp-row-template>
+        <tr>
+            <td>
+                <div class="d-flex align-items-center gap-2 ps-4">
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-link p-0 text-decoration-none"
+                        data-amp-toggle
+                        style="visibility: hidden"
+                    >
+                        <i class="bi bi-caret-right-fill"></i>
+                    </button>
+                    <span data-name></span>
+                </div>
+            </td>
+            <td data-form-route></td>
+        </tr>
+    </template>
+
+    <template data-amp-row-template>
+        <tr data-amp-row hidden>
+            <td>
+                <div class="ps-5">
+                    <em data-name></em>
+                </div>
+            </td>
+            <td data-form-route></td>
+        </tr>
+    </template>
+
+    <template data-dropdown-template>
+        <div class="dropdown-component border rounded bg-body mb-3" data-dropdown>
+            <div
+                class="dropdown-component-header d-flex align-items-center gap-2 px-3 py-2"
+                data-dropdown-header
+            >
+                <button
+                    type="button"
+                    class="btn btn-sm btn-link p-0 text-decoration-none text-body"
+                    data-dropdown-toggle
+                >
+                    <i
+                        class="dropdown-component-caret bi bi-caret-right-fill"
+                        data-dropdown-caret
+                    ></i>
+                </button>
+                <span
+                    class="dropdown-component-title fw-semibold flex-grow-1"
+                    data-dropdown-label
+                ></span>
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-dropdown-remove
+                ></button>
+            </div>
+            <ul
+                class="dropdown-component-selected list-unstyled mb-0 px-3 pb-3"
+                data-dropdown-summary
+            ></ul>
+            <div
+                class="dropdown-component-panel px-3 pb-3"
+                data-dropdown-body
+                hidden
+            >
+                <div class="input-group input-group-sm">
+                    <input
+                        type="text"
+                        class="form-control"
+                        autocomplete="off"
+                        placeholder="Search..."
+                        data-dropdown-input
+                    />
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        data-clear-search
+                    >
+                        Clear
+                    </button>
+                </div>
+                <select
+                    class="dropdown-component-options form-select form-select-sm mt-2"
+                    data-dropdown-options
+                    multiple
+                    size="10"
+                    style="max-height: 12rem"
+                ></select>
+            </div>
         </div>
-        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Update Query</button>
-      </div>
-    </div>
-  </div>
-</div>
+    </template>
 
-{% include "_bnf_table_modal.html" with include_footer=True %}
-{% endblock %}
+    <template data-dropdown-option-template>
+        <option></option>
+    </template>
+
+    <template data-summary-list-template>
+        <ul></ul>
+    </template>
+
+    <template data-summary-list-item-template>
+        <li>
+            <strong data-label></strong>
+            <span data-values></span>
+        </li>
+    </template>
+
+    <template data-summary-empty-list-item-template>
+        <li>No filters selected.</li>
+    </template>
+
+</section>
 
 {% block extra_js %}
-{{ code_to_name|json_script:"code-to-name" }}
-<script type="module" src="{% static 'js/prescribing-query.js' %}"></script>
+<script type="module" src="{% static 'js/build-analysis.js' %}"></script>
+{% endblock %}
 {% endblock %}
