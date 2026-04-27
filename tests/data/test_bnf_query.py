@@ -11,7 +11,7 @@ from tests.utils.ingest_utils import ingest_dmd_bnf_map_data, ingest_dmd_data
 
 @pytest.mark.django_db(databases=["data"])
 def test_get_matching_presentation_codes(bnf_codes):
-    query = BNFQuery.build(["1001030U0AA", "1001030U0BD", "-1001030U0AAABAB"], "all")
+    query = BNFQuery.build(["1001030U0AA", "1001030U0BD", "-1001030U0AAABAB"])
     assert query.get_matching_presentation_codes() == [
         "1001030U0AAACAC",
         "1001030U0BDAAAB",
@@ -21,7 +21,7 @@ def test_get_matching_presentation_codes(bnf_codes):
 
 @pytest.mark.django_db(databases=["data"])
 def test_get_matching_presentation_codes_no_excludes(bnf_codes):
-    query = BNFQuery.build(["1001030U0AA"], ProductType.ALL)
+    query = BNFQuery.build(["1001030U0AA"])
     assert query.get_matching_presentation_codes() == [
         "1001030U0AAABAB",
         "1001030U0AAACAC",
@@ -30,7 +30,7 @@ def test_get_matching_presentation_codes_no_excludes(bnf_codes):
 
 @pytest.mark.django_db(databases=["data"])
 def test_get_matching_presentation_codes_for_strength_and_formulation(bnf_codes):
-    query = BNFQuery.build(["1001030U0_AC"], ProductType.ALL)
+    query = BNFQuery.build(["1001030U0_AC"])
     assert query.get_matching_presentation_codes() == [
         "1001030U0AAACAC",
         "1001030U0BDABAC",
@@ -132,7 +132,7 @@ def test_get_matching_presentation_codes_for_ingredient_ids_no_match(
 
 @pytest.mark.django_db(databases=["data"])
 def test_describe_search_for_all_product_types(bnf_codes):
-    query = BNFQuery.build(["1001030U0", "-1001030U0_AB"], ProductType.ALL)
+    query = BNFQuery.build(["1001030U0", "-1001030U0_AB"])
     assert query.describe() == {
         "product_type": ProductType.ALL,
         "includes": [
@@ -179,7 +179,7 @@ def test_describe_search_for_ingredients(rxdb, settings, tmp_path):
     rxdb.ingest([{}])
     ingest_dmd_data(settings, tmp_path)
     ingest_dmd_bnf_map_data(settings, tmp_path)
-    query = BNFQuery.build([], ProductType.ALL, ingredient_ids=["53034005"])
+    query = BNFQuery.build([], ingredient_ids=["53034005"])
     assert query.describe() == {
         "product_type": ProductType.ALL,
         "includes": [],

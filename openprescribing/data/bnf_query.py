@@ -13,6 +13,12 @@ from openprescribing.data.models.dmd import Ing, OntFormRoute
 from .models import BNFCode
 
 
+class ProductType(StrEnum):
+    ALL = "all"
+    GENERIC = "generic"
+    BRANDED = "branded"
+
+
 def _get_bnf_codes_for_form_route_ids(form_route_ids):
     with rxdb.get_cursor() as cursor:
         results = cursor.execute(
@@ -72,14 +78,14 @@ class BNFQuery:
     """Represents a query returning codes for BNF presentations."""
 
     terms: tuple[Term]
-    product_type: ProductType
+    product_type: ProductType = ProductType.ALL
     form_route_ids: tuple[str] = ()
     ingredient_ids: tuple[str] = ()
 
     PRODUCT_TYPE_DEFAULT = "all"
 
     @classmethod
-    def build(cls, raw_terms, product_type, form_route_ids=(), ingredient_ids=()):
+    def build(cls, raw_terms, product_type="all", form_route_ids=(), ingredient_ids=()):
         return cls(
             tuple([Term.from_param_value(rt) for rt in raw_terms]),
             ProductType(product_type),
@@ -341,9 +347,3 @@ class StrengthAndFormulationTerm(Term):
         else:
             description = generic_code_obj.name
         return {"code": self.code, "description": description}
-
-
-class ProductType(StrEnum):
-    ALL = "all"
-    GENERIC = "generic"
-    BRANDED = "branded"

@@ -17,7 +17,7 @@ def test_from_params():
     )
 
     assert analysis.ntr_query == BNFQuery.build(["01", "-0101"], ProductType.GENERIC)
-    assert analysis.dtr_query == BNFQuery.build(["01", "-0101"], ProductType.ALL)
+    assert analysis.dtr_query == BNFQuery.build(["01", "-0101"])
     assert analysis.org_id == "PRAC01"
 
 
@@ -28,7 +28,7 @@ def test_from_params_ntr_codes_only():
         }
     )
 
-    assert analysis.ntr_query == BNFQuery.build(["01", "-0101"], ProductType.ALL)
+    assert analysis.ntr_query == BNFQuery.build(["01", "-0101"])
     assert analysis.dtr_query == ListSizeQuery()
     assert analysis.org_id is None
 
@@ -36,7 +36,7 @@ def test_from_params_ntr_codes_only():
 def test_to_params():
     analysis = Analysis(
         ntr_query=BNFQuery.build(["01", "-0101"], ProductType.BRANDED),
-        dtr_query=BNFQuery.build(["01", "-0101"], ProductType.ALL),
+        dtr_query=BNFQuery.build(["01", "-0101"]),
         org_id="PRAC01",
     )
 
