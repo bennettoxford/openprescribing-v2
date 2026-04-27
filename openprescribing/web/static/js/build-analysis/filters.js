@@ -6,7 +6,7 @@ export const FILTER_DEFINITIONS = [
   {
     key: "ingredientId",
     label: "Ingredient",
-    urlParamSuffix: "ingredient",
+    urlParamSuffix: "ingredient_ids",
     isBaseline: true,
     lookupKey: "ingredient",
     valueField: "id",
@@ -17,7 +17,7 @@ export const FILTER_DEFINITIONS = [
   {
     key: "vtmId",
     label: "VTM",
-    urlParamSuffix: "vtm",
+    urlParamSuffix: "vtm_ids",
     isBaseline: true,
     lookupKey: "vtm",
     valueField: "id",
@@ -28,7 +28,7 @@ export const FILTER_DEFINITIONS = [
   {
     key: "bnfCodePrefix",
     label: "BNF hierarchy",
-    urlParamSuffix: "bnf",
+    urlParamSuffix: "bnf_codes",
     isBaseline: true,
     lookupKey: "bnf",
     valueField: "code",
@@ -39,7 +39,7 @@ export const FILTER_DEFINITIONS = [
   {
     key: "formRouteId",
     label: "Form/route",
-    urlParamSuffix: "form_route",
+    urlParamSuffix: "form_route_ids",
     isBaseline: false,
     lookupKey: "ont_form_route",
     valueField: "id",
@@ -66,7 +66,7 @@ export function getFilterControlLabel(definition, isExcluded) {
 export function getFilterControlUrlParamSuffix(definition, isExcluded) {
   // Return the URL parameter suffix for the given filter definition and variant.
   return isExcluded
-    ? `${definition.urlParamSuffix}_exclude`
+    ? `${definition.urlParamSuffix}_excluded`
     : definition.urlParamSuffix;
 }
 
