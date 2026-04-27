@@ -21,6 +21,7 @@ import {
   renderAddFilterOptions,
   renderPromptState,
   renderResults,
+  renderSummary,
 } from "./build-analysis/render.js";
 import { DropdownCollection } from "./dropdown.js";
 
@@ -29,12 +30,26 @@ const containerEl = document.querySelector("[data-container]");
 const loadingEl = containerEl.querySelector("[data-loading]");
 const errorEl = containerEl.querySelector("[data-error]");
 const appEl = containerEl.querySelector("[data-app]");
+const summarySectionElsByPrefix = new Map(
+  Array.from(containerEl.querySelectorAll("[data-summary-section]")).map(
+    (element) => [element.dataset.summarySection, element],
+  ),
+);
 
 // Templates that we'll use to generate elements in the document.
 const templates = {
   dropdownTemplate: containerEl.querySelector("[data-dropdown-template]"),
   dropdownOptionTemplate: containerEl.querySelector(
     "[data-dropdown-option-template]",
+  ),
+  summaryListTemplate: containerEl.querySelector(
+    "[data-summary-list-template]",
+  ),
+  summaryListItemTemplate: containerEl.querySelector(
+    "[data-summary-list-item-template]",
+  ),
+  summaryEmptyListItemTemplate: containerEl.querySelector(
+    "[data-summary-empty-list-item-template]",
   ),
   vtmRowTemplate: containerEl.querySelector("[data-vtm-row-template]"),
   vmpRowTemplate: containerEl.querySelector("[data-vmp-row-template]"),
@@ -55,6 +70,7 @@ const initialisePage = async () => {
     });
 
     initialiseQueriesFromUrl(panels);
+    refreshSummary(panels);
     loadingEl.hidden = true;
     appEl.hidden = false;
   } catch (error) {
@@ -100,6 +116,7 @@ function initialiseQueryPanel(panel) {
       renderAddFilterOptions(panel);
       refreshAvailableOptionIds(panel, metadata, filters);
       runQuery(panel, filters, true);
+      refreshSummary([panel]);
     },
   });
 
@@ -128,6 +145,11 @@ function initialiseQueriesFromUrl(panels) {
       runQuery(panel, filters);
     }
   });
+}
+
+function refreshSummary(panels) {
+  // Re-render the summary tab for the given panels.
+  renderSummary(summarySectionElsByPrefix, panels, metadata, templates);
 }
 
 function handleAddFilterChange(panel) {

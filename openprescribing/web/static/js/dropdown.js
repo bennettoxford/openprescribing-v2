@@ -70,6 +70,15 @@ export class DropdownCollection {
     }
     return result;
   }
+
+  // Return an object mapping each key to its array of selected names.
+  getAllSelectedNames() {
+    const result = {};
+    for (const [key, { dropdown }] of this._dropdowns) {
+      result[key] = dropdown.getSelectedNames();
+    }
+    return result;
+  }
 }
 
 class Dropdown {

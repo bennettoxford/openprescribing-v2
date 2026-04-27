@@ -25,12 +25,40 @@
                 </button>
             </li>
             {% endfor %}
+            <li class="nav-item">
+                <button
+                    class="nav-link"
+                    id="summary-tab"
+                    type="button"
+                    data-bs-toggle="tab"
+                    data-bs-target="#summary-panel"
+                >
+                    Summary
+                </button>
+            </li>
         </ul>
 
         <div class="tab-content">
             {% for panel in panels %}
             {% include "./_build_analysis_2_query_panel.html" with prefix=panel.prefix active=forloop.first %}
             {% endfor %}
+            <div
+                class="tab-pane"
+                id="summary-panel"
+                tabindex="0"
+                data-summary-tab
+            >
+                <div class="row mt-3">
+                    {% for panel in panels %}
+                    <div class="col-12{% if not forloop.first %} mt-3{% endif %}">
+                        <h2 class="h5">{{ panel.label }}</h2>
+                        <div data-summary-section="{{ panel.prefix }}">
+                            <ul><li>No filters selected.</li></ul>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
         </div>
     </div>
 
@@ -137,6 +165,21 @@
 
     <template data-dropdown-option-template>
         <option></option>
+    </template>
+
+    <template data-summary-list-template>
+        <ul></ul>
+    </template>
+
+    <template data-summary-list-item-template>
+        <li>
+            <strong data-label></strong>
+            <span data-values></span>
+        </li>
+    </template>
+
+    <template data-summary-empty-list-item-template>
+        <li>No filters selected.</li>
     </template>
 
 </section>

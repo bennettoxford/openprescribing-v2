@@ -37,6 +37,18 @@ export function renderAddFilterOptions(panel) {
   panel.refs.addFilterSelect.value = "";
 }
 
+export function renderSummary(sectionsByPrefix, panels, metadata, templates) {
+  // Render the active filters for each panel into the summary tab.
+  panels.forEach((panel) => {
+    renderSummarySection(
+      sectionsByPrefix.get(panel.prefix),
+      panel,
+      metadata,
+      templates,
+    );
+  });
+}
+
 function makeAddFilterOption(value, label) {
   // Build an Add filter dropdown option.
   const option = document.createElement("option");
@@ -49,6 +61,53 @@ function getActiveFilterControlCount(panel) {
   // Return the number of active filter controls in the panel.
   // TODO move this inline.
   return Object.keys(panel.dropdowns.getAllSelected()).length;
+}
+
+function renderSummarySection(sectionEl, panel, metadata, templates) {
+  // Render given panel's active filters into its summary section.
+  const selectedNamesByKey = panel.dropdowns.getAllSelectedNames();
+  const activeFilters = FILTER_DEFINITIONS.flatMap((definition) =>
+    [false, true].flatMap((isExcluded) => {
+      const filterKey = getFilterControlKey(definition, isExcluded);
+      const values = selectedNamesByKey[filterKey] ?? [];
+
+      if (values.length === 0) {
+        return [];
+      }
+
+      return [
+        {
+          label: getFilterControlLabel(definition, isExcluded),
+          values: selectedNamesByKey[filterKey],
+        },
+      ];
+    }),
+  );
+
+  const listEl = cloneTemplateElement(templates.summaryListTemplate);
+
+  if (activeFilters.length === 0) {
+    listEl.appendChild(
+      cloneTemplateElement(templates.summaryEmptyListItemTemplate),
+    );
+    sectionEl.replaceChildren(listEl);
+    return;
+  }
+
+  activeFilters.forEach((filter) => {
+    const itemEl = cloneTemplateElement(templates.summaryListItemTemplate);
+    itemEl.querySelector("[data-label]").textContent = filter.label;
+    itemEl.querySelector("[data-values]").textContent =
+      ` ${filter.values.join(", ")}`;
+    listEl.appendChild(itemEl);
+  });
+
+  sectionEl.replaceChildren(listEl);
+}
+
+function cloneTemplateElement(template) {
+  // Clone a template's first element.
+  return template.content.firstElementChild.cloneNode(true);
 }
 
 export function renderPromptState(panel) {
