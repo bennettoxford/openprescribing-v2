@@ -4,6 +4,7 @@ import pytest
 
 import openprescribing.data.rxdb
 from openprescribing.data.models import BNFCode, Org, OrgRelation
+from tests.utils.ingest_utils import ingest_dmd_bnf_map_data, ingest_dmd_data
 from tests.utils.rxdb_utils import RXDBFixture
 
 
@@ -66,6 +67,19 @@ def bnf_codes():
         [7, "1001030U0BDABAC", "Maxtrex 10mg tablets"],
     ]:
         BNFCode.objects.create(code=code, name=name, level=level)
+
+
+@pytest.fixture
+def dmd_data(rxdb, settings, tmp_path):
+    """Ingest data from dm+d and dm+d -> BNF map fixtures.
+
+    Tests using this fixture should be marked
+    `@pytest.mark.django_db(databases=["data"], transaction=True)`.
+
+    Future work will remove the need for this pytest mark.
+    """
+    ingest_dmd_data(settings, tmp_path)
+    ingest_dmd_bnf_map_data(settings, tmp_path)
 
 
 @pytest.fixture
