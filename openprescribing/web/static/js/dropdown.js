@@ -110,6 +110,13 @@ class Dropdown {
     return [...this._selected];
   }
 
+  // Return the names of all currently selected options, sorted alphabetically.
+  getSelectedNames() {
+    return [...this._selected]
+      .map((id) => this._optionsById.get(id).name)
+      .sort((a, b) => a.localeCompare(b));
+  }
+
   // Remove the component's DOM contents from its container element.
   destroy() {
     this._el.innerHTML = "";
@@ -233,9 +240,7 @@ class Dropdown {
   // Render the closed-state list of selected names, sorted alphabetically.
   _renderSummary() {
     this._summaryEl.innerHTML = "";
-    const names = [...this._selected]
-      .map((id) => this._optionsById.get(id).name)
-      .sort((a, b) => a.localeCompare(b));
+    const names = this.getSelectedNames();
 
     if (names.length === 0) {
       const li = document.createElement("li");
