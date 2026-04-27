@@ -64,9 +64,9 @@ def query_practice_prescribing_data(query, sample_data):
 
     # We're not interested in testing complicated BNFQuery objects; those are adequately
     # tested in test_bnf_query.py.
-    assert len(query.terms) == 1
-    assert not query.terms[0].negated
-    code = query.terms[0].code
+    assert len(query.bnf_codes) == 1
+    assert len(query.bnf_codes_excluded) == 0
+    code = query.bnf_codes[0]
     assert "_" not in code
     assert query.product_type == ProductType.ALL
 

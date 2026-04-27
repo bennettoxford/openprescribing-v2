@@ -77,7 +77,8 @@ def _get_bnf_codes_for_ingredient_ids(ingredient_ids):
 class BNFQuery:
     """Represents a query returning codes for BNF presentations."""
 
-    terms: tuple[Term]
+    bnf_codes: tuple[str] = ()
+    bnf_codes_excluded: tuple[str] = ()
     product_type: ProductType = ProductType.ALL
     form_route_ids: tuple[str] = ()
     ingredient_ids: tuple[str] = ()
@@ -86,8 +87,11 @@ class BNFQuery:
 
     @classmethod
     def build(cls, raw_terms, product_type="all", form_route_ids=(), ingredient_ids=()):
+        bnf_codes = tuple([rt for rt in raw_terms if rt[0] != "-"])
+        bnf_codes_excluded = tuple([rt[1:] for rt in raw_terms if rt[0] == "-"])
         return cls(
-            tuple([Term.from_param_value(rt) for rt in raw_terms]),
+            bnf_codes,
+            bnf_codes_excluded,
             ProductType(product_type),
             tuple(form_route_ids),
             tuple(ingredient_ids),
@@ -124,15 +128,6 @@ class BNFQuery:
     @classmethod
     def from_dict(cls, query_dict):
         bnf_codes_dict = query_dict.get("bnf_codes", {"included": [], "excluded": []})
-        included_terms = tuple([Term(rt, False) for rt in bnf_codes_dict["included"]])
-        terms = included_terms
-
-        if "excluded" in bnf_codes_dict:
-            excluded_terms = tuple(
-                [Term(rt, True) for rt in bnf_codes_dict["excluded"]]
-            )
-            terms += excluded_terms
-
         product_type = query_dict.get("product_type", cls.PRODUCT_TYPE_DEFAULT)
 
         form_route_ids = _get_form_route_ids_for_forms_and_routes(
@@ -144,20 +139,19 @@ class BNFQuery:
         ingredient_ids = tuple(str(i) for i in query_dict.get("ingredient_ids", []))
 
         return cls(
-            terms,
+            tuple(bnf_codes_dict["included"]),
+            tuple(bnf_codes_dict.get("excluded", [])),
             ProductType(product_type),
             form_route_ids=form_route_ids,
             ingredient_ids=ingredient_ids,
         )
 
     def to_dict(self):
-        included_codes = [term.code for term in self.terms if not term.negated]
-        excluded_codes = [term.code for term in self.terms if term.negated]
         bnf_query_dict = {
-            "bnf_codes": {"included": included_codes},
+            "bnf_codes": {"included": list(self.bnf_codes)},
         }
-        if excluded_codes:
-            bnf_query_dict["bnf_codes"]["excluded"] = excluded_codes
+        if self.bnf_codes_excluded:
+            bnf_query_dict["bnf_codes"]["excluded"] = list(self.bnf_codes_excluded)
         if not self.product_type == ProductType.ALL:
             bnf_query_dict["product_type"] = self.product_type.value
         if self.form_route_ids:
@@ -199,8 +193,8 @@ class BNFQuery:
         Returned codes are strings, not BNFCode instances.
         """
 
-        includes = [t.build_q() for t in self.terms if not t.negated]
-        excludes = [t.build_q() for t in self.terms if t.negated]
+        includes = [build_q(code) for code in self.bnf_codes]
+        excludes = [build_q(code) for code in self.bnf_codes_excluded]
 
         codes = (
             BNFCode.objects.filter(level=BNFCode.Level.PRESENTATION)
@@ -232,11 +226,9 @@ class BNFQuery:
     def describe(self):
         return {
             "product_type": self.product_type,
-            "includes": [
-                t.describe(self.product_type) for t in self.terms if not t.negated
-            ],
+            "includes": [describe(code, self.product_type) for code in self.bnf_codes],
             "excludes": [
-                t.describe(self.product_type) for t in self.terms if t.negated
+                describe(code, self.product_type) for code in self.bnf_codes_excluded
             ],
             "form_routes": [
                 OntFormRoute.objects.get(cd=fr).descr for fr in self.form_route_ids
@@ -265,73 +257,51 @@ class BNFQuery:
         return params
 
     def to_codes(self):
-        return ",".join(t.to_param_value() for t in self.terms)
+        param_values = self.bnf_codes + tuple(
+            f"-{code}" for code in self.bnf_codes_excluded
+        )
+        return ",".join(param_values)
 
 
-@dataclass(frozen=True)
-class Term:
-    """Represents a term in a query.
+def build_q(code):
+    """Return Q object for finding all presentations that match the given code.
 
-    This class will be removed in a subsequent commit.
+    If the code contains an underscore, then it is a "strength and formulation" code,
+    consisting of a BNF chemical substance code (nine characters) and a strength and
+    formulation part (two characters), separated by an underscore.
+
+    For instance, a query for 040702040_AM returns all presentations belonging to the
+    chemical substance 040702040 (Tramadol hydrochloride) that have the same strength
+    and formulation as the generic presentation 040702040AAAMAM (Tramadol 300mg
+    modified-release tablets).
+
+    If the code does not contain an underscore, then it is a "prefix" code, and matches
+    all presentations beginning with that prefix.
     """
 
-    code: str
-    negated: bool
+    if "_" in code:
+        prefix, suffix = code.split("_")
+        assert len(prefix) == 9  # chemical substance code
+        assert len(suffix) == 2  # strength and formulation part
+        return Q(code__startswith=prefix, code__endswith=suffix)
+    else:
+        return Q(code__startswith=code)
 
-    @classmethod
-    def from_param_value(cls, raw_term):
-        if raw_term[0] == "-":
-            negated = True
-            code = raw_term[1:]
+
+def describe(code, product_type):
+    """Return dict with keys `code` and `description` for describing a search to
+    users."""
+
+    if "_" in code:
+        prefix, suffix = code.split("_")
+        assert len(prefix) == 9  # chemical substance code
+        assert len(suffix) == 2  # strength and formulation part
+        generic_code_obj = BNFCode.objects.get(code=f"{prefix}AA{suffix}{suffix}")
+        if product_type == ProductType.ALL:
+            description = f"{generic_code_obj.name} (branded and generic)"
         else:
-            negated = False
-            code = raw_term
-        return cls(code, negated)
-
-    def to_param_value(self):
-        if self.negated:
-            return "-" + self.code
-        else:
-            return self.code
-
-    def build_q(self):
-        """Return Q object for finding all presentations that match the given code.
-
-        If the code contains an underscore, then it is a "strength and formulation" code,
-        consisting of a BNF chemical substance code (nine characters) and a strength and
-        formulation part (two characters), separated by an underscore.
-
-        For instance, a query for 040702040_AM returns all presentations belonging to the
-        chemical substance 040702040 (Tramadol hydrochloride) that have the same strength
-        and formulation as the generic presentation 040702040AAAMAM (Tramadol 300mg
-        modified-release tablets).
-
-        If the code does not contain an underscore, then it is a "prefix" code, and matches
-        all presentations beginning with that prefix.
-        """
-
-        if "_" in self.code:
-            prefix, suffix = self.code.split("_")
-            assert len(prefix) == 9  # chemical substance code
-            assert len(suffix) == 2  # strength and formulation part
-            return Q(code__startswith=prefix, code__endswith=suffix)
-        else:
-            return Q(code__startswith=self.code)
-
-    def describe(self, product_type):
-        """Return dict with keys `code` and `description` for describing a search to
-        users."""
-
-        if "_" in self.code:
-            prefix, suffix = self.code.split("_")
-            assert len(prefix) == 9  # chemical substance code
-            assert len(suffix) == 2  # strength and formulation part
-            generic_code_obj = BNFCode.objects.get(code=f"{prefix}AA{suffix}{suffix}")
-            if product_type == ProductType.ALL:
-                description = f"{generic_code_obj.name} (branded and generic)"
-            else:
-                description = generic_code_obj.name
-            return {"code": self.code, "description": description}
-        else:
-            description = BNFCode.objects.get(code=self.code).name
-            return {"code": self.code, "description": description}
+            description = generic_code_obj.name
+        return {"code": code, "description": description}
+    else:
+        description = BNFCode.objects.get(code=code).name
+        return {"code": code, "description": description}
