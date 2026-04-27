@@ -108,27 +108,11 @@ class BNFQuery:
     def from_params(cls, field, params):
         """Build a BNFQuery from URL query parameters for a field."""
 
-        if ids := params.get(f"{field}_bnf_codes"):
-            bnf_codes = tuple(ids.split(","))
-        else:
-            bnf_codes = ()
-
-        if ids := params.get(f"{field}_bnf_codes_excluded"):
-            bnf_codes_excluded = tuple(ids.split(","))
-        else:
-            bnf_codes_excluded = ()
-
+        bnf_codes = _get_tuple_param(params, f"{field}_bnf_codes")
+        bnf_codes_excluded = _get_tuple_param(params, f"{field}_bnf_codes_excluded")
         product_type = params.get(f"{field}_product_type", cls.PRODUCT_TYPE_DEFAULT)
-
-        if ids := params.get(f"{field}_form_route_ids"):
-            form_route_ids = tuple(ids.split(","))
-        else:
-            form_route_ids = ()
-
-        if ids := params.get(f"{field}_ingredient_ids"):
-            ingredient_ids = tuple(ids.split(","))
-        else:
-            ingredient_ids = ()
+        form_route_ids = _get_tuple_param(params, f"{field}_form_route_ids")
+        ingredient_ids = _get_tuple_param(params, f"{field}_ingredient_ids")
 
         return cls(
             bnf_codes=bnf_codes,
@@ -319,3 +303,9 @@ def describe(code, product_type):
     else:
         description = BNFCode.objects.get(code=code).name
         return {"code": code, "description": description}
+
+
+def _get_tuple_param(params, key):
+    if value := params.get(key):
+        return tuple(value.split(","))
+    return ()
