@@ -73,8 +73,8 @@ class BNFQuery:
 
     terms: tuple[Term]
     product_type: ProductType
-    form_route_ids: tuple[str, ...] = ()
-    ingredient_ids: tuple[str, ...] = ()
+    form_route_ids: tuple[str] = ()
+    ingredient_ids: tuple[str] = ()
 
     PRODUCT_TYPE_DEFAULT = "all"
 
