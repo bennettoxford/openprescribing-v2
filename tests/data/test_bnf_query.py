@@ -9,9 +9,28 @@ from openprescribing.data.models import BNFCode
 from tests.utils.ingest_utils import ingest_dmd_bnf_map_data, ingest_dmd_data
 
 
+def test_init_normalizes_lists_to_tuples():
+    query = BNFQuery(
+        bnf_codes=["01"],
+        bnf_codes_excluded=["0101"],
+        product_type=ProductType.GENERIC,
+        form_route_ids=["1", "6"],
+        ingredient_ids=["2"],
+    )
+    assert query == BNFQuery(
+        bnf_codes=("01",),
+        bnf_codes_excluded=("0101",),
+        product_type=ProductType.GENERIC,
+        form_route_ids=("1", "6"),
+        ingredient_ids=("2",),
+    )
+
+
 @pytest.mark.django_db(databases=["data"])
 def test_get_matching_presentation_codes(bnf_codes):
-    query = BNFQuery.build(["1001030U0AA", "1001030U0BD", "-1001030U0AAABAB"])
+    query = BNFQuery(
+        bnf_codes=["1001030U0AA", "1001030U0BD"], bnf_codes_excluded=["1001030U0AAABAB"]
+    )
     assert query.get_matching_presentation_codes() == [
         "1001030U0AAACAC",
         "1001030U0BDAAAB",
@@ -21,7 +40,7 @@ def test_get_matching_presentation_codes(bnf_codes):
 
 @pytest.mark.django_db(databases=["data"])
 def test_get_matching_presentation_codes_no_excludes(bnf_codes):
-    query = BNFQuery.build(["1001030U0AA"])
+    query = BNFQuery(bnf_codes=["1001030U0AA"])
     assert query.get_matching_presentation_codes() == [
         "1001030U0AAABAB",
         "1001030U0AAACAC",
@@ -30,7 +49,7 @@ def test_get_matching_presentation_codes_no_excludes(bnf_codes):
 
 @pytest.mark.django_db(databases=["data"])
 def test_get_matching_presentation_codes_for_strength_and_formulation(bnf_codes):
-    query = BNFQuery.build(["1001030U0_AC"])
+    query = BNFQuery(bnf_codes=["1001030U0_AC"])
     assert query.get_matching_presentation_codes() == [
         "1001030U0AAACAC",
         "1001030U0BDABAC",
@@ -39,7 +58,7 @@ def test_get_matching_presentation_codes_for_strength_and_formulation(bnf_codes)
 
 @pytest.mark.django_db(databases=["data"])
 def test_get_matching_presentation_codes_for_generic(bnf_codes):
-    query = BNFQuery.build(["1001030U0"], ProductType.GENERIC)
+    query = BNFQuery(bnf_codes=["1001030U0"], product_type=ProductType.GENERIC)
     assert query.get_matching_presentation_codes() == [
         "1001030U0AAABAB",
         "1001030U0AAACAC",
@@ -50,7 +69,7 @@ def test_get_matching_presentation_codes_for_generic(bnf_codes):
 def test_get_matching_presentation_codes_for_generic_with_strength_and_formulation(
     bnf_codes,
 ):
-    query = BNFQuery.build(["1001030U0_AB"], ProductType.GENERIC)
+    query = BNFQuery(bnf_codes=["1001030U0_AB"], product_type=ProductType.GENERIC)
     assert query.get_matching_presentation_codes() == [
         "1001030U0AAABAB",
     ]
@@ -58,7 +77,7 @@ def test_get_matching_presentation_codes_for_generic_with_strength_and_formulati
 
 @pytest.mark.django_db(databases=["data"])
 def test_get_matching_presentation_codes_for_branded(bnf_codes):
-    query = BNFQuery.build(["1001030U0"], ProductType.BRANDED)
+    query = BNFQuery(bnf_codes=["1001030U0"], product_type=ProductType.BRANDED)
     assert query.get_matching_presentation_codes() == [
         "1001030U0BDAAAB",
         "1001030U0BDABAC",
@@ -69,7 +88,7 @@ def test_get_matching_presentation_codes_for_branded(bnf_codes):
 def test_get_matching_presentation_codes_for_branded_with_strength_and_formulation(
     bnf_codes,
 ):
-    query = BNFQuery.build(["1001030U0_AB"], ProductType.BRANDED)
+    query = BNFQuery(bnf_codes=["1001030U0_AB"], product_type=ProductType.BRANDED)
     assert query.get_matching_presentation_codes() == [
         "1001030U0BDAAAB",
     ]
@@ -132,7 +151,7 @@ def test_get_matching_presentation_codes_for_ingredient_ids_no_match(
 
 @pytest.mark.django_db(databases=["data"])
 def test_describe_search_for_all_product_types(bnf_codes):
-    query = BNFQuery.build(["1001030U0", "-1001030U0_AB"])
+    query = BNFQuery(bnf_codes=["1001030U0"], bnf_codes_excluded=["1001030U0_AB"])
     assert query.describe() == {
         "product_type": ProductType.ALL,
         "includes": [
@@ -154,7 +173,11 @@ def test_describe_search_for_all_product_types(bnf_codes):
 
 @pytest.mark.django_db(databases=["data"])
 def test_describe_search_for_generic_products(bnf_codes):
-    query = BNFQuery.build(["1001030U0", "-1001030U0_AB"], ProductType.GENERIC)
+    query = BNFQuery(
+        bnf_codes=["1001030U0"],
+        bnf_codes_excluded=["1001030U0_AB"],
+        product_type=ProductType.GENERIC,
+    )
     assert query.describe() == {
         "product_type": ProductType.GENERIC,
         "includes": [
@@ -179,7 +202,7 @@ def test_describe_search_for_ingredients(rxdb, settings, tmp_path):
     rxdb.ingest([{}])
     ingest_dmd_data(settings, tmp_path)
     ingest_dmd_bnf_map_data(settings, tmp_path)
-    query = BNFQuery.build([], ingredient_ids=["53034005"])
+    query = BNFQuery(bnf_codes=[], ingredient_ids=["53034005"])
     assert query.describe() == {
         "product_type": ProductType.ALL,
         "includes": [],
@@ -198,7 +221,9 @@ def test_from_params():
     query = BNFQuery.from_params(
         "ntr", {"ntr_codes": "01,-0101", "ntr_product_type": "generic"}
     )
-    assert query == BNFQuery.build(["01", "-0101"], ProductType.GENERIC)
+    assert query == BNFQuery(
+        bnf_codes=["01"], bnf_codes_excluded=["0101"], product_type=ProductType.GENERIC
+    )
 
 
 def test_from_params_with_form_route_ids_key_not_val():
@@ -215,13 +240,15 @@ def test_from_params_with_form_route_ids_key_not_val():
 
 def test_from_params_ingredients():
     query = BNFQuery.from_params("ntr", {"ntr_ingredient_ids": "01"})
-    assert query == BNFQuery.build(
-        [], BNFQuery.PRODUCT_TYPE_DEFAULT, ingredient_ids=["01"]
+    assert query == BNFQuery(
+        bnf_codes=[], product_type=BNFQuery.PRODUCT_TYPE_DEFAULT, ingredient_ids=["01"]
     )
 
 
 def test_to_params():
-    query = BNFQuery.build(["01", "-0101"], ProductType.GENERIC)
+    query = BNFQuery(
+        bnf_codes=["01"], bnf_codes_excluded=["0101"], product_type=ProductType.GENERIC
+    )
     assert query.to_params("ntr") == {
         "ntr_codes": "01,-0101",
         "ntr_product_type": "generic",
@@ -229,7 +256,12 @@ def test_to_params():
 
 
 def test_to_params_with_form_route_ids():
-    query = BNFQuery.build(["01", "-0101"], ProductType.GENERIC, ("1", "6"))
+    query = BNFQuery(
+        bnf_codes=["01"],
+        bnf_codes_excluded=["0101"],
+        product_type=ProductType.GENERIC,
+        form_route_ids=("1", "6"),
+    )
     assert query.to_params("ntr") == {
         "ntr_codes": "01,-0101",
         "ntr_product_type": "generic",
@@ -238,7 +270,12 @@ def test_to_params_with_form_route_ids():
 
 
 def test_to_params_with_ingredient_ids():
-    query = BNFQuery.build(["01", "-0101"], ProductType.GENERIC, ingredient_ids=("1"))
+    query = BNFQuery(
+        bnf_codes=["01"],
+        bnf_codes_excluded=["0101"],
+        product_type=ProductType.GENERIC,
+        ingredient_ids=("1"),
+    )
     assert query.to_params("ntr") == {
         "ntr_codes": "01,-0101",
         "ntr_product_type": "generic",

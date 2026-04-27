@@ -85,26 +85,25 @@ class BNFQuery:
 
     PRODUCT_TYPE_DEFAULT = "all"
 
-    @classmethod
-    def build(cls, raw_terms, product_type="all", form_route_ids=(), ingredient_ids=()):
-        bnf_codes = tuple([rt for rt in raw_terms if rt[0] != "-"])
-        bnf_codes_excluded = tuple([rt[1:] for rt in raw_terms if rt[0] == "-"])
-        return cls(
-            bnf_codes,
-            bnf_codes_excluded,
-            ProductType(product_type),
-            tuple(form_route_ids),
-            tuple(ingredient_ids),
-        )
+    def __post_init__(self):
+        """Ensure that all sequence attributes are tuples.
+
+        object.__setattr__ is required because the dataclass is frozen.
+        """
+
+        object.__setattr__(self, "bnf_codes", tuple(self.bnf_codes))
+        object.__setattr__(self, "bnf_codes_excluded", tuple(self.bnf_codes_excluded))
+        object.__setattr__(self, "form_route_ids", tuple(self.form_route_ids))
+        object.__setattr__(self, "ingredient_ids", tuple(self.ingredient_ids))
 
     @classmethod
     def from_params(cls, field, params):
         """Build a BNFQuery from URL query parameters for a field."""
 
         if params.get(f"{field}_codes", ""):
-            raw_terms = tuple(params[f"{field}_codes"].split(","))
+            codes = tuple(params[f"{field}_codes"].split(","))
         else:
-            raw_terms = ()
+            codes = ()
 
         product_type = params.get(f"{field}_product_type", cls.PRODUCT_TYPE_DEFAULT)
 
@@ -118,9 +117,10 @@ class BNFQuery:
         else:
             ingredient_ids = ()
 
-        return cls.build(
-            raw_terms=raw_terms,
-            product_type=product_type,
+        return cls(
+            bnf_codes=tuple(c for c in codes if c[0] != "-"),
+            bnf_codes_excluded=tuple(c[1:] for c in codes if c[0] == "-"),
+            product_type=ProductType(product_type),
             form_route_ids=form_route_ids,
             ingredient_ids=ingredient_ids,
         )
