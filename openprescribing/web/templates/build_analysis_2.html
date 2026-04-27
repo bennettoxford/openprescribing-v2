@@ -4,6 +4,7 @@
 {% block content %}
 <section
     data-container
+    data-analysis-url="{% url 'analysis' %}"
     data-medications-url="{% url 'api_metadata_medications' %}"
     data-dmd-url="{% url 'api_metadata_dmd' %}"
     data-bnf-url="{% url 'api_metadata_bnf' %}"
@@ -57,6 +58,15 @@
                         </div>
                     </div>
                     {% endfor %}
+                    <div class="col-12 mt-3">
+                        <a
+                            class="btn btn-primary"
+                            href="{% url 'analysis' %}"
+                            data-summary-submit
+                        >
+                            Submit
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

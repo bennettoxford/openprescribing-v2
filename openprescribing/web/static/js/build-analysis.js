@@ -30,6 +30,7 @@ const containerEl = document.querySelector("[data-container]");
 const loadingEl = containerEl.querySelector("[data-loading]");
 const errorEl = containerEl.querySelector("[data-error]");
 const appEl = containerEl.querySelector("[data-app]");
+const summarySubmitEl = containerEl.querySelector("[data-summary-submit]");
 const summarySectionElsByPrefix = new Map(
   Array.from(containerEl.querySelectorAll("[data-summary-section]")).map(
     (element) => [element.dataset.summarySection, element],
@@ -150,6 +151,15 @@ function initialiseQueriesFromUrl(panels) {
 function refreshSummary(panels) {
   // Re-render the summary tab for the given panels.
   renderSummary(summarySectionElsByPrefix, panels, metadata, templates);
+  updateSummarySubmitUrl();
+}
+
+function updateSummarySubmitUrl() {
+  // Point the summary submit button at the analysis page for the current filters.
+  const url = new URL(containerEl.dataset.analysisUrl, window.location.href);
+  url.search = new URL(window.location.href).search;
+
+  summarySubmitEl.href = url.toString();
 }
 
 function handleAddFilterChange(panel) {
