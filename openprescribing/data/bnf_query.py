@@ -75,6 +75,18 @@ def _get_bnf_codes_for_ingredient_ids(ingredient_ids):
         return [x[0] for x in results.fetchall()]
 
 
+def _get_bnf_codes_for_vtm_ids(vtm_ids):
+    with rxdb.get_cursor() as cursor:
+        results = cursor.execute(
+            f"""
+            SELECT bnf_code
+            FROM medications
+            WHERE vtm_id IN ({", ".join(vtm_ids)})
+            """
+        )
+        return [x[0] for x in results.fetchall()]
+
+
 @dataclass(frozen=True)
 class BNFQuery:
     """Represents a query returning codes for BNF presentations."""
@@ -86,6 +98,8 @@ class BNFQuery:
     form_route_ids_excluded: tuple[str] = ()
     ingredient_ids: tuple[str] = ()
     ingredient_ids_excluded: tuple[str] = ()
+    vtm_ids: tuple[str] = ()
+    vtm_ids_excluded: tuple[str] = ()
 
     PRODUCT_TYPE_DEFAULT = "all"
 
@@ -105,6 +119,8 @@ class BNFQuery:
         object.__setattr__(
             self, "ingredient_ids_excluded", tuple(self.ingredient_ids_excluded)
         )
+        object.__setattr__(self, "vtm_ids", tuple(self.vtm_ids))
+        object.__setattr__(self, "vtm_ids_excluded", tuple(self.vtm_ids_excluded))
 
     @staticmethod
     def has_params(field, params):
@@ -127,6 +143,8 @@ class BNFQuery:
         ingredient_ids_excluded = _get_tuple_param(
             params, f"{field}_ingredient_ids_excluded"
         )
+        vtm_ids = _get_tuple_param(params, f"{field}_vtm_ids")
+        vtm_ids_excluded = _get_tuple_param(params, f"{field}_vtm_ids_excluded")
 
         return cls(
             bnf_codes=bnf_codes,
@@ -136,6 +154,8 @@ class BNFQuery:
             form_route_ids_excluded=form_route_ids_excluded,
             ingredient_ids=ingredient_ids,
             ingredient_ids_excluded=ingredient_ids_excluded,
+            vtm_ids=vtm_ids,
+            vtm_ids_excluded=vtm_ids_excluded,
         )
 
     @classmethod
@@ -232,6 +252,12 @@ class BNFQuery:
             codes = codes.exclude(
                 code__in=_get_bnf_codes_for_ingredient_ids(self.ingredient_ids_excluded)
             )
+        if self.vtm_ids:
+            codes = codes.filter(code__in=_get_bnf_codes_for_vtm_ids(self.vtm_ids))
+        if self.vtm_ids_excluded:
+            codes = codes.exclude(
+                code__in=_get_bnf_codes_for_vtm_ids(self.vtm_ids_excluded)
+            )
 
         codes = list(codes.order_by("code").values_list("code", flat=True))
 
@@ -283,6 +309,10 @@ class BNFQuery:
             params[f"{field}_ingredient_ids_excluded"] = ",".join(
                 self.ingredient_ids_excluded
             )
+        if self.vtm_ids:
+            params[f"{field}_vtm_ids"] = ",".join(self.vtm_ids)
+        if self.vtm_ids_excluded:
+            params[f"{field}_vtm_ids_excluded"] = ",".join(self.vtm_ids_excluded)
 
         return params
 

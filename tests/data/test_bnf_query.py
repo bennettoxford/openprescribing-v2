@@ -18,6 +18,8 @@ def test_init_normalizes_lists_to_tuples():
         form_route_ids_excluded=["7"],
         ingredient_ids=["2"],
         ingredient_ids_excluded=["3"],
+        vtm_ids=["4"],
+        vtm_ids_excluded=["5"],
     )
     assert query == BNFQuery(
         bnf_codes=("01",),
@@ -27,6 +29,8 @@ def test_init_normalizes_lists_to_tuples():
         form_route_ids_excluded=("7",),
         ingredient_ids=("2",),
         ingredient_ids_excluded=("3",),
+        vtm_ids=("4",),
+        vtm_ids_excluded=("5",),
     )
 
 
@@ -151,6 +155,40 @@ def test_get_matching_presentation_codes_for_ingredient_ids_no_match(
         },
     )
     assert query.get_matching_presentation_codes() == []
+
+
+@pytest.mark.django_db(databases=["data"], transaction=True)
+def test_get_matching_presentation_codes_for_vtm_ids(rxdb, settings, tmp_path):
+    rxdb.ingest([{}])
+    ingest_dmd_data(settings, tmp_path)
+    ingest_dmd_bnf_map_data(settings, tmp_path)
+    BNFCode(code="1305020C0AAFVFV", level=BNFCode.Level.PRESENTATION).save()
+    query = BNFQuery.from_params(
+        "ntr",
+        {
+            "ntr_bnf_codes": "1305020C0AAFVFV",
+            "ntr_vtm_ids": "15219611000001105",
+        },
+    )
+    assert query.get_matching_presentation_codes() == ["1305020C0AAFVFV"]
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_get_matching_presentation_codes_for_vtm_ids_excluded(bnf_codes, monkeypatch):
+    monkeypatch.setattr(
+        "openprescribing.data.bnf_query._get_bnf_codes_for_vtm_ids",
+        lambda ids: {
+            ("90356005",): ["1001030U0AAABAB", "1001030U0AAACAC"],
+        }[tuple(ids)],
+    )
+    query = BNFQuery(
+        bnf_codes=["1001030U0"],
+        vtm_ids_excluded=["90356005"],
+    )
+    assert query.get_matching_presentation_codes() == [
+        "1001030U0BDAAAB",
+        "1001030U0BDABAC",
+    ]
 
 
 @pytest.mark.django_db(databases=["data"])
@@ -401,6 +439,8 @@ def test_from_params():
             "ntr_form_route_ids_excluded": "2",
             "ntr_ingredient_ids": "3",
             "ntr_ingredient_ids_excluded": "4",
+            "ntr_vtm_ids": "5",
+            "ntr_vtm_ids_excluded": "6",
         },
     )
     assert query == BNFQuery(
@@ -411,6 +451,8 @@ def test_from_params():
         form_route_ids_excluded=["2"],
         ingredient_ids=["3"],
         ingredient_ids_excluded=["4"],
+        vtm_ids=["5"],
+        vtm_ids_excluded=["6"],
     )
 
 
@@ -483,6 +525,8 @@ def test_to_params_with_ingredient_ids():
         product_type=ProductType.GENERIC,
         ingredient_ids=("1",),
         ingredient_ids_excluded=("2",),
+        vtm_ids=("3",),
+        vtm_ids_excluded=("4",),
     )
     assert query.to_params("ntr") == {
         "ntr_bnf_codes": "01",
@@ -490,6 +534,8 @@ def test_to_params_with_ingredient_ids():
         "ntr_product_type": "generic",
         "ntr_ingredient_ids": "1",
         "ntr_ingredient_ids_excluded": "2",
+        "ntr_vtm_ids": "3",
+        "ntr_vtm_ids_excluded": "4",
     }
 
 
