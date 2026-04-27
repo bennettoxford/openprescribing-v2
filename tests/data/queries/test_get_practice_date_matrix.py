@@ -69,7 +69,7 @@ def test_get_practice_date_matrix_spot_check(rxdb):
         ],
     )
 
-    query = BNFQuery.build(["1001030U0AAABAB"], "all")
+    query = BNFQuery(bnf_codes=["1001030U0AAABAB"])
 
     with rxdb.get_cursor() as cursor:
         pdm = get_practice_date_matrix(cursor, query, date_count=2)
@@ -86,7 +86,7 @@ def test_get_practice_date_matrix_spot_check(rxdb):
 
 @pytest.mark.django_db(databases=["data"])
 def test_get_practice_date_matrix_for_bnf_query(rxdb, sample_data):
-    query = BNFQuery.build(["1001030U0AAABAB"], "all")
+    query = BNFQuery(bnf_codes=["1001030U0AAABAB"])
 
     with rxdb.get_cursor() as cursor:
         pdm = get_practice_date_matrix(cursor, query, date_count=2)
@@ -101,7 +101,7 @@ def test_get_practice_date_matrix_for_bnf_query(rxdb, sample_data):
 @pytest.mark.django_db(databases=["data"])
 def test_get_practice_date_matrix_for_bnf_query_no_matching_codes(rxdb, sample_data):
     invalid_bnf_code = "999999999"
-    query = BNFQuery.build([invalid_bnf_code], "all")
+    query = BNFQuery(bnf_codes=[invalid_bnf_code])
 
     with rxdb.get_cursor() as cursor:
         pdm = get_practice_date_matrix(cursor, query, date_count=2)

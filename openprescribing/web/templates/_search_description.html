@@ -5,51 +5,29 @@
     {% if description.product_type == "generic" or description.product_type == "branded" %}
     <li>{{ description.product_type|title }} prescribing only</li>
     {% endif %}
-    {% if description.includes %}
-    <li>Included codes
-        <ul>
-            {% for item in description.includes %}
-            <li>{{ item.description }} <code>{{ item.code }}</code></li>
-            {% endfor %}
-        </ul>
-    </li>
+    {% if description.bnf_codes %}
+    <li><strong>BNF codes</strong> {% for item in description.bnf_codes %}{% if not forloop.first %}, {% endif %}{{ item }}{% endfor %}</li>
     {% endif %}
-    {% if description.excludes %}
-    <li>Excluded codes
-        <ul>
-            {% for item in description.excludes %}
-            <li>{{ item.description }} <code>{{ item.code }}</code></li>
-            {% endfor %}
-        </ul>
-    </li>
+    {% if description.bnf_codes_excluded %}
+    <li><strong>BNF codes (excluded)</strong> {% for item in description.bnf_codes_excluded %}{% if not forloop.first %}, {% endif %}{{ item }}{% endfor %}</li>
     {% endif %}
-    {% if description.ingredient_ids %}
-    <li>Ingredients
-        <ul>
-            {% for item in description.ingredient_ids %}
-            <li>{{ item.description }} <code>{{ item.code }}</code></li>
-            {% endfor %}
-        </ul>
-    </li>
+    {% if description.ingredients %}
+    <li><strong>Ingredients</strong> {% for item in description.ingredients %}{% if not forloop.first %}, {% endif %}{{ item }}{% endfor %}</li>
+    {% endif %}
+    {% if description.ingredients_excluded %}
+    <li><strong>Ingredients (excluded)</strong> {% for item in description.ingredients_excluded %}{% if not forloop.first %}, {% endif %}{{ item }}{% endfor %}</li>
+    {% endif %}
+    {% if description.vtms %}
+    <li><strong>VTM</strong> {% for item in description.vtms %}{% if not forloop.first %}, {% endif %}{{ item }}{% endfor %}</li>
+    {% endif %}
+    {% if description.vtms_excluded %}
+    <li><strong>VTM (excluded)</strong> {% for item in description.vtms_excluded %}{% if not forloop.first %}, {% endif %}{{ item }}{% endfor %}</li>
     {% endif %}
     {% if description.form_routes %}
-    <p>
-        <button
-            class="btn btn-secondary"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#collapseFormRoutes"
-        >
-        Form / Routes
-        </button>
-    </p>
-    <div class="collapse" id="collapseFormRoutes">
-        <ul>
-            {% for form_route in description.form_routes %}
-            <li>{{ form_route }}</li>
-            {% endfor %}
-        </ul>
-    </div>
+    <li><strong>Form/route</strong> {% for form_route in description.form_routes %}{% if not forloop.first %}, {% endif %}{{ form_route }}{% endfor %}</li>
+    {% endif %}
+    {% if description.form_routes_excluded %}
+    <li><strong>Form/route (excluded)</strong> {% for form_route in description.form_routes_excluded %}{% if not forloop.first %}, {% endif %}{{ form_route }}{% endfor %}</li>
     {% endif %}
 </ul>
 {% endif %}

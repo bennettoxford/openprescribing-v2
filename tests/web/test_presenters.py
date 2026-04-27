@@ -169,19 +169,6 @@ def test_make_bnf_table_with_no_generic_products(bnf_codes):
             },
         ),
         (
-            ["1001030U0AAABAB", "1001030U0BDAAAB"],
-            "all",
-            ["1001030U0AA", "-1001030U0AAACAC"],
-            "all",
-            {
-                "has_denominators": True,
-                "data": [
-                    ("1001030U0AAABAB", "Methotrexate 2.5mg tablets", True, True),
-                    ("1001030U0BDAAAB", "Maxtrex 2.5mg tablets", True, False),
-                ],
-            },
-        ),
-        (
             ["1001030U0AAABAB"],
             "all",
             ["1001030U0"],
@@ -215,9 +202,9 @@ def test_make_bnf_table_with_no_generic_products(bnf_codes):
 def test_make_ntr_dtr_intersection_table(
     bnf_codes, ntr_codes, ntr_product_type, dtr_codes, dtr_product_type, expected
 ):
-    ntr_query = BNFQuery.build(ntr_codes, ntr_product_type)
+    ntr_query = BNFQuery(bnf_codes=ntr_codes, product_type=ntr_product_type)
     if dtr_codes:
-        dtr_query = BNFQuery.build(dtr_codes, dtr_product_type)
+        dtr_query = BNFQuery(bnf_codes=dtr_codes, product_type=dtr_product_type)
     else:
         dtr_query = None
     actual = make_ntr_dtr_intersection_table(ntr_query, dtr_query)

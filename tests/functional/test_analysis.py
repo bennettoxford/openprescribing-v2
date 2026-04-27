@@ -1,51 +1,33 @@
 import pytest
 from playwright.sync_api import expect
 
+from tests.utils.ingest_utils import ingest_dmd_bnf_map_data, ingest_dmd_data
+
 
 pytestmark = pytest.mark.functional
 
 
+@pytest.mark.filterwarnings("ignore:All-NaN slice encountered:RuntimeWarning")
 @pytest.mark.django_db(databases=["data"], transaction=True)
-def test_analysis(live_server, page, sample_data):
-    # This is a limited smoke test that checks that codes can be selected from the table
-    # (numerator) and the tree (denominator), and that on form submission we're directed
-    # to the expected URL.
-    page.goto(f"{live_server.url}/analysis/build/")
-    page.get_by_role("button", name="Select BNF codes for numerator").click()
-    page.get_by_role("textbox", name="Search by name or code").click()
-    page.get_by_role("textbox", name="Search by name or code").fill("metho")
-    page.get_by_role("button", name="Search").click()
-    page.get_by_text("1001030U0 Methotrexate").click()
-    page.get_by_text("1001030U0AAACAC").click(modifiers=["ControlOrMeta"])
-    page.locator("#bnf-table-modal").get_by_role("button", name="Update Query").click()
-    page.locator("#bnf-tree-modal").get_by_role("button", name="Update Query").click()
-    page.get_by_role("button", name="Select BNF codes for denominator").click()
-    page.get_by_role("textbox", name="Search by name or code").click()
-    page.get_by_role("textbox", name="Search by name or code").fill("metho")
-    page.get_by_role("button", name="Search").click()
-    page.locator("#bnf-tree-modal").get_by_text("1001030U0 Methotrexate").click(
-        modifiers=["ControlOrMeta"]
-    )
-    page.locator("#bnf-tree-modal").get_by_role("button", name="Update Query").click()
-    page.get_by_role("button", name="Submit").click()
+def test_analysis(live_server, page, sample_data, settings, tmp_path):
+    # This is a limited smoke test that walks through building a simple analysis from
+    # the landing page and verifies that the resulting analysis page renders a chart.
+
+    ingest_dmd_data(settings, tmp_path)
+    ingest_dmd_bnf_map_data(settings, tmp_path)
+
+    page.goto(live_server.url + "/")
+    page.get_by_role("link", name="Start analysing prescribing data").click()
+
+    panel = page.locator('[data-query-panel][data-panel-prefix="ntr"]')
+    panel.locator("[data-add-filter]").select_option(label="VTM")
+    dropdown = panel.locator("[data-dropdown]").filter(has_text="VTM").first
+    dropdown.locator("[data-dropdown-input]").fill("Aden")
+    dropdown.locator("[data-dropdown-options]").select_option(label="Adenosine")
+
+    page.locator("#summary-tab").click()
+    page.get_by_role("link", name="Submit").click()
     page.wait_for_load_state("domcontentloaded")
 
-    expect(page).to_have_url(
-        live_server.url
-        + "/?ntr_codes=1001030U0_AC&ntr_product_type=all&dtr_codes=1001030U0&dtr_product_type=all"
-    )
-
-    # Test org search
-    page.get_by_role(
-        "searchbox", name="Name or code of organisation to highlight"
-    ).click()
-    page.get_by_role(
-        "searchbox", name="Name or code of organisation to highlight"
-    ).fill("ICB 1")
-
-    page.get_by_role("button", name="ICB 1 ICB01 - ICB").click()
-
-    expect(page).to_have_url(
-        live_server.url
-        + "/?ntr_codes=1001030U0_AC&ntr_product_type=all&dtr_codes=1001030U0&dtr_product_type=all&org_id=ICB01"
-    )
+    expect(page).to_have_url(live_server.url + "/?ntr_vtm_ids=108502004")
+    expect(page.locator("#deciles-chart-container")).to_be_attached()

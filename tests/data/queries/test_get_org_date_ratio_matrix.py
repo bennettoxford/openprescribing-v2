@@ -1,7 +1,7 @@
 import pytest
 
 from openprescribing.data.analysis import Analysis
-from openprescribing.data.bnf_query import BNFQuery, ProductType
+from openprescribing.data.bnf_query import BNFQuery
 from openprescribing.data.list_size_query import ListSizeQuery
 from openprescribing.data.queries import get_org_date_ratio_matrix
 from tests.utils.rxdb_utils import assert_approx_equal
@@ -12,7 +12,7 @@ from .alternative_implementations import get_org_date_ratio_matrix_alternative
 @pytest.mark.django_db(databases=["data"])
 def test_get_org_date_ratio_matrix_prescribing_vs_list_size(rxdb, sample_data):
     analysis = Analysis(
-        ntr_query=BNFQuery.build(["1001030U0AAABAB"], ProductType.ALL),
+        ntr_query=BNFQuery(bnf_codes=["1001030U0AAABAB"]),
         dtr_query=ListSizeQuery(),
         org_id="ICB01",
     )
@@ -28,8 +28,8 @@ def test_get_org_date_ratio_matrix_prescribing_vs_list_size(rxdb, sample_data):
 @pytest.mark.django_db(databases=["data"])
 def test_get_org_date_ratio_matrix_prescribing_vs_prescribing(rxdb, sample_data):
     analysis = Analysis(
-        ntr_query=BNFQuery.build(["1001030U0AAABAB"], ProductType.ALL),
-        dtr_query=BNFQuery.build(["1001030U0"], ProductType.ALL),
+        ntr_query=BNFQuery(bnf_codes=["1001030U0AAABAB"]),
+        dtr_query=BNFQuery(bnf_codes=["1001030U0"]),
         org_id="ICB01",
     )
 

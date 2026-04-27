@@ -17,7 +17,6 @@ from .models import Feedback
 from .presenters import (
     make_bnf_table,
     make_bnf_tree,
-    make_code_to_name,
     make_ntr_dtr_intersection_table,
     make_orgs,
 )
@@ -115,9 +114,7 @@ def _build_analysis_context(analysis):
 def analysis(request):
     analysis_presentation = AnalysisPresentation.from_params(request.GET)
 
-    search_params_for_analysis = ["ntr_codes", "ntr_ingredient_ids"]
-
-    if any(p in search_params_for_analysis for p in request.GET):
+    if BNFQuery.has_params("ntr", request.GET):
         analysis = Analysis.from_params(request.GET)
     else:
         analysis = None
@@ -130,30 +127,11 @@ def analysis(request):
 
 
 def build_analysis(request):
-    if "ntr_codes" in request.GET:
-        analysis = Analysis.from_params(request.GET)
-    else:
-        analysis = None
-
-    codes = BNFCode.objects.exclude(code__startswith="2")
-    tree = make_bnf_tree(codes)
-    code_to_name = make_code_to_name(codes)
-
-    ctx = {
-        "analysis": analysis,
-        "code_to_name": code_to_name,
-        "tree": tree,
-    }
-    return render(request, "build_analysis.html", ctx)
-
-
-def build_analysis_2(request):  # pragma: no cover
-    # This will replace build_analysis when it is finished
     panels = [
         {"prefix": "ntr", "label": "Numerator"},
         {"prefix": "dtr", "label": "Denominator"},
     ]
-    return render(request, "build_analysis_2.html", {"panels": panels})
+    return render(request, "build_analysis.html", {"panels": panels})
 
 
 def measure(request, measure_name):

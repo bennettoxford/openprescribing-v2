@@ -8,56 +8,96 @@ from openprescribing.data.list_size_query import ListSizeQuery
 def test_from_params():
     analysis = Analysis.from_params(
         {
-            "ntr_codes": "01,-0101",
+            "ntr_bnf_codes": "01",
+            "ntr_bnf_codes_excluded": "0101",
+            "ntr_form_route_ids_excluded": "2",
+            "ntr_vtm_ids": "5",
             "ntr_product_type": "generic",
-            "dtr_codes": "01,-0101",
+            "dtr_bnf_codes": "01",
+            "dtr_bnf_codes_excluded": "0101",
+            "dtr_ingredient_ids_excluded": "4",
+            "dtr_vtm_ids_excluded": "6",
             "dtr_product_type": "all",
             "org_id": "PRAC01",
         }
     )
 
-    assert analysis.ntr_query == BNFQuery.build(["01", "-0101"], ProductType.GENERIC)
-    assert analysis.dtr_query == BNFQuery.build(["01", "-0101"], ProductType.ALL)
+    assert analysis.ntr_query == BNFQuery(
+        bnf_codes=["01"],
+        bnf_codes_excluded=["0101"],
+        product_type=ProductType.GENERIC,
+        form_route_ids_excluded=["2"],
+        vtm_ids=["5"],
+    )
+    assert analysis.dtr_query == BNFQuery(
+        bnf_codes=["01"],
+        bnf_codes_excluded=["0101"],
+        ingredient_ids_excluded=["4"],
+        vtm_ids_excluded=["6"],
+    )
     assert analysis.org_id == "PRAC01"
 
 
 def test_from_params_ntr_codes_only():
     analysis = Analysis.from_params(
         {
-            "ntr_codes": "01,-0101",
+            "ntr_bnf_codes": "01",
+            "ntr_bnf_codes_excluded": "0101",
         }
     )
 
-    assert analysis.ntr_query == BNFQuery.build(["01", "-0101"], ProductType.ALL)
+    assert analysis.ntr_query == BNFQuery(bnf_codes=["01"], bnf_codes_excluded=["0101"])
     assert analysis.dtr_query == ListSizeQuery()
     assert analysis.org_id is None
 
 
 def test_to_params():
     analysis = Analysis(
-        ntr_query=BNFQuery.build(["01", "-0101"], ProductType.BRANDED),
-        dtr_query=BNFQuery.build(["01", "-0101"], ProductType.ALL),
+        ntr_query=BNFQuery(
+            bnf_codes=["01"],
+            bnf_codes_excluded=["0101"],
+            product_type=ProductType.BRANDED,
+            form_route_ids_excluded=["2"],
+            vtm_ids=["5"],
+        ),
+        dtr_query=BNFQuery(
+            bnf_codes=["01"],
+            bnf_codes_excluded=["0101"],
+            ingredient_ids_excluded=["4"],
+            vtm_ids_excluded=["6"],
+        ),
         org_id="PRAC01",
     )
 
     assert analysis.to_params() == {
-        "ntr_codes": "01,-0101",
+        "ntr_bnf_codes": "01",
+        "ntr_bnf_codes_excluded": "0101",
         "ntr_product_type": "branded",
-        "dtr_codes": "01,-0101",
+        "ntr_form_route_ids_excluded": "2",
+        "ntr_vtm_ids": "5",
+        "dtr_bnf_codes": "01",
+        "dtr_bnf_codes_excluded": "0101",
         "dtr_product_type": "all",
+        "dtr_ingredient_ids_excluded": "4",
+        "dtr_vtm_ids_excluded": "6",
         "org_id": "PRAC01",
     }
 
 
 def test_to_params_dtr_list_size():
     analysis = Analysis(
-        ntr_query=BNFQuery.build(["01", "-0101"], ProductType.BRANDED),
+        ntr_query=BNFQuery(
+            bnf_codes=["01"],
+            bnf_codes_excluded=["0101"],
+            product_type=ProductType.BRANDED,
+        ),
         dtr_query=ListSizeQuery(),
         org_id=None,
     )
 
     assert analysis.to_params() == {
-        "ntr_codes": "01,-0101",
+        "ntr_bnf_codes": "01",
+        "ntr_bnf_codes_excluded": "0101",
         "ntr_product_type": "branded",
     }
 
