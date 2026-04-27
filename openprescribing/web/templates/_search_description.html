@@ -5,19 +5,19 @@
     {% if description.product_type == "generic" or description.product_type == "branded" %}
     <li>{{ description.product_type|title }} prescribing only</li>
     {% endif %}
-    {% if description.includes %}
+    {% if description.bnf_codes %}
     <li>Included codes
         <ul>
-            {% for item in description.includes %}
+            {% for item in description.bnf_codes %}
             <li>{{ item.description }} <code>{{ item.code }}</code></li>
             {% endfor %}
         </ul>
     </li>
     {% endif %}
-    {% if description.excludes %}
+    {% if description.bnf_codes_excluded %}
     <li>Excluded codes
         <ul>
-            {% for item in description.excludes %}
+            {% for item in description.bnf_codes_excluded %}
             <li>{{ item.description }} <code>{{ item.code }}</code></li>
             {% endfor %}
         </ul>

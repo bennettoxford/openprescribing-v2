@@ -273,11 +273,11 @@ class BNFQuery:
     def describe(self):
         return {
             "product_type": self.product_type,
-            "includes": [
+            "bnf_codes": [
                 description_for_bnf_code(code, self.product_type)
                 for code in self.bnf_codes
             ],
-            "excludes": [
+            "bnf_codes_excluded": [
                 description_for_bnf_code(code, self.product_type)
                 for code in self.bnf_codes_excluded
             ],

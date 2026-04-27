@@ -365,13 +365,13 @@ def test_describe_search_for_all_product_types(bnf_codes):
     query = BNFQuery(bnf_codes=["1001030U0"], bnf_codes_excluded=["1001030U0_AB"])
     assert query.describe() == {
         "product_type": ProductType.ALL,
-        "includes": [
+        "bnf_codes": [
             {
                 "code": "1001030U0",
                 "description": "Methotrexate",
             }
         ],
-        "excludes": [
+        "bnf_codes_excluded": [
             {
                 "code": "1001030U0_AB",
                 "description": "Methotrexate 2.5mg tablets (branded and generic)",
@@ -391,13 +391,13 @@ def test_describe_search_for_generic_products(bnf_codes):
     )
     assert query.describe() == {
         "product_type": ProductType.GENERIC,
-        "includes": [
+        "bnf_codes": [
             {
                 "code": "1001030U0",
                 "description": "Methotrexate",
             }
         ],
-        "excludes": [
+        "bnf_codes_excluded": [
             {
                 "code": "1001030U0_AB",
                 "description": "Methotrexate 2.5mg tablets",
@@ -416,8 +416,8 @@ def test_describe_search_for_ingredients(rxdb, settings, tmp_path):
     query = BNFQuery(bnf_codes=[], ingredient_ids=["53034005"])
     assert query.describe() == {
         "product_type": ProductType.ALL,
-        "includes": [],
-        "excludes": [],
+        "bnf_codes": [],
+        "bnf_codes_excluded": [],
         "form_routes": [],
         "ingredient_ids": [
             {
