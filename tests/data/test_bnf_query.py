@@ -104,7 +104,6 @@ def test_get_matching_presentation_codes_for_branded_with_strength_and_formulati
 
 @pytest.mark.django_db(databases=["data"], transaction=True)
 def test_get_matching_presentation_codes_for_form_route_ids(rxdb, settings, tmp_path):
-    rxdb.ingest([{}])
     ingest_dmd_data(settings, tmp_path)
     ingest_dmd_bnf_map_data(settings, tmp_path)
     # The following appears in the dm+d -> BNF data/mapping data
@@ -123,7 +122,6 @@ def test_get_matching_presentation_codes_for_form_route_ids(rxdb, settings, tmp_
 
 @pytest.mark.django_db(databases=["data"], transaction=True)
 def test_get_matching_presentation_codes_for_ingredient_ids(rxdb, settings, tmp_path):
-    rxdb.ingest([{}])
     ingest_dmd_data(settings, tmp_path)
     ingest_dmd_bnf_map_data(settings, tmp_path)
     # The following appears in the dm+d -> BNF data/mapping data
@@ -142,7 +140,6 @@ def test_get_matching_presentation_codes_for_ingredient_ids(rxdb, settings, tmp_
 def test_get_matching_presentation_codes_for_ingredient_ids_no_match(
     rxdb, settings, tmp_path
 ):
-    rxdb.ingest([{}])
     ingest_dmd_data(settings, tmp_path)
     ingest_dmd_bnf_map_data(settings, tmp_path)
     # The following appears in the dm+d -> BNF data/mapping data
@@ -159,7 +156,6 @@ def test_get_matching_presentation_codes_for_ingredient_ids_no_match(
 
 @pytest.mark.django_db(databases=["data"], transaction=True)
 def test_get_matching_presentation_codes_for_vtm_ids(rxdb, settings, tmp_path):
-    rxdb.ingest([{}])
     ingest_dmd_data(settings, tmp_path)
     ingest_dmd_bnf_map_data(settings, tmp_path)
     BNFCode(code="1305020C0AAFVFV", level=BNFCode.Level.PRESENTATION).save()
@@ -398,7 +394,6 @@ def test_describe_search_for_generic_products(bnf_codes):
 
 @pytest.mark.django_db(databases=["data"], transaction=True)
 def test_describe_search_for_ingredients(rxdb, settings, tmp_path):
-    rxdb.ingest([{}])
     ingest_dmd_data(settings, tmp_path)
     ingest_dmd_bnf_map_data(settings, tmp_path)
     query = BNFQuery(bnf_codes=[], ingredient_ids=["53034005"])
@@ -417,7 +412,6 @@ def test_describe_search_for_ingredients(rxdb, settings, tmp_path):
 
 @pytest.mark.django_db(databases=["data"], transaction=True)
 def test_describe_search_for_all_filter_types(rxdb, settings, tmp_path, bnf_codes):
-    rxdb.ingest([{}])
     ingest_dmd_data(settings, tmp_path)
     query = BNFQuery(
         bnf_codes=["1001030U0"],
@@ -579,7 +573,6 @@ def test_from_dict_generic():
 
 @pytest.mark.django_db(databases=["data"], transaction=True)
 def test_from_dict_form_route(rxdb, settings, tmp_path):
-    rxdb.ingest([{}])
     ingest_dmd_data(settings, tmp_path)
     ingest_dmd_bnf_map_data(settings, tmp_path)
     # The following appears in the dm+d -> BNF data/mapping data
@@ -597,7 +590,6 @@ def test_from_dict_form_route(rxdb, settings, tmp_path):
 
 @pytest.mark.django_db(databases=["data"], transaction=True)
 def test_from_dict_separate_form_route(rxdb, settings, tmp_path):
-    rxdb.ingest([{}])
     ingest_dmd_data(settings, tmp_path)
 
     test_dict = {
@@ -619,7 +611,6 @@ def test_from_dict_separate_form_route(rxdb, settings, tmp_path):
 
 @pytest.mark.django_db(databases=["data"], transaction=True)
 def test_get_form_route_ids_for_forms_and_routes(rxdb, settings, tmp_path):
-    rxdb.ingest([{}])
     ingest_dmd_data(settings, tmp_path)
 
     route_ids = _get_form_route_ids_for_forms_and_routes(
@@ -641,7 +632,6 @@ def test_get_form_route_ids_for_no_forms_or_routes(rxdb, settings, tmp_path):
 
 @pytest.mark.django_db(databases=["data"], transaction=True)
 def test_get_form_route_ids_for_invalid_form_routes(rxdb, settings, tmp_path):
-    rxdb.ingest([{}])
     ingest_dmd_data(settings, tmp_path)
 
     with pytest.raises(ValueError):

@@ -1,6 +1,5 @@
 import contextlib
 import datetime
-import textwrap
 import uuid
 
 import duckdb
@@ -90,24 +89,9 @@ class RXDBFixture:
         self.cache_key = None
 
     def get_cursor(self):
-        if not self.has_data:  # pragma: no cover
-            msg = """\
-            No prescribing data loaded into `rxdb` fixture, use:
-
-                rxdb.ingest(
-                    [
-                        {...},
-                        ...
-                    ]
-                )
-
-            Missing keys take default values so at a minimum you can load a single row
-            of default data with:
-
-                rxdb.ingest([{}])
-
-            """
-            raise RuntimeError(textwrap.dedent(msg))
+        if not self.has_data:
+            # Ingest one prescribing record to ensure that DuckDB tables are created.
+            self.ingest([{}])
         cursor = self.conn.cursor()
         cursor.execute("SET search_path = 'memory,sqlite_db'")
         cursor.execute(CREATE_VIEWS_PATH.read_text())
