@@ -226,8 +226,8 @@ class BNFQuery:
         Returned codes are strings, not BNFCode instances.
         """
 
-        includes = [build_q(code) for code in self.bnf_codes]
-        excludes = [build_q(code) for code in self.bnf_codes_excluded]
+        includes = [build_q_for_bnf_code(code) for code in self.bnf_codes]
+        excludes = [build_q_for_bnf_code(code) for code in self.bnf_codes_excluded]
 
         codes = (
             BNFCode.objects.filter(level=BNFCode.Level.PRESENTATION)
@@ -273,9 +273,13 @@ class BNFQuery:
     def describe(self):
         return {
             "product_type": self.product_type,
-            "includes": [describe(code, self.product_type) for code in self.bnf_codes],
+            "includes": [
+                description_for_bnf_code(code, self.product_type)
+                for code in self.bnf_codes
+            ],
             "excludes": [
-                describe(code, self.product_type) for code in self.bnf_codes_excluded
+                description_for_bnf_code(code, self.product_type)
+                for code in self.bnf_codes_excluded
             ],
             "form_routes": [
                 OntFormRoute.objects.get(cd=fr).descr for fr in self.form_route_ids
@@ -323,7 +327,7 @@ class BNFQuery:
         return ",".join(param_values)
 
 
-def build_q(code):
+def build_q_for_bnf_code(code):
     """Return Q object for finding all presentations that match the given code.
 
     If the code contains an underscore, then it is a "strength and formulation" code,
@@ -348,7 +352,7 @@ def build_q(code):
         return Q(code__startswith=code)
 
 
-def describe(code, product_type):
+def description_for_bnf_code(code, product_type):
     """Return dict with keys `code` and `description` for describing a search to
     users."""
 
