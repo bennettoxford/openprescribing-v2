@@ -29,7 +29,7 @@ def test_build_analyse_has_dynamic_filters_and_independent_queries(
     ingest_dmd_bnf_map_data(settings, tmp_path)
     ingest_build_analysis_bnf_data()
 
-    page.goto(live_server.url + "/analysis/build2/")
+    page.goto(live_server.url + "/analysis/build/")
 
     # The page loads with no active filters and the numerator tab selected.
     numerator_panel = panel_for_prefix(page, "ntr")
@@ -80,7 +80,7 @@ def test_build_analyse_has_dynamic_filters_and_independent_queries(
     assert "VTM (excluded)" in add_filter_option_labels(numerator_panel)
 
     expect(page).to_have_url(
-        live_server.url + "/analysis/build2/?ntr_vtm=108502004%2C90356005"
+        live_server.url + "/analysis/build/?ntr_vtm_ids=108502004%2C90356005"
     )
     expect(results_counts(numerator_panel)).to_have_text(
         "4 dm+d products (2 VMPs, 2 AMPs)"
@@ -106,7 +106,7 @@ def test_build_analyse_has_dynamic_filters_and_independent_queries(
     expect(results_table(numerator_panel)).to_be_visible()
     expect(page).to_have_url(
         live_server.url
-        + "/analysis/build2/?ntr_vtm=108502004%2C90356005&ntr_ingredient=35431001"
+        + "/analysis/build/?ntr_vtm_ids=108502004%2C90356005&ntr_ingredient_ids=35431001"
     )
     expect(dropdown_summary(numerator_panel, "VTM")).to_contain_text("Adenosine")
     expect(dropdown_summary(numerator_panel, "VTM")).to_contain_text("Pilocarpine")
@@ -179,14 +179,14 @@ def test_build_analyse_has_dynamic_filters_and_independent_queries(
     remove_dropdown_button(numerator_panel, "BNF hierarchy").click()
 
     expect(page).to_have_url(
-        live_server.url + "/analysis/build2/?ntr_vtm=108502004%2C90356005"
+        live_server.url + "/analysis/build/?ntr_vtm_ids=108502004%2C90356005"
     )
     assert "BNF hierarchy" in add_filter_option_labels(numerator_panel)
 
     # Removing the final numerator filter returns the panel to its prompt state.
     remove_dropdown_button(numerator_panel, "VTM").click()
 
-    expect(page).to_have_url(live_server.url + "/analysis/build2/")
+    expect(page).to_have_url(live_server.url + "/analysis/build/")
     expect(dropdown_rows(numerator_panel)).to_have_count(0)
     expect(results_counts(numerator_panel)).to_be_hidden()
     expect(results_table(numerator_panel)).to_be_hidden()
@@ -208,7 +208,7 @@ def test_build_analyse_has_dynamic_filters_and_independent_queries(
 
     expect(page).to_have_url(
         live_server.url
-        + "/analysis/build2/?dtr_ingredient=35431001&dtr_ingredient_exclude=35431001"
+        + "/analysis/build/?dtr_ingredient_ids=35431001&dtr_ingredient_ids_excluded=35431001"
     )
     expect(results_counts(denominator_panel)).to_have_text(
         "0 dm+d products (0 VMPs, 0 AMPs)"
@@ -244,8 +244,8 @@ def test_build_analyse_loads_dynamic_filters_from_url(
 
     page.goto(
         live_server.url
-        + "/analysis/build2/?ntr_vtm=108502004,90356005&ntr_form_route=24"
-        + "&dtr_ingredient=35431001&dtr_ingredient_exclude=35431001"
+        + "/analysis/build/?ntr_vtm_ids=108502004,90356005&ntr_form_route_ids=24"
+        + "&dtr_ingredient_ids=35431001&dtr_ingredient_ids_excluded=35431001"
     )
 
     numerator_panel = panel_for_prefix(page, "ntr")
