@@ -226,6 +226,13 @@ def test_from_params():
     )
 
 
+def test_has_params():
+    assert BNFQuery.has_params("ntr", {"ntr_bnf_codes": "01"})
+    assert BNFQuery.has_params("ntr", {"ntr_product_type": "generic"})
+    assert BNFQuery.has_params("ntr", {"ntr_ingredient_ids": "01"})
+    assert not BNFQuery.has_params("ntr", {"org_id": "PRAC01"})
+
+
 def test_from_params_with_form_route_ids_key_not_val():
     query = BNFQuery.from_params(
         "ntr",

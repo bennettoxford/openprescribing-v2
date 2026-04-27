@@ -36,7 +36,7 @@ class Analysis:
 
         ntr_query = BNFQuery.from_params("ntr", params)
 
-        if params.get("dtr_codes"):
+        if BNFQuery.has_params("dtr", params):
             dtr_query = BNFQuery.from_params("dtr", params)
         else:
             dtr_query = ListSizeQuery()

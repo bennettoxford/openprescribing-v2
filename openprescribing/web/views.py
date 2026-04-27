@@ -115,9 +115,7 @@ def _build_analysis_context(analysis):
 def analysis(request):
     analysis_presentation = AnalysisPresentation.from_params(request.GET)
 
-    search_params_for_analysis = ["ntr_codes", "ntr_ingredient_ids"]
-
-    if any(p in search_params_for_analysis for p in request.GET):
+    if BNFQuery.has_params("ntr", request.GET):
         analysis = Analysis.from_params(request.GET)
     else:
         analysis = None
@@ -130,7 +128,7 @@ def analysis(request):
 
 
 def build_analysis(request):
-    if "ntr_codes" in request.GET:
+    if BNFQuery.has_params("ntr", request.GET):
         analysis = Analysis.from_params(request.GET)
     else:
         analysis = None

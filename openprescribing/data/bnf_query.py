@@ -96,6 +96,12 @@ class BNFQuery:
         object.__setattr__(self, "form_route_ids", tuple(self.form_route_ids))
         object.__setattr__(self, "ingredient_ids", tuple(self.ingredient_ids))
 
+    @staticmethod
+    def has_params(field, params):
+        """Indicate whether any of given params belong to given field."""
+
+        return any(key.startswith(f"{field}_") for key in params)
+
     @classmethod
     def from_params(cls, field, params):
         """Build a BNFQuery from URL query parameters for a field."""
