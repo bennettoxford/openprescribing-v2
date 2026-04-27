@@ -365,20 +365,14 @@ def test_describe_search_for_all_product_types(bnf_codes):
     query = BNFQuery(bnf_codes=["1001030U0"], bnf_codes_excluded=["1001030U0_AB"])
     assert query.describe() == {
         "product_type": ProductType.ALL,
-        "bnf_codes": [
-            {
-                "code": "1001030U0",
-                "description": "Methotrexate",
-            }
-        ],
-        "bnf_codes_excluded": [
-            {
-                "code": "1001030U0_AB",
-                "description": "Methotrexate 2.5mg tablets (branded and generic)",
-            }
-        ],
+        "bnf_codes": ["Methotrexate"],
+        "bnf_codes_excluded": ["Methotrexate 2.5mg tablets (branded and generic)"],
         "form_routes": [],
-        "ingredient_ids": [],
+        "form_routes_excluded": [],
+        "ingredients": [],
+        "ingredients_excluded": [],
+        "vtms": [],
+        "vtms_excluded": [],
     }
 
 
@@ -391,20 +385,14 @@ def test_describe_search_for_generic_products(bnf_codes):
     )
     assert query.describe() == {
         "product_type": ProductType.GENERIC,
-        "bnf_codes": [
-            {
-                "code": "1001030U0",
-                "description": "Methotrexate",
-            }
-        ],
-        "bnf_codes_excluded": [
-            {
-                "code": "1001030U0_AB",
-                "description": "Methotrexate 2.5mg tablets",
-            }
-        ],
+        "bnf_codes": ["Methotrexate"],
+        "bnf_codes_excluded": ["Methotrexate 2.5mg tablets"],
         "form_routes": [],
-        "ingredient_ids": [],
+        "form_routes_excluded": [],
+        "ingredients": [],
+        "ingredients_excluded": [],
+        "vtms": [],
+        "vtms_excluded": [],
     }
 
 
@@ -419,12 +407,38 @@ def test_describe_search_for_ingredients(rxdb, settings, tmp_path):
         "bnf_codes": [],
         "bnf_codes_excluded": [],
         "form_routes": [],
-        "ingredient_ids": [
-            {
-                "code": "53034005",
-                "description": "Coal tar",
-            }
-        ],
+        "form_routes_excluded": [],
+        "ingredients": ["Coal tar"],
+        "ingredients_excluded": [],
+        "vtms": [],
+        "vtms_excluded": [],
+    }
+
+
+@pytest.mark.django_db(databases=["data"], transaction=True)
+def test_describe_search_for_all_filter_types(rxdb, settings, tmp_path, bnf_codes):
+    rxdb.ingest([{}])
+    ingest_dmd_data(settings, tmp_path)
+    query = BNFQuery(
+        bnf_codes=["1001030U0"],
+        bnf_codes_excluded=["1001030U0_AB"],
+        form_route_ids=["6"],
+        form_route_ids_excluded=["5"],
+        ingredient_ids=["53034005"],
+        ingredient_ids_excluded=["35431001"],
+        vtm_ids=["15219611000001105"],
+        vtm_ids_excluded=["108502004"],
+    )
+    assert query.describe() == {
+        "product_type": ProductType.ALL,
+        "bnf_codes": ["Methotrexate"],
+        "bnf_codes_excluded": ["Methotrexate 2.5mg tablets (branded and generic)"],
+        "form_routes": ["suspension.oral"],
+        "form_routes_excluded": ["solution.oral"],
+        "ingredients": ["Coal tar"],
+        "ingredients_excluded": ["Adenosine"],
+        "vtms": ["Coal tar + Salicylic acid"],
+        "vtms_excluded": ["Adenosine"],
     }
 
 

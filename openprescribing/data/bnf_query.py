@@ -8,7 +8,7 @@ from operator import and_
 from django.db.models import Q
 
 from openprescribing.data import rxdb
-from openprescribing.data.models.dmd import Ing, OntFormRoute
+from openprescribing.data.models.dmd import VTM, Ing, OntFormRoute
 
 from .models import BNFCode
 
@@ -284,12 +284,21 @@ class BNFQuery:
             "form_routes": [
                 OntFormRoute.objects.get(cd=fr).descr for fr in self.form_route_ids
             ],
-            "ingredient_ids": [
-                {
-                    "code": ingredient_id,
-                    "description": Ing.objects.get(isid=ingredient_id).nm,
-                }
+            "form_routes_excluded": [
+                OntFormRoute.objects.get(cd=fr).descr
+                for fr in self.form_route_ids_excluded
+            ],
+            "ingredients": [
+                Ing.objects.get(isid=ingredient_id).nm
                 for ingredient_id in self.ingredient_ids
+            ],
+            "ingredients_excluded": [
+                Ing.objects.get(isid=ingredient_id).nm
+                for ingredient_id in self.ingredient_ids_excluded
+            ],
+            "vtms": [VTM.objects.get(vtmid=vtm_id).nm for vtm_id in self.vtm_ids],
+            "vtms_excluded": [
+                VTM.objects.get(vtmid=vtm_id).nm for vtm_id in self.vtm_ids_excluded
             ],
         }
 
@@ -353,8 +362,7 @@ def build_q_for_bnf_code(code):
 
 
 def description_for_bnf_code(code, product_type):
-    """Return dict with keys `code` and `description` for describing a search to
-    users."""
+    """Return a human-readable description for a BNF code."""
 
     if "_" in code:
         prefix, suffix = code.split("_")
@@ -362,13 +370,11 @@ def description_for_bnf_code(code, product_type):
         assert len(suffix) == 2  # strength and formulation part
         generic_code_obj = BNFCode.objects.get(code=f"{prefix}AA{suffix}{suffix}")
         if product_type == ProductType.ALL:
-            description = f"{generic_code_obj.name} (branded and generic)"
+            return f"{generic_code_obj.name} (branded and generic)"
         else:
-            description = generic_code_obj.name
-        return {"code": code, "description": description}
+            return generic_code_obj.name
     else:
-        description = BNFCode.objects.get(code=code).name
-        return {"code": code, "description": description}
+        return BNFCode.objects.get(code=code).name
 
 
 def _get_tuple_param(params, key):
