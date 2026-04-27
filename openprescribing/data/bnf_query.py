@@ -329,12 +329,6 @@ class BNFQuery:
 
         return params
 
-    def to_codes(self):
-        param_values = self.bnf_codes + tuple(
-            f"-{code}" for code in self.bnf_codes_excluded
-        )
-        return ",".join(param_values)
-
 
 def build_q_for_bnf_code(code):
     """Return Q object for finding all presentations that match the given code.
