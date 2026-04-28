@@ -37,7 +37,7 @@ export function renderAddFilterOptions(panel) {
   panel.refs.addFilterSelect.value = "";
 }
 
-export function renderSummary(sectionsByPrefix, panels, metadata, templates) {
+export function renderSummary(sectionsByPrefix, panels, templates) {
   // Render the active filters for each panel into the summary tab.
   panels.forEach((panel) => {
     renderSummarySection(sectionsByPrefix.get(panel.prefix), panel, templates);
