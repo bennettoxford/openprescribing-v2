@@ -5,6 +5,7 @@ import pytest
 import openprescribing.data.rxdb
 from openprescribing.data.models import BNFCode, Org, OrgRelation
 from tests.utils.ingest_utils import ingest_dmd_bnf_map_data, ingest_dmd_data
+from tests.utils.medications_utils import MedicationsBuilder
 from tests.utils.rxdb_utils import RXDBFixture
 
 
@@ -114,6 +115,16 @@ def dmd_data(rxdb, settings, tmp_path):
     """
     ingest_dmd_data(settings, tmp_path)
     ingest_dmd_bnf_map_data(settings, tmp_path)
+
+
+@pytest.fixture
+def medications(rxdb):
+    """This fixture can be used to populate the rxdb medications view.
+
+    def test_something(medications):
+        medications.add_rows([...])
+    """
+    return MedicationsBuilder()
 
 
 @pytest.fixture
