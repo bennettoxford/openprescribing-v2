@@ -33,7 +33,9 @@ def pytest_terminal_summary(terminalreporter, exitstatus, config):
 
 
 @pytest.fixture
-def rxdb(monkeypatch):
+def rxdb(data_db_with_transaction, monkeypatch):
+    # data_db_with_transaction is a dependency of this fixture so that any views
+    # specified in CREATE_VIEWS_PATH have access to data in the SQLite database.
     rxdb_fixture = RXDBFixture()
     monkeypatch.setattr(
         openprescribing.data.rxdb, "get_cursor", rxdb_fixture.get_cursor
@@ -73,7 +75,7 @@ def data_db_with_transaction(request):
 
 
 @pytest.fixture
-def bnf_codes():
+def bnf_codes(data_db):
     for level, code, name in [
         # This fragment of the BNF hierarchy contains an ununsual chemical substance
         # that does not have a generic product.

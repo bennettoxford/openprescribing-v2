@@ -14,7 +14,7 @@ STATUS_NOT_INCLUDED = "not_included"
 
 
 def test_build_analyse_has_dynamic_filters_and_independent_queries(
-    data_db_with_transaction, live_server, page, rxdb, settings, tmp_path
+    live_server, page, rxdb, settings, tmp_path
 ):
     # Seed a small dataset with overlapping VTM, BNF, and form/route coverage.
     rxdb.ingest(
