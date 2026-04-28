@@ -33,8 +33,7 @@ def test_init_normalizes_lists_to_tuples():
     )
 
 
-@pytest.mark.django_db(databases=["data"])
-def test_get_matching_presentation_codes(bnf_codes):
+def test_get_matching_presentation_codes(data_db, bnf_codes):
     query = BNFQuery(
         bnf_codes=["1001030U0AA", "1001030U0BD"], bnf_codes_excluded=["1001030U0AAABAB"]
     )
@@ -45,8 +44,7 @@ def test_get_matching_presentation_codes(bnf_codes):
     ]
 
 
-@pytest.mark.django_db(databases=["data"])
-def test_get_matching_presentation_codes_no_excludes(bnf_codes):
+def test_get_matching_presentation_codes_no_excludes(data_db, bnf_codes):
     query = BNFQuery(bnf_codes=["1001030U0AA"])
     assert query.get_matching_presentation_codes() == [
         "1001030U0AAABAB",
@@ -54,8 +52,9 @@ def test_get_matching_presentation_codes_no_excludes(bnf_codes):
     ]
 
 
-@pytest.mark.django_db(databases=["data"])
-def test_get_matching_presentation_codes_for_strength_and_formulation(bnf_codes):
+def test_get_matching_presentation_codes_for_strength_and_formulation(
+    data_db, bnf_codes
+):
     query = BNFQuery(bnf_codes=["1001030U0_AC"])
     assert query.get_matching_presentation_codes() == [
         "1001030U0AAACAC",
@@ -63,8 +62,7 @@ def test_get_matching_presentation_codes_for_strength_and_formulation(bnf_codes)
     ]
 
 
-@pytest.mark.django_db(databases=["data"])
-def test_get_matching_presentation_codes_for_generic(bnf_codes):
+def test_get_matching_presentation_codes_for_generic(data_db, bnf_codes):
     query = BNFQuery(bnf_codes=["1001030U0"], product_type=ProductType.GENERIC)
     assert query.get_matching_presentation_codes() == [
         "1001030U0AAABAB",
@@ -72,9 +70,8 @@ def test_get_matching_presentation_codes_for_generic(bnf_codes):
     ]
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_get_matching_presentation_codes_for_generic_with_strength_and_formulation(
-    bnf_codes,
+    data_db, bnf_codes
 ):
     query = BNFQuery(bnf_codes=["1001030U0_AB"], product_type=ProductType.GENERIC)
     assert query.get_matching_presentation_codes() == [
@@ -82,8 +79,7 @@ def test_get_matching_presentation_codes_for_generic_with_strength_and_formulati
     ]
 
 
-@pytest.mark.django_db(databases=["data"])
-def test_get_matching_presentation_codes_for_branded(bnf_codes):
+def test_get_matching_presentation_codes_for_branded(data_db, bnf_codes):
     query = BNFQuery(bnf_codes=["1001030U0"], product_type=ProductType.BRANDED)
     assert query.get_matching_presentation_codes() == [
         "1001030U0BDAAAB",
@@ -91,9 +87,8 @@ def test_get_matching_presentation_codes_for_branded(bnf_codes):
     ]
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_get_matching_presentation_codes_for_branded_with_strength_and_formulation(
-    bnf_codes,
+    data_db, bnf_codes
 ):
     query = BNFQuery(bnf_codes=["1001030U0_AB"], product_type=ProductType.BRANDED)
     assert query.get_matching_presentation_codes() == [
@@ -101,8 +96,9 @@ def test_get_matching_presentation_codes_for_branded_with_strength_and_formulati
     ]
 
 
-@pytest.mark.django_db(databases=["data"], transaction=True)
-def test_get_matching_presentation_codes_for_form_route_ids(dmd_data):
+def test_get_matching_presentation_codes_for_form_route_ids(
+    data_db_with_transaction, dmd_data
+):
     # The following appears in the dm+d -> BNF data/mapping data
     BNFCode(code="0203020C0AAAAAA", level=BNFCode.Level.PRESENTATION).save()
     # The following doesn't appear in the dm+d -> BNF data/mapping data
@@ -117,8 +113,9 @@ def test_get_matching_presentation_codes_for_form_route_ids(dmd_data):
     assert query.get_matching_presentation_codes() == ["0203020C0AAAAAA"]
 
 
-@pytest.mark.django_db(databases=["data"], transaction=True)
-def test_get_matching_presentation_codes_for_ingredient_ids(dmd_data):
+def test_get_matching_presentation_codes_for_ingredient_ids(
+    data_db_with_transaction, dmd_data
+):
     # The following appears in the dm+d -> BNF data/mapping data
     BNFCode(code="1305020C0AAFVFV", level=BNFCode.Level.PRESENTATION).save()
     query = BNFQuery.from_params(
@@ -131,8 +128,9 @@ def test_get_matching_presentation_codes_for_ingredient_ids(dmd_data):
     assert query.get_matching_presentation_codes() == ["1305020C0AAFVFV"]
 
 
-@pytest.mark.django_db(databases=["data"], transaction=True)
-def test_get_matching_presentation_codes_for_ingredient_ids_no_match(dmd_data):
+def test_get_matching_presentation_codes_for_ingredient_ids_no_match(
+    data_db_with_transaction, dmd_data
+):
     # The following appears in the dm+d -> BNF data/mapping data
     BNFCode(code="1305020C0AAFVFV", level=BNFCode.Level.PRESENTATION).save()
     query = BNFQuery.from_params(
@@ -145,8 +143,9 @@ def test_get_matching_presentation_codes_for_ingredient_ids_no_match(dmd_data):
     assert query.get_matching_presentation_codes() == []
 
 
-@pytest.mark.django_db(databases=["data"], transaction=True)
-def test_get_matching_presentation_codes_for_vtm_ids(dmd_data):
+def test_get_matching_presentation_codes_for_vtm_ids(
+    data_db_with_transaction, dmd_data
+):
     BNFCode(code="1305020C0AAFVFV", level=BNFCode.Level.PRESENTATION).save()
     query = BNFQuery.from_params(
         "ntr",
@@ -158,8 +157,9 @@ def test_get_matching_presentation_codes_for_vtm_ids(dmd_data):
     assert query.get_matching_presentation_codes() == ["1305020C0AAFVFV"]
 
 
-@pytest.mark.django_db(databases=["data"])
-def test_get_matching_presentation_codes_for_vtm_ids_excluded(bnf_codes, monkeypatch):
+def test_get_matching_presentation_codes_for_vtm_ids_excluded(
+    data_db, bnf_codes, monkeypatch
+):
     monkeypatch.setattr(
         "openprescribing.data.bnf_query._get_bnf_codes_for_vtm_ids",
         lambda ids: {
@@ -176,9 +176,8 @@ def test_get_matching_presentation_codes_for_vtm_ids_excluded(bnf_codes, monkeyp
     ]
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_get_matching_presentation_codes_for_form_route_ids_excluded(
-    bnf_codes, monkeypatch
+    data_db, bnf_codes, monkeypatch
 ):
     monkeypatch.setattr(
         "openprescribing.data.bnf_query._get_bnf_codes_for_form_route_ids",
@@ -196,9 +195,8 @@ def test_get_matching_presentation_codes_for_form_route_ids_excluded(
     ]
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_get_matching_presentation_codes_for_form_route_ids_include_and_exclude(
-    bnf_codes, monkeypatch
+    data_db, bnf_codes, monkeypatch
 ):
     monkeypatch.setattr(
         "openprescribing.data.bnf_query._get_bnf_codes_for_form_route_ids",
@@ -223,9 +221,8 @@ def test_get_matching_presentation_codes_for_form_route_ids_include_and_exclude(
     ]
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_get_matching_presentation_codes_for_form_route_ids_excluded_no_match(
-    bnf_codes, monkeypatch
+    data_db, bnf_codes, monkeypatch
 ):
     monkeypatch.setattr(
         "openprescribing.data.bnf_query._get_bnf_codes_for_form_route_ids",
@@ -241,9 +238,8 @@ def test_get_matching_presentation_codes_for_form_route_ids_excluded_no_match(
     ]
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_get_matching_presentation_codes_for_ingredient_ids_excluded(
-    bnf_codes, monkeypatch
+    data_db, bnf_codes, monkeypatch
 ):
     monkeypatch.setattr(
         "openprescribing.data.bnf_query._get_bnf_codes_for_ingredient_ids",
@@ -261,9 +257,8 @@ def test_get_matching_presentation_codes_for_ingredient_ids_excluded(
     ]
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_get_matching_presentation_codes_for_ingredient_ids_include_and_exclude(
-    bnf_codes, monkeypatch
+    data_db, bnf_codes, monkeypatch
 ):
     monkeypatch.setattr(
         "openprescribing.data.bnf_query._get_bnf_codes_for_ingredient_ids",
@@ -288,9 +283,8 @@ def test_get_matching_presentation_codes_for_ingredient_ids_include_and_exclude(
     ]
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_get_matching_presentation_codes_for_ingredient_ids_excluded_no_match(
-    bnf_codes, monkeypatch
+    data_db, bnf_codes, monkeypatch
 ):
     monkeypatch.setattr(
         "openprescribing.data.bnf_query._get_bnf_codes_for_ingredient_ids",
@@ -306,9 +300,8 @@ def test_get_matching_presentation_codes_for_ingredient_ids_excluded_no_match(
     ]
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_get_matching_presentation_codes_with_combined_exclusions(
-    bnf_codes, monkeypatch
+    data_db, bnf_codes, monkeypatch
 ):
     monkeypatch.setattr(
         "openprescribing.data.bnf_query._get_bnf_codes_for_form_route_ids",
@@ -345,8 +338,7 @@ def test_get_matching_presentation_codes_with_combined_exclusions(
     assert query.get_matching_presentation_codes() == ["1001030U0AAACAC"]
 
 
-@pytest.mark.django_db(databases=["data"])
-def test_describe_search_for_all_product_types(bnf_codes):
+def test_describe_search_for_all_product_types(data_db, bnf_codes):
     query = BNFQuery(bnf_codes=["1001030U0"], bnf_codes_excluded=["1001030U0_AB"])
     assert query.describe() == {
         "product_type": ProductType.ALL,
@@ -361,8 +353,7 @@ def test_describe_search_for_all_product_types(bnf_codes):
     }
 
 
-@pytest.mark.django_db(databases=["data"])
-def test_describe_search_for_generic_products(bnf_codes):
+def test_describe_search_for_generic_products(data_db, bnf_codes):
     query = BNFQuery(
         bnf_codes=["1001030U0"],
         bnf_codes_excluded=["1001030U0_AB"],
@@ -381,8 +372,7 @@ def test_describe_search_for_generic_products(bnf_codes):
     }
 
 
-@pytest.mark.django_db(databases=["data"], transaction=True)
-def test_describe_search_for_ingredients(dmd_data):
+def test_describe_search_for_ingredients(data_db_with_transaction, dmd_data):
     query = BNFQuery(bnf_codes=[], ingredient_ids=["53034005"])
     assert query.describe() == {
         "product_type": ProductType.ALL,
@@ -397,8 +387,9 @@ def test_describe_search_for_ingredients(dmd_data):
     }
 
 
-@pytest.mark.django_db(databases=["data"], transaction=True)
-def test_describe_search_for_all_filter_types(dmd_data, bnf_codes):
+def test_describe_search_for_all_filter_types(
+    data_db_with_transaction, dmd_data, bnf_codes
+):
     query = BNFQuery(
         bnf_codes=["1001030U0"],
         bnf_codes_excluded=["1001030U0_AB"],
@@ -555,8 +546,7 @@ def test_from_dict_generic():
     assert query.to_dict() == test_dict
 
 
-@pytest.mark.django_db(databases=["data"], transaction=True)
-def test_from_dict_form_route(dmd_data):
+def test_from_dict_form_route(data_db_with_transaction, dmd_data):
     # The following appears in the dm+d -> BNF data/mapping data
     BNFCode(code="0203020C0AAAAAA", level=BNFCode.Level.PRESENTATION).save()
 
@@ -570,8 +560,7 @@ def test_from_dict_form_route(dmd_data):
     assert query.to_dict() == test_dict
 
 
-@pytest.mark.django_db(databases=["data"], transaction=True)
-def test_from_dict_separate_form_route(dmd_data):
+def test_from_dict_separate_form_route(data_db_with_transaction, dmd_data):
     test_dict = {
         "bnf_codes": {
             "included": ["0203020C0AAAAAA"],
@@ -589,8 +578,7 @@ def test_from_dict_separate_form_route(dmd_data):
     assert query.to_dict() == expected_dict
 
 
-@pytest.mark.django_db(databases=["data"], transaction=True)
-def test_get_form_route_ids_for_forms_and_routes(dmd_data):
+def test_get_form_route_ids_for_forms_and_routes(data_db_with_transaction, dmd_data):
     route_ids = _get_form_route_ids_for_forms_and_routes(
         form_routes=[], forms=["tablet"], routes=["oral"]
     )
@@ -608,8 +596,7 @@ def test_get_form_route_ids_for_no_forms_or_routes():
     assert route_ids == expected_route_ids
 
 
-@pytest.mark.django_db(databases=["data"], transaction=True)
-def test_get_form_route_ids_for_invalid_form_routes(dmd_data):
+def test_get_form_route_ids_for_invalid_form_routes(data_db_with_transaction, dmd_data):
     with pytest.raises(ValueError):
         _get_form_route_ids_for_forms_and_routes(
             form_routes=[], forms=["unicorn"], routes=[]

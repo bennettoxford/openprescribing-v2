@@ -8,8 +8,9 @@ pytestmark = pytest.mark.functional
 
 
 @pytest.mark.filterwarnings("ignore:All-NaN slice encountered:RuntimeWarning")
-@pytest.mark.django_db(databases=["data"], transaction=True)
-def test_analysis(live_server, page, sample_data, settings, tmp_path):
+def test_analysis(
+    data_db_with_transaction, live_server, page, sample_data, settings, tmp_path
+):
     # This is a limited smoke test that walks through building a simple analysis from
     # the landing page and verifies that the resulting analysis page renders a chart.
 

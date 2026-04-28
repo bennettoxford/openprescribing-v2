@@ -8,6 +8,20 @@ from tests.utils.ingest_utils import ingest_dmd_bnf_map_data, ingest_dmd_data
 from tests.utils.rxdb_utils import RXDBFixture
 
 
+def pytest_collection_modifyitems(config, items):
+    # This pytest hook applies pytest markers at collection time based on the presence
+    # of fixtures.
+    #
+    # We use this so that we can set up the database with fixtures, which compose better
+    # than marks.
+
+    for item in items:
+        if "data_db_with_transaction" in item.fixturenames:
+            item.add_marker(pytest.mark.django_db(databases=["data"], transaction=True))
+        elif "data_db" in item.fixturenames:
+            item.add_marker(pytest.mark.django_db(databases=["data"]))
+
+
 def pytest_terminal_summary(terminalreporter, exitstatus, config):
     if terminalreporter.stats.get("warnings"):  # pragma: no cover
         print(
@@ -38,6 +52,24 @@ def prevent_rxdb_access():
     with pytest.MonkeyPatch.context() as monkeypatch:
         monkeypatch.setattr(openprescribing.data.rxdb, "get_cursor", get_cursor)
         yield
+
+
+@pytest.fixture
+def data_db(request):
+    """
+    Equivalent to `@pytest.mark.django_db(databases=["data"])`.
+
+    See pytest_collection_modifyitems for more.
+    """
+
+
+@pytest.fixture
+def data_db_with_transaction(request):
+    """
+    Equivalent to `@pytest.mark.django_db(databases=["data"], transaction=True)`.
+
+    See pytest_collection_modifyitems for more.
+    """
 
 
 @pytest.fixture
