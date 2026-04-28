@@ -150,7 +150,7 @@ function initialiseQueriesFromUrl(panels) {
 
 function refreshSummary(panels) {
   // Re-render the summary tab for the given panels.
-  renderSummary(summarySectionElsByPrefix, panels, metadata, templates);
+  renderSummary(summarySectionElsByPrefix, panels, templates);
   updateSummarySubmitUrl();
 }
 
