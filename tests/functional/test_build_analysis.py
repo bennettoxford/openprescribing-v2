@@ -13,9 +13,8 @@ STATUS_EXCLUDED = "excluded"
 STATUS_NOT_INCLUDED = "not_included"
 
 
-@pytest.mark.django_db(databases=["data"], transaction=True)
 def test_build_analyse_has_dynamic_filters_and_independent_queries(
-    live_server, page, rxdb, settings, tmp_path
+    data_db_with_transaction, live_server, page, rxdb, settings, tmp_path
 ):
     # Seed a small dataset with overlapping VTM, BNF, and form/route coverage.
     rxdb.ingest(
@@ -227,9 +226,8 @@ def test_build_analyse_has_dynamic_filters_and_independent_queries(
     )
 
 
-@pytest.mark.django_db(databases=["data"], transaction=True)
 def test_build_analyse_loads_dynamic_filters_from_url(
-    live_server, page, rxdb, settings, tmp_path
+    data_db_with_transaction, live_server, page, rxdb, settings, tmp_path
 ):
     # Seed the same small dataset used by the main interaction test.
     rxdb.ingest(
