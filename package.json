@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "lint": "biome check",
+    "lint": "biome check --error-on-warnings",
     "fix": "biome check --write",
     "test": "vitest run"
   },
