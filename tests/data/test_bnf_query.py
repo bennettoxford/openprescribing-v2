@@ -533,7 +533,6 @@ def test_to_params_with_ingredient_ids():
     }
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_from_dict():
     test_dict = {
         "bnf_codes": {
@@ -544,7 +543,6 @@ def test_from_dict():
     assert query.to_dict() == test_dict
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_from_dict_generic():
     test_dict = {
         "bnf_codes": {
@@ -628,7 +626,6 @@ def test_get_form_route_ids_for_invalid_form_routes(dmd_data):
         )
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_from_dict_ingredient():
     test_dict = {
         "ingredient_ids": ["53034005"],
