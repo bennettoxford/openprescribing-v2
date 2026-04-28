@@ -40,12 +40,7 @@ export function renderAddFilterOptions(panel) {
 export function renderSummary(sectionsByPrefix, panels, metadata, templates) {
   // Render the active filters for each panel into the summary tab.
   panels.forEach((panel) => {
-    renderSummarySection(
-      sectionsByPrefix.get(panel.prefix),
-      panel,
-      metadata,
-      templates,
-    );
+    renderSummarySection(sectionsByPrefix.get(panel.prefix), panel, templates);
   });
 }
 
@@ -63,7 +58,7 @@ function getActiveFilterControlCount(panel) {
   return Object.keys(panel.dropdowns.getAllSelected()).length;
 }
 
-function renderSummarySection(sectionEl, panel, metadata, templates) {
+function renderSummarySection(sectionEl, panel, templates) {
   // Render given panel's active filters into its summary section.
   const selectedNamesByKey = panel.dropdowns.getAllSelectedNames();
   const activeFilters = FILTER_DEFINITIONS.flatMap((definition) =>
