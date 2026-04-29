@@ -42,7 +42,7 @@ def _build_analysis_context(analysis):
                 analysis.ntr_query, None
             )
 
-        url_parameters = urlencode(analysis.to_params(), safe=",")
+        url_parameters = urlencode(analysis.to_json_params())
         build_analysis_url = f"{reverse('build-analysis')}?{url_parameters}"
         deciles_api_url = f"{reverse('api_prescribing_deciles')}?{url_parameters}"
         all_orgs_api_url = f"{reverse('api_prescribing_all_orgs')}?{url_parameters}"

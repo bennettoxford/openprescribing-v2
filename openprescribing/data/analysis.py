@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from django.db.models.fields.json import json
+
 from .bnf_query import BNFQuery
 from .list_size_query import ListSizeQuery
 
@@ -90,3 +92,10 @@ class Analysis:
             analysis_dict["org_id"] = self.org_id
 
         return analysis_dict
+
+    @classmethod
+    def from_json_params(cls, params):
+        return cls.from_dict(json.loads(params["analysis"]))
+
+    def to_json_params(self):
+        return {"analysis": json.dumps(self.to_dict())}

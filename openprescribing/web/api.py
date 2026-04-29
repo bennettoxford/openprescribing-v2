@@ -61,7 +61,11 @@ def prescribing_all_orgs(request):
 
 
 def prescribing_deciles(request):
-    analysis = Analysis.from_params(request.GET)
+    if "analysis" in request.GET:
+        analysis = Analysis.from_json_params(request.GET)
+    else:
+        analysis = Analysis.from_params(request.GET)
+
     with rxdb.get_cursor() as cursor:
         odm = get_org_date_ratio_matrix(cursor, analysis, date_count=DATE_COUNT)
     org = _get_org(analysis)

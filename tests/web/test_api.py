@@ -1,5 +1,8 @@
+from urllib.parse import urlencode
+
 import pytest
 
+from openprescribing.data.analysis import Analysis
 from openprescribing.web import api
 from tests.utils.ingest_utils import ingest_dmd_bnf_map_data, ingest_dmd_data
 
@@ -59,6 +62,103 @@ def test_prescribing_deciles_with_denominator(client, sample_data):
     assert payload["org"] == []
 
 
+def _prescribing_deciles_get_analysis(analysis_dict, client):
+    analysis_param = urlencode(Analysis.from_dict(analysis_dict).to_json_params())
+    return client.get(f"/api/prescribing-deciles/?{analysis_param}")
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_prescribing_deciles_json(client, sample_data):
+    analysis_dict = {
+        "queries": [
+            {
+                "numerator": {
+                    "bnf_codes": {
+                        "included": ["1001030U0"],
+                    },
+                },
+            },
+        ],
+    }
+    rsp = _prescribing_deciles_get_analysis(analysis_dict, client)
+
+    payload = rsp.json()
+    assert rsp.status_code == 200
+    assert payload["deciles"][-1]["value"] == pytest.approx(64.15, 0.001)
+    assert payload["org"] == []
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_prescribing_deciles_json_with_practice(client, sample_data):
+    analysis_dict = {
+        "queries": [
+            {
+                "numerator": {
+                    "bnf_codes": {
+                        "included": ["1001030U0"],
+                    },
+                },
+            },
+        ],
+        "org_id": "PRA00",
+    }
+    rsp = _prescribing_deciles_get_analysis(analysis_dict, client)
+
+    payload = rsp.json()
+    assert rsp.status_code == 200
+    assert payload["deciles"][-1]["value"] == pytest.approx(66.41, 0.001)
+    assert payload["org"][-1]["value"] == pytest.approx(51.94, 0.001)
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_prescribing_deciles_json_with_exclusion(client, sample_data):
+    analysis_dict = {
+        "queries": [
+            {
+                "numerator": {
+                    "bnf_codes": {
+                        "included": ["1001030U0"],
+                        "excluded": ["1001030U0AAABAB"],
+                    },
+                },
+            },
+        ],
+    }
+    rsp = _prescribing_deciles_get_analysis(analysis_dict, client)
+
+    payload = rsp.json()
+    assert rsp.status_code == 200
+    assert payload["deciles"][-1]["value"] == pytest.approx(59.07, 0.001)
+    assert payload["org"] == []
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_prescribing_deciles_json_with_denominator(client, sample_data):
+    analysis_dict = {
+        "queries": [
+            {
+                "numerator": {
+                    "bnf_codes": {
+                        "included": ["1001030U0AA"],
+                    },
+                },
+                "denominator": {
+                    "bnf_codes": {
+                        "included": ["1001030U0"],
+                    },
+                },
+            },
+        ],
+    }
+    rsp = _prescribing_deciles_get_analysis(analysis_dict, client)
+
+    payload = rsp.json()
+    assert rsp.status_code == 200
+    assert payload["deciles"][-1]["value"] == pytest.approx(27.14, 0.001)
+    assert payload["org"] == []
+
+
+@pytest.mark.django_db(databases=["data"], transaction=True)
 def test_metadata_medications(client, rxdb, settings, tmp_path):
     rxdb.ingest([{"bnf_code": "1106000X0AAA4A4"}])
     ingest_dmd_data(settings, tmp_path)
