@@ -1,7 +1,7 @@
 import pytest
 
 from openprescribing.data.analysis import Analysis
-from openprescribing.data.bnf_query import BNFQuery, ProductType
+from openprescribing.data.bnf_query import BNFQuery, MultiBNFQuery, ProductType
 from openprescribing.data.list_size_query import ListSizeQuery
 
 
@@ -185,4 +185,116 @@ def test_from_dict_ingredients():
         ],
     }
     analysis = Analysis.from_dict(analysis_dict)
+    assert analysis.to_dict() == analysis_dict
+
+
+def test_from_dict_multiple_queries(medications):
+    medications.add_rows(
+        [
+            {"bnf_code": "1001030U0AAABAB", "ingredient_ids": [11111]},
+            {"bnf_code": "1001030U0AAACAC", "ingredient_ids": [11111, 53034005]},
+            {"bnf_code": "1001030U0BDAAAB", "ingredient_ids": [11111]},
+            {"bnf_code": "1001030U0BDABAC", "ingredient_ids": [11111, 53034005]},
+        ]
+    )
+    analysis_dict = {
+        "queries": [
+            {
+                "numerator": {
+                    "bnf_codes": {
+                        "included": ["1001030U0"],
+                    },
+                    "product_type": "generic",
+                },
+            },
+            {
+                "numerator": {
+                    "bnf_codes": {
+                        "included": ["1001030U0"],
+                    },
+                    "product_type": "branded",
+                },
+            },
+        ],
+    }
+    analysis = Analysis.from_dict(analysis_dict)
+    # breakpoint()
+    # query = BNFQuery(
+    #     bnf_codes=["1001030U0"],
+    #     ingredient_ids=["11111"],
+    #     ingredient_ids_excluded=["53034005"],
+    # )
+    assert analysis.ntr_query.get_matching_presentation_codes() == [
+        "1001030U0AAABAB",
+        "1001030U0AAACAC",
+        "1001030U0BDAAAB",
+        "1001030U0BDABAC",
+    ]
+
+    assert analysis.to_dict() == analysis_dict
+
+
+def test_from_dict_multiple_queries_dtr(medications):
+    medications.add_rows(
+        [
+            # methotrexate
+            {"bnf_code": "1001030U0AAABAB", "ingredient_ids": [11111]},
+            {"bnf_code": "1001030U0AAACAC", "ingredient_ids": [11111, 53034005]},
+            {"bnf_code": "1001030U0BDAAAB", "ingredient_ids": [11111]},
+            {"bnf_code": "1001030U0BDABAC", "ingredient_ids": [11111, 53034005]},
+            # leflunomide
+            {"bnf_code": "1001030L0AAABAB", "ingredient_ids": [386981009]},
+            {"bnf_code": "1001030L0AAACAC", "ingredient_ids": [386981009]},
+            {"bnf_code": "1001030L0BDAAAB", "ingredient_ids": [386981009]},
+            {"bnf_code": "1001030L0BDABAC", "ingredient_ids": [386981009]},
+        ]
+    )
+    analysis_dict = {
+        "queries": [
+            {
+                "numerator": {
+                    "bnf_codes": {
+                        "included": ["1001030U0_AB"],
+                    },
+                },
+                "denominator": {
+                    "bnf_codes": {
+                        "included": ["1001030U0"],
+                    },
+                },
+            },
+            {
+                "numerator": {
+                    "bnf_codes": {
+                        "included": ["1001030L0_AC"],
+                    },
+                },
+                "denominator": {
+                    "bnf_codes": {
+                        "included": ["1001030L0"],
+                    },
+                },
+            },
+        ],
+    }
+    analysis = Analysis.from_dict(analysis_dict)
+
+    assert isinstance(analysis.ntr_query, MultiBNFQuery)
+    assert analysis.ntr_query.get_matching_presentation_codes() == [
+        "1001030L0AAACAC",
+        "1001030L0BDABAC",
+        "1001030U0AAABAB",
+        "1001030U0BDAAAB",
+    ]
+    assert analysis.dtr_query.get_matching_presentation_codes() == [
+        "1001030L0AAABAB",
+        "1001030L0AAACAC",
+        "1001030L0BDAAAB",
+        "1001030L0BDABAC",
+        "1001030U0AAABAB",
+        "1001030U0AAACAC",
+        "1001030U0BDAAAB",
+        "1001030U0BDABAC",
+    ]
+
     assert analysis.to_dict() == analysis_dict
