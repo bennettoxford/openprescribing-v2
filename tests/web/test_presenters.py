@@ -10,7 +10,6 @@ from openprescribing.web.presenters import (
 )
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_make_bnf_tree(bnf_codes):
     codes = BNFCode.objects.all()
 
@@ -76,7 +75,6 @@ def test_make_bnf_tree(bnf_codes):
     ]
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_make_bnf_table_with_generic_products(bnf_codes):
     code = "1001030U0"
     products = BNFCode.objects.filter(
@@ -110,7 +108,6 @@ def test_make_bnf_table_with_generic_products(bnf_codes):
     ]
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_make_bnf_table_with_no_generic_products(bnf_codes):
     code = "0601060D0"
     products = BNFCode.objects.filter(
@@ -198,7 +195,6 @@ def test_make_bnf_table_with_no_generic_products(bnf_codes):
         ),
     ],
 )
-@pytest.mark.django_db(databases=["data"])
 def test_make_ntr_dtr_intersection_table(
     bnf_codes, ntr_codes, ntr_product_type, dtr_codes, dtr_product_type, expected
 ):
@@ -221,7 +217,6 @@ def test_make_ntr_dtr_intersection_table(
     assert actual["has_denominators"] is expected["has_denominators"]
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_make_code_to_name(bnf_codes):
     codes = BNFCode.objects.filter(code__startswith="10")
     assert make_code_to_name(codes) == {

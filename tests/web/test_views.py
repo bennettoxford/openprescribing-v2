@@ -7,7 +7,6 @@ from openprescribing.web.analysis_presentation import ChartType
 from openprescribing.web.models import Feedback
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_analysis(client, sample_data):
     rsp = client.get("")
     assert rsp.status_code == 200
@@ -62,7 +61,6 @@ def test_analysis(client, sample_data):
     assert rsp.context["analysis_presentation"].chart_type == ChartType.DECILES
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_analysis_build(client, sample_data):
     rsp = client.get("/analysis/build/")
     assert rsp.status_code == 200
@@ -71,19 +69,16 @@ def test_analysis_build(client, sample_data):
     assert rsp.status_code == 200
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_bnf_tree(client, bnf_codes):
     rsp = client.get("/bnf/")
     assert rsp.status_code == 200
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_bnf_table_with_generic_products(client, bnf_codes):
     rsp = client.get("/bnf/1001030U0/")
     assert rsp.status_code == 200
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_bnf_table_with_no_generic_products(client, bnf_codes):
     rsp = client.get("/bnf/0601060D0/")
     assert rsp.status_code == 200
@@ -129,7 +124,6 @@ def test_feedback_comment_rejects_missing_session(client):
     assert feedback.comment == ""
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_measure(client, sample_data, tmp_path, settings):
     test_yaml = """
 metadata:
