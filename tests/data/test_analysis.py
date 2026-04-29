@@ -1,6 +1,6 @@
 import pytest
 
-from openprescribing.data.analysis import Analysis
+from openprescribing.data.analysis import Analysis, AnalysisQuery
 from openprescribing.data.bnf_query import BNFQuery, MultiBNFQuery, ProductType
 from openprescribing.data.list_size_query import ListSizeQuery
 
@@ -53,18 +53,22 @@ def test_from_params_ntr_codes_only():
 
 def test_to_params():
     analysis = Analysis(
-        ntr_query=BNFQuery(
-            bnf_codes=["01"],
-            bnf_codes_excluded=["0101"],
-            product_type=ProductType.BRANDED,
-            form_route_ids_excluded=["2"],
-            vtm_ids=["5"],
-        ),
-        dtr_query=BNFQuery(
-            bnf_codes=["01"],
-            bnf_codes_excluded=["0101"],
-            ingredient_ids_excluded=["4"],
-            vtm_ids_excluded=["6"],
+        (
+            AnalysisQuery(
+                ntr_query=BNFQuery(
+                    bnf_codes=["01"],
+                    bnf_codes_excluded=["0101"],
+                    product_type=ProductType.BRANDED,
+                    form_route_ids_excluded=["2"],
+                    vtm_ids=["5"],
+                ),
+                dtr_query=BNFQuery(
+                    bnf_codes=["01"],
+                    bnf_codes_excluded=["0101"],
+                    ingredient_ids_excluded=["4"],
+                    vtm_ids_excluded=["6"],
+                ),
+            ),
         ),
         org_id="PRAC01",
     )
@@ -86,12 +90,16 @@ def test_to_params():
 
 def test_to_params_dtr_list_size():
     analysis = Analysis(
-        ntr_query=BNFQuery(
-            bnf_codes=["01"],
-            bnf_codes_excluded=["0101"],
-            product_type=ProductType.BRANDED,
+        (
+            AnalysisQuery(
+                ntr_query=BNFQuery(
+                    bnf_codes=["01"],
+                    bnf_codes_excluded=["0101"],
+                    product_type=ProductType.BRANDED,
+                ),
+                dtr_query=ListSizeQuery(),
+            ),
         ),
-        dtr_query=ListSizeQuery(),
         org_id=None,
     )
 

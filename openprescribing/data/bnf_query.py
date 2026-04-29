@@ -87,6 +87,21 @@ def _get_bnf_codes_for_vtm_ids(vtm_ids):
         return [x[0] for x in results.fetchall()]
 
 
+def _build_sql_for_codes(codes):
+    if codes:
+        return f"""
+        SELECT practice_id, date_id, items AS value
+        FROM prescribing
+        WHERE bnf_code IN ({", ".join(f"'{c}'" for c in codes)})
+        """
+    else:
+        return """
+        SELECT practice_id, date_id, items AS value
+        FROM prescribing
+        WHERE false
+        """
+
+
 @dataclass(frozen=True)
 class BNFQuery:
     """Represents a query returning codes for BNF presentations."""
@@ -207,18 +222,7 @@ class BNFQuery:
 
         codes = self.get_matching_presentation_codes()
 
-        if codes:
-            return f"""
-            SELECT practice_id, date_id, items AS value
-            FROM prescribing
-            WHERE bnf_code IN ({", ".join(f"'{c}'" for c in codes)})
-            """
-        else:
-            return """
-            SELECT practice_id, date_id, items AS value
-            FROM prescribing
-            WHERE false
-            """
+        return _build_sql_for_codes(codes)
 
     def get_matching_presentation_codes(self):
         """Return list of BNF codes for presentations matching the query.
@@ -353,6 +357,33 @@ def build_q_for_bnf_code(code):
         return Q(code__startswith=prefix, code__endswith=suffix)
     else:
         return Q(code__startswith=code)
+
+
+@dataclass(frozen=True)
+class MultiBNFQuery:
+    # This is a tuple rather than a list so that it is hashable, so that we
+    # can use functools.lru_cache for get_practice_date_matrix()
+    queries: tuple[BNFQuery]
+
+    @classmethod
+    def from_list(cls, queries):
+        bnf_queries = tuple([q for q in queries if isinstance(q, BNFQuery)])
+        return cls(queries=bnf_queries)
+
+    def to_sql(self):
+        codes = self.get_matching_presentation_codes()
+        return _build_sql_for_codes(codes)
+
+    def get_matching_presentation_codes(self):
+        matching_codes = [
+            query.get_matching_presentation_codes() for query in self.queries
+        ]
+
+        unique_matching_codes = sorted(
+            list({code for codes in matching_codes for code in codes})
+        )
+
+        return unique_matching_codes
 
 
 def description_for_bnf_code(code, product_type):

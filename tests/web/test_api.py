@@ -158,6 +158,34 @@ def test_prescribing_deciles_json_with_denominator(client, sample_data):
     assert payload["org"] == []
 
 
+@pytest.mark.django_db(databases=["data"])
+def test_prescribing_deciles_json_multiple_queries(client, sample_data):
+    analysis_dict = {
+        "queries": [
+            {
+                "numerator": {
+                    "bnf_codes": {
+                        "included": ["1001030U0AA"],
+                    },
+                },
+            },
+            {
+                "numerator": {
+                    "bnf_codes": {
+                        "included": ["1001030U0AA"],
+                    },
+                },
+            },
+        ],
+    }
+    rsp = _prescribing_deciles_get_analysis(analysis_dict, client)
+
+    payload = rsp.json()
+    assert rsp.status_code == 200
+    assert payload["deciles"][-1]["value"] == pytest.approx(17.46, 0.001)
+    assert payload["org"] == []
+
+
 @pytest.mark.django_db(databases=["data"], transaction=True)
 def test_metadata_medications(client, rxdb, settings, tmp_path):
     rxdb.ingest([{"bnf_code": "1106000X0AAA4A4"}])
