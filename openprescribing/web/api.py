@@ -1,3 +1,4 @@
+import json
 import math
 
 from django.http import JsonResponse as DjangoJsonResponse
@@ -61,7 +62,11 @@ def prescribing_all_orgs(request):
 
 
 def prescribing_deciles(request):
-    analysis = Analysis.from_params(request.GET)
+    if "analysis" in request.GET:
+        analysis = Analysis.from_dict(json.loads(request.GET["analysis"]))
+    else:
+        analysis = Analysis.from_params(request.GET)
+
     with rxdb.get_cursor() as cursor:
         odm = get_org_date_ratio_matrix(cursor, analysis, date_count=DATE_COUNT)
     org = _get_org(analysis)

@@ -64,6 +64,50 @@ def test_prescribing_deciles_with_denominator(client, sample_data):
     assert payload["org"] == []
 
 
+@pytest.mark.django_db(databases=["data"])
+def test_prescribing_deciles_json(client, sample_data):
+    rsp = client.get(
+        "/api/prescribing-deciles/?analysis=%7B%22queries%22%3A+%5B%7B%22numerator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001030U0%22%5D%7D%7D%7D%5D%7D"
+    )
+    payload = rsp.json()
+    assert rsp.status_code == 200
+    assert payload["deciles"][-1]["value"] == pytest.approx(64.15, 0.001)
+    assert payload["org"] == []
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_prescribing_deciles_json_with_practice(client, sample_data):
+    rsp = client.get(
+        "/api/prescribing-deciles/?analysis=%7B%22queries%22%3A+%5B%7B%22numerator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001030U0%22%5D%7D%7D%7D%5D%2C+%22org_id%22%3A+%22PRA00%22%7D"
+    )
+    payload = rsp.json()
+    assert rsp.status_code == 200
+    assert payload["deciles"][-1]["value"] == pytest.approx(66.41, 0.001)
+    assert payload["org"][-1]["value"] == pytest.approx(51.94, 0.001)
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_prescribing_deciles_json_with_exclusion(client, sample_data):
+    rsp = client.get(
+        "/api/prescribing-deciles/?analysis=%7B%22queries%22%3A+%5B%7B%22numerator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001030U0%22%5D%2C+%22excluded%22%3A+%5B%221001030U0AAABAB%22%5D%7D%7D%7D%5D%7D"
+    )
+    payload = rsp.json()
+    assert rsp.status_code == 200
+    assert payload["deciles"][-1]["value"] == pytest.approx(59.07, 0.001)
+    assert payload["org"] == []
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_prescribing_deciles_json_with_denominator(client, sample_data):
+    rsp = client.get(
+        "/api/prescribing-deciles/?analysis=%7B%22queries%22%3A+%5B%7B%22numerator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001030U0AA%22%5D%7D%7D%2C+%22denominator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001030U0%22%5D%7D%7D%7D%5D%7D"
+    )
+    payload = rsp.json()
+    assert rsp.status_code == 200
+    assert payload["deciles"][-1]["value"] == pytest.approx(27.14, 0.001)
+    assert payload["org"] == []
+
+
 @pytest.mark.django_db(databases=["data"], transaction=True)
 def test_metadata_medications(client, rxdb, settings, tmp_path):
     rxdb.ingest([{"bnf_code": "1106000X0AAA4A4"}])
