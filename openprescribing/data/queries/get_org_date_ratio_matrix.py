@@ -1,10 +1,11 @@
+from openprescribing.data.analysis import Analysis
 from openprescribing.data.models import Org
 
 from ..bnf_query import BNFQuery
 from .get_practice_date_matrix import get_practice_date_matrix
 
 
-def get_org_date_ratio_matrix(cursor, analysis, date_count=None):
+def get_org_date_ratio_matrix(cursor, analysis: Analysis, date_count=None):
     """Return a matrix with one row per org and one column per date, giving ratio
     between numerator and denominator values specified by queries in given analysis."""
 
