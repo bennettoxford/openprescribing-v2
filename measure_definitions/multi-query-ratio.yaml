@@ -1,0 +1,29 @@
+metadata:
+  title: Multiple numerators
+  tags:
+    - demo
+  why_it_matters: This one doesn't really matter!
+output:
+  numerator: items
+  denominator: items
+queries:
+  - numerator:
+      bnf_codes:
+          included:
+              # co-codamol
+              - 0407010F0_AK
+    denominator:
+      bnf_codes:
+          included:
+              # co-codamol
+              - 0407010F0
+  - numerator:
+      bnf_codes:
+          included:
+              # paracetamol
+              - 0407010AD_AB
+    denominator:
+      bnf_codes:
+          included:
+              # paracetamol
+              - 0407010H0
