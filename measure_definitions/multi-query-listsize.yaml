@@ -1,0 +1,17 @@
+metadata:
+  title: Multiple numerators
+  tags:
+    - demo
+  why_it_matters: This one doesn't really matter!
+output:
+  numerator: items
+  denominator: list_size
+queries:
+  - numerator:
+      bnf_codes:
+          included:
+              - 040702
+  - numerator:
+      bnf_codes:
+          included:
+              - 040701

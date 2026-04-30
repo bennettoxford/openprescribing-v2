@@ -57,14 +57,24 @@ def test_load_measure_strictyaml_validation_invalid(settings):
     assert "'invalid-measure-queries' failed to validate" in str(excinfo.value)
 
 
+@pytest.mark.parametrize(
+    "measure_name,key,value",
+    [
+        ("valid-measure", "form_routes", "tablet.oral"),
+        ("valid-measure-multiple-queries", "forms", "tablet"),
+        ("valid-measure-multiple-queries-denominator", "forms", "tablet"),
+    ],
+)
 @pytest.mark.django_db(databases=["data"], transaction=True)
-def test_load_measure_pydantic_validation_valid_form_route(rxdb, settings, tmp_path):
+def test_load_measure_pydantic_validation_valid_form_route(
+    rxdb, settings, tmp_path, measure_name, key, value
+):
     rxdb.ingest([{}])
     ingest_dmd_data(settings, tmp_path)
 
     settings.MEASURE_DEFINITIONS_PATH = Path(__file__).parent / "fixtures"
-    m = load_measure("valid-measure")
-    assert "tablet.oral" in m["queries"][0]["numerator"]["form_routes"]
+    m = load_measure(measure_name)
+    assert value in m["queries"][0]["numerator"][key]
 
 
 @pytest.mark.parametrize(
@@ -72,7 +82,8 @@ def test_load_measure_pydantic_validation_valid_form_route(rxdb, settings, tmp_p
     [
         "invalid-measure-form_routes",
         "invalid-measure-form_routes-and-routes",
-        "invalid-measure-multiple-queries",
+        "invalid-measure-multiple-queries-output-items",
+        "invalid-measure-multiple-queries-output-list_size",
         "invalid-measure-output",
         "invalid-measure-product-type",
     ],

@@ -2,8 +2,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from .bnf_query import BNFQuery
+from .bnf_query import BNFQuery, MultiBNFQuery
 from .list_size_query import ListSizeQuery
+
+
+@dataclass
+class AnalysisQuery:
+    """Represents a numerator/denominator pair as part of an Analysis"""
+
+    ntr_query: BNFQuery
+    dtr_query: BNFQuery | ListSizeQuery
 
 
 @dataclass
@@ -26,9 +34,27 @@ class Analysis:
     AnalysisPresentation if they are not.
     """
 
-    ntr_query: BNFQuery
-    dtr_query: BNFQuery | ListSizeQuery
+    # This is a tuple rather than a list so that it is hashable, so that we
+    # can use functools.lru_cache for get_practice_date_matrix()
+    queries: tuple[AnalysisQuery]
     org_id: str | None
+
+    @property
+    def ntr_query(self):
+        if len(self.queries) == 1:
+            return self.queries[0].ntr_query
+        assert all(isinstance(q.ntr_query, BNFQuery) for q in self.queries)
+        return MultiBNFQuery(tuple([q.ntr_query for q in self.queries]))
+
+    @property
+    def dtr_query(self):
+        if len(self.queries) == 1:
+            return self.queries[0].dtr_query
+        assert all(
+            isinstance(q.dtr_query, BNFQuery) or isinstance(q.dtr_query, ListSizeQuery)
+            for q in self.queries
+        )
+        return MultiBNFQuery.from_list([q.dtr_query for q in self.queries])
 
     @classmethod
     def from_params(cls, params):
@@ -42,16 +68,17 @@ class Analysis:
             dtr_query = ListSizeQuery()
 
         org_id = params.get("org_id")
+        queries = (AnalysisQuery(ntr_query, dtr_query),)
 
         return cls(
-            ntr_query=ntr_query,
-            dtr_query=dtr_query,
+            queries=queries,
             org_id=org_id,
         )
 
     def to_params(self):
         """Serialize back to URL query parameters."""
 
+        assert len(self.queries) == 1
         params = {}
         params.update(self.ntr_query.to_params("ntr"))
         params.update(self.dtr_query.to_params("dtr"))
@@ -61,31 +88,30 @@ class Analysis:
 
     @classmethod
     def from_dict(cls, analysis_dict):
-        assert len(analysis_dict["queries"]) == 1, (
-            "We only currently support one numerator/denominator pair"
-        )
+        query_list = []
+        for query in analysis_dict["queries"]:
+            ntr_query = BNFQuery.from_dict(query["numerator"])
 
-        numerator = analysis_dict["queries"][0]["numerator"]
-        ntr_query = BNFQuery.from_dict(numerator)
-
-        if "denominator" in analysis_dict["queries"][0]:
-            denominator = analysis_dict["queries"][0]["denominator"]
-            dtr_query = BNFQuery.from_dict(denominator)
-        else:
-            dtr_query = ListSizeQuery()
+            if "denominator" in query:
+                dtr_query = BNFQuery.from_dict(query["denominator"])
+            else:
+                dtr_query = ListSizeQuery()
+            query_list.append(AnalysisQuery(ntr_query, dtr_query))
 
         return cls(
-            ntr_query=ntr_query,
-            dtr_query=dtr_query,
+            queries=tuple(query_list),
             org_id=analysis_dict.get("org_id"),
         )
 
     def to_dict(self):
         analysis_dict = {"queries": []}
 
-        analysis_dict["queries"].append({"numerator": self.ntr_query.to_dict()})
-        if not isinstance(self.dtr_query, ListSizeQuery):
-            analysis_dict["queries"][0]["denominator"] = self.dtr_query.to_dict()
+        for query in self.queries:
+            new_query = {"numerator": query.ntr_query.to_dict()}
+            if not isinstance(query.dtr_query, ListSizeQuery):
+                new_query["denominator"] = query.dtr_query.to_dict()
+            analysis_dict["queries"].append(new_query)
+
         if self.org_id:
             analysis_dict["org_id"] = self.org_id
 
