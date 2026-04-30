@@ -84,12 +84,6 @@ class Measure(BaseModel):
     output: Output
     queries: list[Query]
 
-    @field_validator("queries")
-    @classmethod
-    def only_one_query(cls, v):
-        if v and len(v) > 1:
-            raise ValueError("only one simultaneous query is currently supported")
-
     @model_validator(mode="after")
     def check_output_matches_query_structure(self) -> Self:
         if self.output.denominator == "list_size":
