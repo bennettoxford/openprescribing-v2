@@ -18,22 +18,27 @@ def test_make_bnf_tree(bnf_codes):
         {
             "code": "06",
             "name": "Endocrine System",
+            "node_type": "chapter",
             "children": [
                 {
                     "code": "0601",
                     "name": "Drugs used in diabetes",
+                    "node_type": "section",
                     "children": [
                         {
                             "code": "060106",
                             "name": "Diabetic diagnostic and monitoring agents",
+                            "node_type": "paragraph",
                             "children": [
                                 {
                                     "code": "0601060",
                                     "name": "Diabetic diagnostic and monitoring agents",
+                                    "node_type": "subparagraph",
                                     "children": [
                                         {
                                             "code": "0601060D0",
                                             "name": "Glucose blood testing reagents",
+                                            "node_type": "chemical-substance",
                                             "children": [],
                                         },
                                     ],
@@ -47,27 +52,58 @@ def test_make_bnf_tree(bnf_codes):
         {
             "code": "10",
             "name": "Musculoskeletal and Joint Diseases",
+            "node_type": "chapter",
             "children": [
                 {
                     "code": "1001",
                     "name": "Drugs used in rheumatic diseases and gout",
+                    "node_type": "section",
                     "children": [
                         {
                             "code": "100103",
                             "name": "Rheumatic disease suppressant drugs",
+                            "node_type": "paragraph",
                             "children": [
                                 {
                                     "code": "1001030",
                                     "name": "Rheumatic disease suppressant drugs",
+                                    "node_type": "subparagraph",
                                     "children": [
                                         {
                                             "code": "1001030U0",
                                             "name": "Methotrexate",
+                                            "node_type": "chemical-substance",
                                             "children": [],
                                         },
                                     ],
                                 },
                             ],
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            "code": "20",
+            "name": "Dressings",
+            "node_type": "chapter",
+            "children": [
+                {
+                    "code": "2002",
+                    "name": "Arm Sling/Bandages",
+                    "node_type": "section",
+                    "children": [
+                        {
+                            "code": "20020100101",
+                            "name": "Arm sling web adjustable",
+                            "node_type": "product",
+                            "children": [],
+                        },
+                        {
+                            "code": "20020200251",
+                            "name": "Easifix Crinx bandage 5cm x 3.5m",
+                            "node_type": "product",
+                            "children": [],
                         },
                     ],
                 },

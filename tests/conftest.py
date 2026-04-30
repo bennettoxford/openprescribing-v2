@@ -99,6 +99,11 @@ def bnf_codes(data_db):
         [6, "1001030U0BD", "Maxtrex (Rheumatism)"],
         [7, "1001030U0BDAAAB", "Maxtrex 2.5mg tablets"],
         [7, "1001030U0BDABAC", "Maxtrex 10mg tablets"],
+        # Device chapters use a flatter structure of chapter -> section -> product.
+        [1, "20", "Dressings"],
+        [2, "2002", "Arm Sling/Bandages"],
+        [6, "20020100101", "Arm sling web adjustable"],
+        [6, "20020200251", "Easifix Crinx bandage 5cm x 3.5m"],
     ]:
         BNFCode.objects.create(code=code, name=name, level=level)
 

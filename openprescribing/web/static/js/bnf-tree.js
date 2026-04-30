@@ -2,9 +2,9 @@
 // arranged in a tree.
 //
 // Initially the browser shows a list of BNF chapters, with all other objects hidden.
-// When the user clicks on an object (down to the chemical substance level), its
-// children are shown.  When the user clicks on a chemical substance, a modal is opened
-// that shows the corresponding products and presentations in a table.
+// When the user clicks on an object, its children are shown. Clicking on a medicine
+// chemical substance opens a modal showing the corresponding products and
+// presentations.
 //
 // There is also a search box that lets users search for BNF objects by name or
 // code.
@@ -13,8 +13,6 @@
 // HTML.  However, the two components are sufficiently different in behaviour that it
 // does not make sense to combine implementations.  When making changes here, consider
 // also making changes there.
-
-import { isChemical } from "./bnf-utils.js";
 
 const tree = document.getElementById("bnf-tree");
 const searchForm = document.getElementById("bnf-search-form");
@@ -25,8 +23,11 @@ const modalBody = modal.querySelector(".modal-body");
 
 tree.addEventListener("click", (e) => {
   const li = e.target.closest("li");
+  if (!li) {
+    return;
+  }
   const code = li.dataset.code;
-  if (isChemical(code)) {
+  if (li.dataset.nodeType === "chemical-substance") {
     modalTitle.innerHTML = `<code>${code}</code> ${li.dataset.name}`;
     modalBody.innerHTML = `
     <div class="text-center py-5">

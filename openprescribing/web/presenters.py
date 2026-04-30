@@ -4,27 +4,80 @@ from openprescribing.data.models import BNFCode, Org
 
 
 def make_bnf_tree(codes):
-    """Return list of nodes of representing a tree of BNF objects from chapters down to
-    chemical substances.
+    """Return list of nodes representing the BNF browser tree.
 
-    Each node is a dictionary representing a BNF object and its children.
+    Chapters 01 to 19 are shown from chapter down to chemical substance. Chapters 20+
+    use a flatter structure of chapter -> section -> product.
+
+    Each node is a dictionary representing a BNF object and its children. Nodes also
+    include a ``node_type`` used by the browser frontend.
 
     See tests.web.test_presenters.test_make_bnf_tree for an example of the output.
     """
 
     root = []
-    stack = [(0, root)]  # tuples of (level, list of child nodes)
+    nodes_by_code = {}
 
     for code in sorted(codes, key=lambda code: code.code):
-        if code.level > BNFCode.Level.CHEMICAL_SUBSTANCE:
+        node_type = get_bnf_browser_node_type(code)
+        if node_type is None:
             continue
-        node = {"code": code.code, "name": code.name, "children": []}
-        while stack and stack[-1][0] >= code.level:
-            stack.pop()
-        stack[-1][1].append(node)
-        stack.append((code.level, node["children"]))
+
+        node = {
+            "code": code.code,
+            "name": code.name,
+            "node_type": node_type,
+            "children": [],
+        }
+        parent_code = get_bnf_browser_parent_code(code)
+        if parent_code is None:
+            root.append(node)
+        else:
+            nodes_by_code[parent_code]["children"].append(node)
+        nodes_by_code[code.code] = node
 
     return root
+
+
+def get_bnf_browser_node_type(code):
+    if is_devices_chapter(code.code):
+        node_types = {
+            BNFCode.Level.CHAPTER: "chapter",
+            BNFCode.Level.SECTION: "section",
+            BNFCode.Level.PRODUCT: "product",
+        }
+    else:
+        node_types = {
+            BNFCode.Level.CHAPTER: "chapter",
+            BNFCode.Level.SECTION: "section",
+            BNFCode.Level.PARAGRAPH: "paragraph",
+            BNFCode.Level.SUBPARAGRAPH: "subparagraph",
+            BNFCode.Level.CHEMICAL_SUBSTANCE: "chemical-substance",
+        }
+    return node_types.get(code.level)
+
+
+def get_bnf_browser_parent_code(code):
+    if code.level == BNFCode.Level.CHAPTER:
+        return None
+
+    if is_devices_chapter(code.code):
+        parent_lengths = {
+            BNFCode.Level.SECTION: 2,
+            BNFCode.Level.PRODUCT: 4,
+        }
+    else:
+        parent_lengths = {
+            BNFCode.Level.SECTION: 2,
+            BNFCode.Level.PARAGRAPH: 4,
+            BNFCode.Level.SUBPARAGRAPH: 6,
+            BNFCode.Level.CHEMICAL_SUBSTANCE: 7,
+        }
+
+    parent_length = parent_lengths.get(code.level)
+    if parent_length is None:
+        return None
+    return code.code[:parent_length]
 
 
 def make_bnf_table(products, presentations):
@@ -149,3 +202,7 @@ def make_code_to_name(codes):
                 c.strength_and_formulation_name
             )
     return code_to_name
+
+
+def is_devices_chapter(code):
+    return int(code[:2]) >= 20

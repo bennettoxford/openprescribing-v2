@@ -75,6 +75,7 @@ def test_analysis_build(client, sample_data):
 def test_bnf_tree(client, bnf_codes):
     rsp = client.get("/bnf/")
     assert rsp.status_code == 200
+    assert "Dressings" in rsp.content.decode()
 
 
 @pytest.mark.django_db(databases=["data"])
@@ -87,6 +88,18 @@ def test_bnf_table_with_generic_products(client, bnf_codes):
 def test_bnf_table_with_no_generic_products(client, bnf_codes):
     rsp = client.get("/bnf/0601060D0/")
     assert rsp.status_code == 200
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_bnf_table_rejects_non_terminal_code(client, bnf_codes):
+    rsp = client.get("/bnf/2002/")
+    assert rsp.status_code == 404
+
+
+@pytest.mark.django_db(databases=["data"])
+def test_bnf_table_rejects_device_product(client, bnf_codes):
+    rsp = client.get("/bnf/20020100101/")
+    assert rsp.status_code == 404
 
 
 @pytest.mark.django_db

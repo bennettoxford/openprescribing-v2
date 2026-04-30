@@ -2,6 +2,7 @@ from urllib.parse import urlencode
 
 import altair as alt
 import markdown
+from django.http import Http404
 from django.http import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
@@ -156,44 +157,30 @@ def all_measures(request):
 
 
 def bnf_browser_tree(request):
-    """This view renders an interactive tree for chapters 01 to 19 of the BNF hierarchy.
-    Nodes include BNF codes down to the chemical substance level.  For products and
-    presentations, see bnf_browser_table.
+    """Render the interactive BNF browser tree."""
 
-    Chapters 20 to 23 (devices rather than medicines) have a slightly different code
-    structure, and so will need to be handled slightly differently.
-    """
-
-    codes = (
-        BNFCode.objects.filter(level__lte=BNFCode.Level.CHEMICAL_SUBSTANCE)
-        .exclude(code__startswith="2")
-        .order_by("code")
-    )
+    codes = BNFCode.objects.exclude(level=BNFCode.Level.PRESENTATION).order_by("code")
     ctx = {"tree": make_bnf_tree(codes)}
     return render(request, "bnf_browser_tree.html", ctx)
 
 
 def bnf_browser_table(request, code):
-    """This view renders a table showing all of the products and presentations belonging
-    to a chemical substance.
+    """Render modal content for a chemical substance."""
 
-    See docstring of make_bnf_table for a description of the structure of the table.
-    """
+    bnf_code = get_object_or_404(BNFCode, code=code)
+    if bnf_code.level == BNFCode.Level.CHEMICAL_SUBSTANCE:
+        products = BNFCode.objects.filter(
+            code__startswith=code, level=BNFCode.Level.PRODUCT
+        ).order_by("code")
+        presentations = BNFCode.objects.filter(
+            code__startswith=code, level=BNFCode.Level.PRESENTATION
+        ).order_by("code")
 
-    # Although we don't use the object found here, we want to return a 404 if the code
-    # doesn't correspond to a chemical substance.
-    get_object_or_404(BNFCode, code=code, level=BNFCode.Level.CHEMICAL_SUBSTANCE)
-    products = BNFCode.objects.filter(
-        code__startswith=code, level=BNFCode.Level.PRODUCT
-    ).order_by("code")
-    presentations = BNFCode.objects.filter(
-        code__startswith=code, level=BNFCode.Level.PRESENTATION
-    ).order_by("code")
+        headers, rows = make_bnf_table(products, presentations)
+        ctx = {"headers": headers, "rows": rows}
+        return render(request, "bnf_browser_table.html", ctx)
 
-    headers, rows = make_bnf_table(products, presentations)
-
-    ctx = {"headers": headers, "rows": rows}
-    return render(request, "bnf_browser_table.html", ctx)
+    raise Http404()
 
 
 @require_POST

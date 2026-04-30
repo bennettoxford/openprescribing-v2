@@ -37,6 +37,15 @@ def test_bnf_browser(live_server, page, sample_data):
     modal.get_by_role("button").click()
     expect(modal).not_to_be_visible()
 
+    # Test that chapter 20+ nodes use the flatter chapter -> section -> product shape
+    # and do not open a modal at the product level.
+    expect(page.get_by_text("Arm Sling/Bandages")).not_to_be_visible()
+    page.get_by_text("Dressings").click()
+    page.get_by_text("Arm Sling/Bandages").click()
+    expect(page.get_by_text("20020100101 Arm sling web adjustable")).to_be_visible()
+    page.get_by_text("20020100101 Arm sling web adjustable").click()
+    expect(modal).not_to_be_visible()
+
     # Test that clicking on an expanded node hides its descendants.
     expect(page.get_by_text("Drugs used in diabetes")).to_be_visible()
     page.get_by_text("Endocrine System").click()
