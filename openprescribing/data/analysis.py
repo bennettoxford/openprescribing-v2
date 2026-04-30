@@ -61,10 +61,6 @@ class Analysis:
 
     @classmethod
     def from_dict(cls, analysis_dict):
-        assert len(analysis_dict["queries"]) == 1, (
-            "We only currently support one numerator/denominator pair"
-        )
-
         numerator = analysis_dict["queries"][0]["numerator"]
         ntr_query = BNFQuery.from_dict(numerator)
 
