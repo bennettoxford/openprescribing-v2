@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Self
 
 from pydantic import BaseModel, field_validator, model_validator
 from pydantic_core import ValidationError
@@ -89,6 +89,19 @@ class Measure(BaseModel):
     def only_one_query(cls, v):
         if v and len(v) > 1:
             raise ValueError("only one simultaneous query is currently supported")
+
+    @model_validator(mode="after")
+    def check_output_matches_query_structure(self) -> Self:
+        if self.output.denominator == "list_size":
+            if any(q.denominator for q in self.queries):
+                raise ValueError(
+                    "Should not specify any denominators with output_type `list_size`"
+                )
+        if self.output.denominator == "items":
+            if not all(q.denominator for q in self.queries):
+                raise ValueError(
+                    "Must specify all denominators with output_type `items`"
+                )
 
 
 def validate_dict(measure_name, measure_dict):
