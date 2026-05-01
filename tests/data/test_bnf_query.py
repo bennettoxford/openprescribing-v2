@@ -33,7 +33,15 @@ def test_init_normalizes_lists_to_tuples():
     )
 
 
-def test_get_matching_presentation_codes(bnf_codes):
+def test_get_matching_presentation_codes(medications):
+    medications.add_rows(
+        [
+            {"bnf_code": "1001030U0AAABAB"},
+            {"bnf_code": "1001030U0AAACAC"},
+            {"bnf_code": "1001030U0BDAAAB"},
+            {"bnf_code": "1001030U0BDABAC"},
+        ]
+    )
     query = BNFQuery(
         bnf_codes=["1001030U0AA", "1001030U0BD"], bnf_codes_excluded=["1001030U0AAABAB"]
     )
@@ -44,7 +52,15 @@ def test_get_matching_presentation_codes(bnf_codes):
     ]
 
 
-def test_get_matching_presentation_codes_no_excludes(bnf_codes):
+def test_get_matching_presentation_codes_no_excludes(medications):
+    medications.add_rows(
+        [
+            {"bnf_code": "1001030U0AAABAB"},
+            {"bnf_code": "1001030U0AAACAC"},
+            {"bnf_code": "1001030U0BDAAAB"},
+            {"bnf_code": "1001030U0BDABAC"},
+        ]
+    )
     query = BNFQuery(bnf_codes=["1001030U0AA"])
     assert query.get_matching_presentation_codes() == [
         "1001030U0AAABAB",
@@ -52,7 +68,15 @@ def test_get_matching_presentation_codes_no_excludes(bnf_codes):
     ]
 
 
-def test_get_matching_presentation_codes_for_strength_and_formulation(bnf_codes):
+def test_get_matching_presentation_codes_for_strength_and_formulation(medications):
+    medications.add_rows(
+        [
+            {"bnf_code": "1001030U0AAABAB"},
+            {"bnf_code": "1001030U0AAACAC"},
+            {"bnf_code": "1001030U0BDAAAB"},
+            {"bnf_code": "1001030U0BDABAC"},
+        ]
+    )
     query = BNFQuery(bnf_codes=["1001030U0_AC"])
     assert query.get_matching_presentation_codes() == [
         "1001030U0AAACAC",
@@ -60,7 +84,15 @@ def test_get_matching_presentation_codes_for_strength_and_formulation(bnf_codes)
     ]
 
 
-def test_get_matching_presentation_codes_for_generic(bnf_codes):
+def test_get_matching_presentation_codes_for_generic(medications):
+    medications.add_rows(
+        [
+            {"bnf_code": "1001030U0AAABAB"},
+            {"bnf_code": "1001030U0AAACAC"},
+            {"bnf_code": "1001030U0BDAAAB"},
+            {"bnf_code": "1001030U0BDABAC"},
+        ]
+    )
     query = BNFQuery(bnf_codes=["1001030U0"], product_type=ProductType.GENERIC)
     assert query.get_matching_presentation_codes() == [
         "1001030U0AAABAB",
@@ -69,15 +101,31 @@ def test_get_matching_presentation_codes_for_generic(bnf_codes):
 
 
 def test_get_matching_presentation_codes_for_generic_with_strength_and_formulation(
-    bnf_codes,
+    medications,
 ):
+    medications.add_rows(
+        [
+            {"bnf_code": "1001030U0AAABAB"},
+            {"bnf_code": "1001030U0AAACAC"},
+            {"bnf_code": "1001030U0BDAAAB"},
+            {"bnf_code": "1001030U0BDABAC"},
+        ]
+    )
     query = BNFQuery(bnf_codes=["1001030U0_AB"], product_type=ProductType.GENERIC)
     assert query.get_matching_presentation_codes() == [
         "1001030U0AAABAB",
     ]
 
 
-def test_get_matching_presentation_codes_for_branded(bnf_codes):
+def test_get_matching_presentation_codes_for_branded(medications):
+    medications.add_rows(
+        [
+            {"bnf_code": "1001030U0AAABAB"},
+            {"bnf_code": "1001030U0AAACAC"},
+            {"bnf_code": "1001030U0BDAAAB"},
+            {"bnf_code": "1001030U0BDABAC"},
+        ]
+    )
     query = BNFQuery(bnf_codes=["1001030U0"], product_type=ProductType.BRANDED)
     assert query.get_matching_presentation_codes() == [
         "1001030U0BDAAAB",
@@ -86,32 +134,60 @@ def test_get_matching_presentation_codes_for_branded(bnf_codes):
 
 
 def test_get_matching_presentation_codes_for_branded_with_strength_and_formulation(
-    bnf_codes,
+    medications,
 ):
+    medications.add_rows(
+        [
+            {"bnf_code": "1001030U0AAABAB"},
+            {"bnf_code": "1001030U0AAACAC"},
+            {"bnf_code": "1001030U0BDAAAB"},
+            {"bnf_code": "1001030U0BDABAC"},
+        ]
+    )
     query = BNFQuery(bnf_codes=["1001030U0_AB"], product_type=ProductType.BRANDED)
     assert query.get_matching_presentation_codes() == [
         "1001030U0BDAAAB",
     ]
 
 
-def test_get_matching_presentation_codes_for_form_route_ids(dmd_data):
-    # The following appears in the dm+d -> BNF data/mapping data
-    BNFCode(code="0203020C0AAAAAA", level=BNFCode.Level.PRESENTATION).save()
-    # The following doesn't appear in the dm+d -> BNF data/mapping data
-    BNFCode(code="1001030U0BDABAC", level=BNFCode.Level.PRESENTATION).save()
+def test_get_matching_presentation_codes_for_form_route_ids(medications):
+    medications.add_rows(
+        [
+            {"bnf_code": "0203020C0AAAAAA", "form_route_ids": [24]},
+            {"bnf_code": "1001030U0AAACAC", "form_route_ids": [1]},
+        ]
+    )
     query = BNFQuery.from_params(
         "ntr",
         {
             "ntr_bnf_codes": "0203020C0AAAAAA",
-            "ntr_form_route_ids": "0024",
+            "ntr_form_route_ids": "24",
         },
     )
     assert query.get_matching_presentation_codes() == ["0203020C0AAAAAA"]
 
 
-def test_get_matching_presentation_codes_for_ingredient_ids(dmd_data):
-    # The following appears in the dm+d -> BNF data/mapping data
-    BNFCode(code="1305020C0AAFVFV", level=BNFCode.Level.PRESENTATION).save()
+def test_get_matching_presentation_codes_for_ingredient_ids(medications):
+    medications.add_rows(
+        [
+            {
+                "bnf_code": "1305020C0AAFVFV",
+                "ingredient_ids": [387253001, 3588411000001101],
+            },
+            {
+                "bnf_code": "1305020C0AAFVFV",
+                "ingredient_ids": [387253001, 3588411000001101],
+            },
+            {
+                "bnf_code": "1305020C0AAFVFV",
+                "ingredient_ids": [387253001, 53034005],
+            },
+            {
+                "bnf_code": "1305020C0AAFVFV",
+                "ingredient_ids": [387253001, 53034005],
+            },
+        ]
+    )
     query = BNFQuery.from_params(
         "ntr",
         {
@@ -122,9 +198,15 @@ def test_get_matching_presentation_codes_for_ingredient_ids(dmd_data):
     assert query.get_matching_presentation_codes() == ["1305020C0AAFVFV"]
 
 
-def test_get_matching_presentation_codes_for_ingredient_ids_no_match(dmd_data):
-    # The following appears in the dm+d -> BNF data/mapping data
-    BNFCode(code="1305020C0AAFVFV", level=BNFCode.Level.PRESENTATION).save()
+def test_get_matching_presentation_codes_for_ingredient_ids_no_match(medications):
+    medications.add_rows(
+        [
+            {
+                "bnf_code": "1305020C0AAFVFV",
+                "ingredient_ids": [387253001, 3588411000001101],
+            },
+        ]
+    )
     query = BNFQuery.from_params(
         "ntr",
         {
@@ -135,8 +217,27 @@ def test_get_matching_presentation_codes_for_ingredient_ids_no_match(dmd_data):
     assert query.get_matching_presentation_codes() == []
 
 
-def test_get_matching_presentation_codes_for_vtm_ids(dmd_data):
-    BNFCode(code="1305020C0AAFVFV", level=BNFCode.Level.PRESENTATION).save()
+def test_get_matching_presentation_codes_for_vtm_ids(medications):
+    medications.add_rows(
+        [
+            {
+                "bnf_code": "1305020C0AAFVFV",
+                "vtm_id": 15219611000001105,
+            },
+            {
+                "bnf_code": "1305020C0AAFVFV",
+                "vtm_id": 15219611000001105,
+            },
+            {
+                "bnf_code": "1305020C0AAFVFV",
+                "vtm_id": 15219611000001105,
+            },
+            {
+                "bnf_code": "1305020C0AAFVFV",
+                "vtm_id": 15219611000001105,
+            },
+        ]
+    )
     query = BNFQuery.from_params(
         "ntr",
         {
@@ -147,12 +248,14 @@ def test_get_matching_presentation_codes_for_vtm_ids(dmd_data):
     assert query.get_matching_presentation_codes() == ["1305020C0AAFVFV"]
 
 
-def test_get_matching_presentation_codes_for_vtm_ids_excluded(bnf_codes, monkeypatch):
-    monkeypatch.setattr(
-        "openprescribing.data.bnf_query._get_bnf_codes_for_vtm_ids",
-        lambda ids: {
-            ("90356005",): ["1001030U0AAABAB", "1001030U0AAACAC"],
-        }[tuple(ids)],
+def test_get_matching_presentation_codes_for_vtm_ids_excluded(medications):
+    medications.add_rows(
+        [
+            {"bnf_code": "1001030U0AAABAB", "vtm_id": 90356005},
+            {"bnf_code": "1001030U0AAACAC", "vtm_id": 90356005},
+            {"bnf_code": "1001030U0BDAAAB"},
+            {"bnf_code": "1001030U0BDABAC"},
+        ]
     )
     query = BNFQuery(
         bnf_codes=["1001030U0"],
@@ -164,14 +267,14 @@ def test_get_matching_presentation_codes_for_vtm_ids_excluded(bnf_codes, monkeyp
     ]
 
 
-def test_get_matching_presentation_codes_for_form_route_ids_excluded(
-    bnf_codes, monkeypatch
-):
-    monkeypatch.setattr(
-        "openprescribing.data.bnf_query._get_bnf_codes_for_form_route_ids",
-        lambda ids: {
-            ("24",): ["1001030U0AAABAB", "1001030U0BDAAAB"],
-        }[tuple(ids)],
+def test_get_matching_presentation_codes_for_form_route_ids_excluded(medications):
+    medications.add_rows(
+        [
+            {"bnf_code": "1001030U0AAABAB", "form_route_ids": [24]},
+            {"bnf_code": "1001030U0AAACAC", "form_route_ids": [1]},
+            {"bnf_code": "1001030U0BDAAAB", "form_route_ids": [24]},
+            {"bnf_code": "1001030U0BDABAC", "form_route_ids": [1]},
+        ]
     )
     query = BNFQuery(
         bnf_codes=["1001030U0"],
@@ -184,19 +287,15 @@ def test_get_matching_presentation_codes_for_form_route_ids_excluded(
 
 
 def test_get_matching_presentation_codes_for_form_route_ids_include_and_exclude(
-    bnf_codes, monkeypatch
+    medications,
 ):
-    monkeypatch.setattr(
-        "openprescribing.data.bnf_query._get_bnf_codes_for_form_route_ids",
-        lambda ids: {
-            ("1",): [
-                "1001030U0AAABAB",
-                "1001030U0AAACAC",
-                "1001030U0BDAAAB",
-                "1001030U0BDABAC",
-            ],
-            ("24",): ["1001030U0AAABAB", "1001030U0BDAAAB"],
-        }[tuple(ids)],
+    medications.add_rows(
+        [
+            {"bnf_code": "1001030U0AAABAB", "form_route_ids": [1, 24]},
+            {"bnf_code": "1001030U0AAACAC", "form_route_ids": [1]},
+            {"bnf_code": "1001030U0BDAAAB", "form_route_ids": [1, 24]},
+            {"bnf_code": "1001030U0BDABAC", "form_route_ids": [1]},
+        ]
     )
     query = BNFQuery(
         bnf_codes=["1001030U0"],
@@ -210,11 +309,13 @@ def test_get_matching_presentation_codes_for_form_route_ids_include_and_exclude(
 
 
 def test_get_matching_presentation_codes_for_form_route_ids_excluded_no_match(
-    bnf_codes, monkeypatch
+    medications,
 ):
-    monkeypatch.setattr(
-        "openprescribing.data.bnf_query._get_bnf_codes_for_form_route_ids",
-        lambda ids: [],
+    medications.add_rows(
+        [
+            {"bnf_code": "1001030U0AAABAB"},
+            {"bnf_code": "1001030U0AAACAC"},
+        ]
     )
     query = BNFQuery(
         bnf_codes=["1001030U0AA"],
@@ -226,14 +327,14 @@ def test_get_matching_presentation_codes_for_form_route_ids_excluded_no_match(
     ]
 
 
-def test_get_matching_presentation_codes_for_ingredient_ids_excluded(
-    bnf_codes, monkeypatch
-):
-    monkeypatch.setattr(
-        "openprescribing.data.bnf_query._get_bnf_codes_for_ingredient_ids",
-        lambda ids: {
-            ("53034005",): ["1001030U0AAACAC", "1001030U0BDABAC"],
-        }[tuple(ids)],
+def test_get_matching_presentation_codes_for_ingredient_ids_excluded(medications):
+    medications.add_rows(
+        [
+            {"bnf_code": "1001030U0AAABAB"},
+            {"bnf_code": "1001030U0AAACAC", "ingredient_ids": [53034005]},
+            {"bnf_code": "1001030U0BDAAAB"},
+            {"bnf_code": "1001030U0BDABAC", "ingredient_ids": [53034005]},
+        ]
     )
     query = BNFQuery(
         bnf_codes=["1001030U0"],
@@ -246,23 +347,19 @@ def test_get_matching_presentation_codes_for_ingredient_ids_excluded(
 
 
 def test_get_matching_presentation_codes_for_ingredient_ids_include_and_exclude(
-    bnf_codes, monkeypatch
+    medications,
 ):
-    monkeypatch.setattr(
-        "openprescribing.data.bnf_query._get_bnf_codes_for_ingredient_ids",
-        lambda ids: {
-            ("methotrexate",): [
-                "1001030U0AAABAB",
-                "1001030U0AAACAC",
-                "1001030U0BDAAAB",
-                "1001030U0BDABAC",
-            ],
-            ("53034005",): ["1001030U0AAACAC", "1001030U0BDABAC"],
-        }[tuple(ids)],
+    medications.add_rows(
+        [
+            {"bnf_code": "1001030U0AAABAB", "ingredient_ids": [11111]},
+            {"bnf_code": "1001030U0AAACAC", "ingredient_ids": [11111, 53034005]},
+            {"bnf_code": "1001030U0BDAAAB", "ingredient_ids": [11111]},
+            {"bnf_code": "1001030U0BDABAC", "ingredient_ids": [11111, 53034005]},
+        ]
     )
     query = BNFQuery(
         bnf_codes=["1001030U0"],
-        ingredient_ids=["methotrexate"],
+        ingredient_ids=["11111"],
         ingredient_ids_excluded=["53034005"],
     )
     assert query.get_matching_presentation_codes() == [
@@ -272,15 +369,17 @@ def test_get_matching_presentation_codes_for_ingredient_ids_include_and_exclude(
 
 
 def test_get_matching_presentation_codes_for_ingredient_ids_excluded_no_match(
-    bnf_codes, monkeypatch
+    medications,
 ):
-    monkeypatch.setattr(
-        "openprescribing.data.bnf_query._get_bnf_codes_for_ingredient_ids",
-        lambda ids: [],
+    medications.add_rows(
+        [
+            {"bnf_code": "1001030U0AAABAB"},
+            {"bnf_code": "1001030U0AAACAC"},
+        ]
     )
     query = BNFQuery(
         bnf_codes=["1001030U0AA"],
-        ingredient_ids_excluded=["missing"],
+        ingredient_ids_excluded=["999"],
     )
     assert query.get_matching_presentation_codes() == [
         "1001030U0AAABAB",
@@ -288,39 +387,37 @@ def test_get_matching_presentation_codes_for_ingredient_ids_excluded_no_match(
     ]
 
 
-def test_get_matching_presentation_codes_with_combined_exclusions(
-    bnf_codes, monkeypatch
-):
-    monkeypatch.setattr(
-        "openprescribing.data.bnf_query._get_bnf_codes_for_form_route_ids",
-        lambda ids: {
-            ("tablet",): [
-                "1001030U0AAABAB",
-                "1001030U0AAACAC",
-                "1001030U0BDAAAB",
-                "1001030U0BDABAC",
-            ],
-            ("24",): ["1001030U0AAABAB", "1001030U0BDAAAB"],
-        }[tuple(ids)],
-    )
-    monkeypatch.setattr(
-        "openprescribing.data.bnf_query._get_bnf_codes_for_ingredient_ids",
-        lambda ids: {
-            ("methotrexate",): [
-                "1001030U0AAABAB",
-                "1001030U0AAACAC",
-                "1001030U0BDAAAB",
-                "1001030U0BDABAC",
-            ],
-            ("53034005",): ["1001030U0BDABAC"],
-        }[tuple(ids)],
+def test_get_matching_presentation_codes_with_combined_exclusions(medications):
+    medications.add_rows(
+        [
+            {
+                "bnf_code": "1001030U0AAABAB",
+                "form_route_ids": [1, 24],
+                "ingredient_ids": [11111],
+            },
+            {
+                "bnf_code": "1001030U0AAACAC",
+                "form_route_ids": [1],
+                "ingredient_ids": [11111],
+            },
+            {
+                "bnf_code": "1001030U0BDAAAB",
+                "form_route_ids": [1, 24],
+                "ingredient_ids": [11111],
+            },
+            {
+                "bnf_code": "1001030U0BDABAC",
+                "form_route_ids": [1],
+                "ingredient_ids": [11111, 53034005],
+            },
+        ]
     )
     query = BNFQuery(
         bnf_codes=["1001030U0"],
         bnf_codes_excluded=["1001030U0AAABAB"],
-        form_route_ids=["tablet"],
+        form_route_ids=["1"],
         form_route_ids_excluded=["24"],
-        ingredient_ids=["methotrexate"],
+        ingredient_ids=["11111"],
         ingredient_ids_excluded=["53034005"],
     )
     assert query.get_matching_presentation_codes() == ["1001030U0AAACAC"]
