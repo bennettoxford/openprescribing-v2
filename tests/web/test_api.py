@@ -4,7 +4,6 @@ from openprescribing.web import api
 from tests.utils.ingest_utils import ingest_dmd_bnf_map_data, ingest_dmd_data
 
 
-@pytest.mark.django_db(databases=["data"])
 @pytest.mark.parametrize(
     "params, expected_last_value",
     [
@@ -24,7 +23,6 @@ def test_prescribing_all_orgs(client, sample_data, params, expected_last_value):
     assert payload["all_orgs"][-1]["value"] == pytest.approx(expected_last_value, 0.001)
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_prescribing_deciles(client, sample_data):
     rsp = client.get("/api/prescribing-deciles/?ntr_bnf_codes=1001030U0")
     payload = rsp.json()
@@ -33,7 +31,6 @@ def test_prescribing_deciles(client, sample_data):
     assert payload["org"] == []
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_prescribing_deciles_with_practice(client, sample_data):
     rsp = client.get("/api/prescribing-deciles/?ntr_bnf_codes=1001030U0&org_id=PRA00")
     payload = rsp.json()
@@ -42,7 +39,6 @@ def test_prescribing_deciles_with_practice(client, sample_data):
     assert payload["org"][-1]["value"] == pytest.approx(51.94, 0.001)
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_prescribing_deciles_with_exclusion(client, sample_data):
     rsp = client.get(
         "/api/prescribing-deciles/?ntr_bnf_codes=1001030U0&ntr_bnf_codes_excluded=1001030U0AAABAB"
@@ -53,7 +49,6 @@ def test_prescribing_deciles_with_exclusion(client, sample_data):
     assert payload["org"] == []
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_prescribing_deciles_with_denominator(client, sample_data):
     rsp = client.get(
         "/api/prescribing-deciles/?ntr_bnf_codes=1001030U0AA&dtr_bnf_codes=1001030U0"
@@ -64,7 +59,6 @@ def test_prescribing_deciles_with_denominator(client, sample_data):
     assert payload["org"] == []
 
 
-@pytest.mark.django_db(databases=["data"], transaction=True)
 def test_metadata_medications(client, rxdb, settings, tmp_path):
     rxdb.ingest([{"bnf_code": "1106000X0AAA4A4"}])
     ingest_dmd_data(settings, tmp_path)
@@ -124,7 +118,6 @@ def test_metadata_dmd(client, settings, tmp_path):
     ]
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_metadata_bnf(client, bnf_codes):
     rsp = client.get("/api/metadata/bnf/")
     payload = rsp.json()

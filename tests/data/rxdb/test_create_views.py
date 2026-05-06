@@ -1,7 +1,3 @@
-import pytest
-
-
-@pytest.mark.django_db(databases=["data"], transaction=True)
 def test_medications(rxdb, dmd_data):
 
     # Confirm that we can query the medications table.

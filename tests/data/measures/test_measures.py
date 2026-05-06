@@ -57,7 +57,6 @@ def test_load_measure_strictyaml_validation_invalid(settings):
     assert "'invalid-measure-queries' failed to validate" in str(excinfo.value)
 
 
-@pytest.mark.django_db(databases=["data"], transaction=True)
 def test_load_measure_pydantic_validation_valid_form_route(rxdb, settings, tmp_path):
     rxdb.ingest([{}])
     ingest_dmd_data(settings, tmp_path)
@@ -77,7 +76,6 @@ def test_load_measure_pydantic_validation_valid_form_route(rxdb, settings, tmp_p
         "invalid-measure-product-type",
     ],
 )
-@pytest.mark.django_db(databases=["data"], transaction=True)
 def test_load_measure_pydantic_validation_invalid_measure(
     rxdb, settings, tmp_path, measure_name
 ):

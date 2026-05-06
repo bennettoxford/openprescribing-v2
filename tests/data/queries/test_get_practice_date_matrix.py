@@ -1,7 +1,5 @@
 from datetime import date
 
-import pytest
-
 from openprescribing.data.bnf_query import BNFQuery
 from openprescribing.data.list_size_query import ListSizeQuery
 from openprescribing.data.models import BNFCode
@@ -11,7 +9,6 @@ from tests.utils.rxdb_utils import assert_approx_equal
 from .alternative_implementations import get_practice_date_matrix_alternative
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_get_practice_date_matrix_spot_check(rxdb):
     BNFCode.objects.create(code="1001030U0AAABAB", level=7)
     rxdb.ingest(
@@ -84,7 +81,6 @@ def test_get_practice_date_matrix_spot_check(rxdb):
     ]
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_get_practice_date_matrix_for_bnf_query(rxdb, sample_data):
     query = BNFQuery(bnf_codes=["1001030U0AAABAB"])
 
@@ -98,7 +94,6 @@ def test_get_practice_date_matrix_for_bnf_query(rxdb, sample_data):
     assert_approx_equal(pdm, expected_pdm)
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_get_practice_date_matrix_for_bnf_query_no_matching_codes(rxdb, sample_data):
     invalid_bnf_code = "999999999"
     query = BNFQuery(bnf_codes=[invalid_bnf_code])
@@ -113,7 +108,6 @@ def test_get_practice_date_matrix_for_bnf_query_no_matching_codes(rxdb, sample_d
     assert_approx_equal(pdm, expected_pdm)
 
 
-@pytest.mark.django_db(databases=["data"])
 def test_get_practice_date_matrix_for_list_sizes(rxdb, sample_data):
     query = ListSizeQuery()
 

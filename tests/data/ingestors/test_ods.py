@@ -166,7 +166,6 @@ def test_ods_ingest(tmp_path, settings):
 @pytest.mark.parametrize(
     "frozen_date,expected_pcn", [("2026-03-20", "U93165"), ("2026-04-20", "U25891")]
 )
-@pytest.mark.django_db(databases=["data"])
 def test_ods_ingest_multiple_pcns(rxdb, tmp_path, settings, frozen_date, expected_pcn):
     with freeze_time(frozen_date):
         duckdb_view_from_json_file(
@@ -182,7 +181,6 @@ def test_ods_ingest_multiple_pcns(rxdb, tmp_path, settings, frozen_date, expecte
 
 
 @freeze_time("2026-03-20")
-@pytest.mark.django_db(databases=["data"])
 def test_ods_ingest_multiple_pcns_missing_opEndDate(rxdb, tmp_path, settings):
     duckdb_view_from_json_file(
         rxdb.conn,
