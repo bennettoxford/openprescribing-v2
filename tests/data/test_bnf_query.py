@@ -551,6 +551,11 @@ def test_from_params_ingredients():
 
 
 def test_to_params():
+    query = BNFQuery(bnf_codes=["01"])
+    assert query.to_params("ntr") == {"ntr_bnf_codes": "01", "ntr_product_type": "all"}
+
+
+def test_to_params_excluded():
     query = BNFQuery(
         bnf_codes=["01"], bnf_codes_excluded=["0101"], product_type=ProductType.GENERIC
     )
