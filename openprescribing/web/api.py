@@ -42,7 +42,8 @@ def _get_org_records(odm, org):
 
 
 def prescribing_all_orgs(request):
-    analysis = Analysis.from_params(request.GET)
+    analysis = Analysis.from_dict(json.loads(request.GET["analysis"]))
+
     with rxdb.get_cursor() as cursor:
         odm = get_org_date_ratio_matrix(cursor, analysis, date_count=DATE_COUNT)
     org = _get_org(analysis)
