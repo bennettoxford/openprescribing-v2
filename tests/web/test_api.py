@@ -7,27 +7,85 @@ from openprescribing.web import api
 from tests.utils.ingest_utils import ingest_dmd_bnf_map_data, ingest_dmd_data
 
 
+def _analysis_dict_to_param(analysis_dict):
+    return urlencode({"analysis": json.dumps(analysis_dict)})
+
+
 @pytest.mark.parametrize(
-    "params, expected_last_value",
+    "analysis_dict, expected_last_value",
     [
-        ("?ntr_bnf_codes=1001030U0", 65.09),
-        ("?ntr_bnf_codes=1001030U0&org_id=PRA00", 68.40),
         (
-            "?ntr_bnf_codes=1001030U0&ntr_bnf_codes_excluded=1001030U0AAABAB",
+            {
+                "queries": [
+                    {
+                        "numerator": {
+                            "bnf_codes": {
+                                "included": ["1001030U0"],
+                            },
+                        },
+                    },
+                ],
+            },
+            65.09,
+        ),
+        (
+            {
+                "queries": [
+                    {
+                        "numerator": {
+                            "bnf_codes": {
+                                "included": ["1001030U0"],
+                            },
+                        },
+                    },
+                ],
+                "org_id": "PRA00",
+            },
+            68.40,
+        ),
+        (
+            {
+                "queries": [
+                    {
+                        "numerator": {
+                            "bnf_codes": {
+                                "included": ["1001030U0"],
+                                "excluded": ["1001030U0AAABAB"],
+                            },
+                        },
+                    },
+                ],
+            },
             59.67,
         ),
-        ("?ntr_bnf_codes=1001030U0AA&dtr_bnf_codes=1001030U0", 27.77),
+        (
+            {
+                "queries": [
+                    {
+                        "numerator": {
+                            "bnf_codes": {
+                                "included": ["1001030U0AA"],
+                            },
+                        },
+                        "denominator": {
+                            "bnf_codes": {
+                                "included": ["1001030U0"],
+                            },
+                        },
+                    },
+                ],
+            },
+            27.77,
+        ),
     ],
 )
-def test_prescribing_all_orgs(client, sample_data, params, expected_last_value):
-    rsp = client.get(f"/api/prescribing-all-orgs/{params}")
+def test_prescribing_all_orgs(client, sample_data, analysis_dict, expected_last_value):
+    rsp = client.get(
+        f"/api/prescribing-all-orgs/?{_analysis_dict_to_param(analysis_dict)}"
+    )
     payload = rsp.json()
     assert rsp.status_code == 200
     assert payload["all_orgs"][-1]["value"] == pytest.approx(expected_last_value, 0.001)
-
-
-def _analysis_dict_to_param(analysis_dict):
-    return urlencode({"analysis": json.dumps(analysis_dict)})
 
 
 def test_prescribing_deciles(client, sample_data):
