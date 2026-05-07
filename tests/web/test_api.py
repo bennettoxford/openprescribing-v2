@@ -1,3 +1,6 @@
+import json
+from urllib.parse import urlencode
+
 import pytest
 
 from openprescribing.web import api
@@ -23,8 +26,26 @@ def test_prescribing_all_orgs(client, sample_data, params, expected_last_value):
     assert payload["all_orgs"][-1]["value"] == pytest.approx(expected_last_value, 0.001)
 
 
+def _analysis_dict_to_param(analysis_dict):
+    return urlencode({"analysis": json.dumps(analysis_dict)})
+
+
 def test_prescribing_deciles(client, sample_data):
-    rsp = client.get("/api/prescribing-deciles/?ntr_bnf_codes=1001030U0")
+    analysis_dict = {
+        "queries": [
+            {
+                "numerator": {
+                    "bnf_codes": {
+                        "included": ["1001030U0"],
+                    },
+                },
+            },
+        ],
+    }
+    rsp = client.get(
+        f"/api/prescribing-deciles/?{_analysis_dict_to_param(analysis_dict)}"
+    )
+
     payload = rsp.json()
     assert rsp.status_code == 200
     assert payload["deciles"][-1]["value"] == pytest.approx(64.15, 0.001)
@@ -32,7 +53,22 @@ def test_prescribing_deciles(client, sample_data):
 
 
 def test_prescribing_deciles_with_practice(client, sample_data):
-    rsp = client.get("/api/prescribing-deciles/?ntr_bnf_codes=1001030U0&org_id=PRA00")
+    analysis_dict = {
+        "queries": [
+            {
+                "numerator": {
+                    "bnf_codes": {
+                        "included": ["1001030U0"],
+                    },
+                },
+            },
+        ],
+        "org_id": "PRA00",
+    }
+    rsp = client.get(
+        f"/api/prescribing-deciles/?{_analysis_dict_to_param(analysis_dict)}"
+    )
+
     payload = rsp.json()
     assert rsp.status_code == 200
     assert payload["deciles"][-1]["value"] == pytest.approx(66.41, 0.001)
@@ -40,9 +76,22 @@ def test_prescribing_deciles_with_practice(client, sample_data):
 
 
 def test_prescribing_deciles_with_exclusion(client, sample_data):
+    analysis_dict = {
+        "queries": [
+            {
+                "numerator": {
+                    "bnf_codes": {
+                        "included": ["1001030U0"],
+                        "excluded": ["1001030U0AAABAB"],
+                    },
+                },
+            },
+        ],
+    }
     rsp = client.get(
-        "/api/prescribing-deciles/?ntr_bnf_codes=1001030U0&ntr_bnf_codes_excluded=1001030U0AAABAB"
+        f"/api/prescribing-deciles/?{_analysis_dict_to_param(analysis_dict)}"
     )
+
     payload = rsp.json()
     assert rsp.status_code == 200
     assert payload["deciles"][-1]["value"] == pytest.approx(59.07, 0.001)
@@ -50,9 +99,26 @@ def test_prescribing_deciles_with_exclusion(client, sample_data):
 
 
 def test_prescribing_deciles_with_denominator(client, sample_data):
+    analysis_dict = {
+        "queries": [
+            {
+                "numerator": {
+                    "bnf_codes": {
+                        "included": ["1001030U0AA"],
+                    },
+                },
+                "denominator": {
+                    "bnf_codes": {
+                        "included": ["1001030U0"],
+                    },
+                },
+            },
+        ],
+    }
     rsp = client.get(
-        "/api/prescribing-deciles/?ntr_bnf_codes=1001030U0AA&dtr_bnf_codes=1001030U0"
+        f"/api/prescribing-deciles/?{_analysis_dict_to_param(analysis_dict)}"
     )
+
     payload = rsp.json()
     assert rsp.status_code == 200
     assert payload["deciles"][-1]["value"] == pytest.approx(27.14, 0.001)
