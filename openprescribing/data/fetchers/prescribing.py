@@ -69,8 +69,8 @@ def get_items_to_fetch(existing_files, response_data, version_number):
             item["last_modified"] or item["created"]
         )
 
-        # We use version numbers to distinguish the different structures in which
-        # prescribing data has historically been published.
+        # We use the version number to distinguish between the EPD with (v3) and without
+        # (v2) SNOMED codes.
         filename = (
             f"prescribing_{date}_v{version_number}_{published_at:%Y-%m-%dT%H%M}.parquet"
         )
