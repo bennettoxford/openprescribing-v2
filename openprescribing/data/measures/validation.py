@@ -71,7 +71,9 @@ class Query(BaseModel):
     denominator: BNFQuery | None = None
 
 
-output_types = Literal["items"]
+output_types = (
+    Literal["items"] | Literal["quantity"] | Literal["cost"] | Literal["custom"]
+)
 
 
 class Output(BaseModel):
@@ -141,7 +143,7 @@ def schema():
             Optional("form_routes"): Seq(Str()),
         }
     )
-    # Currently this must be `items` or `list_size`
+    # Currently this must be `items`, `quantity`, `cost`, `custom` or `list_size`
     output = Str()
     query = Map(
         {
