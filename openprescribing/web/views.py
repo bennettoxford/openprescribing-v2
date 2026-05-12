@@ -10,6 +10,7 @@ from django.views.decorators.http import require_POST
 
 from openprescribing.data.analysis import Analysis
 from openprescribing.data.bnf_query import BNFQuery
+from openprescribing.data.list_size_query import ListSizeQuery
 from openprescribing.data.measures import all_measure_details, load_measure
 from openprescribing.data.models import BNFCode, Org
 
@@ -39,6 +40,7 @@ def _build_analysis_context(analysis):
                 analysis.ntr_query, analysis.dtr_query
             )
         else:
+            assert isinstance(analysis.dtr_query, ListSizeQuery)
             ntr_dtr_intersection_table = make_ntr_dtr_intersection_table(
                 analysis.ntr_query, None
             )
@@ -50,13 +52,15 @@ def _build_analysis_context(analysis):
 
     orgs = make_orgs()
 
+    if analysis and isinstance(analysis.dtr_query, BNFQuery):
+        title = "%"
+    else:
+        if analysis:
+            assert isinstance(analysis.dtr_query, ListSizeQuery)
+        title = "Items per 1000 patients"
+
     x = alt.X("month:T", title="Month", axis=alt.Axis(format="%Y %b"))
-    y = alt.Y(
-        "value:Q",
-        title="%"
-        if analysis and isinstance(analysis.dtr_query, BNFQuery)
-        else "Items per 1000 patients",
-    )
+    y = alt.Y("value:Q", title=title)
     stroke_width = (
         alt.when(alt.datum.centile == 50).then(alt.value(3)).otherwise(alt.value(1))
     )

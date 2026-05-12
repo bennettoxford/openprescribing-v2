@@ -1,3 +1,4 @@
+from openprescribing.data.list_size_query import ListSizeQuery
 from openprescribing.data.models import Org
 
 from ..bnf_query import BNFQuery
@@ -28,7 +29,11 @@ def get_org_date_ratio_matrix(cursor, analysis, date_count=None):
     # For prescribing vs prescribing queries, we want to show the numerator values
     # as a percentage of the denominator values.  For prescribing vs list size
     # queries, we want to show the numerator values per thousand patients.
-    multiplier = 100 if isinstance(analysis.dtr_query, BNFQuery) else 1000
+    if isinstance(analysis.dtr_query, BNFQuery):
+        multiplier = 100
+    else:
+        assert isinstance(analysis.dtr_query, ListSizeQuery)
+        multiplier = 1000
 
     odm = ntr_odm / dtr_odm * multiplier
 
