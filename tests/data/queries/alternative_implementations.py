@@ -4,6 +4,7 @@ from itertools import product
 import numpy as np
 
 from openprescribing.data.bnf_query import BNFQuery, ProductType
+from openprescribing.data.list_size_query import ListSizeQuery
 from openprescribing.data.models import Org, OrgRelation
 from openprescribing.data.rxdb.labelled_matrix import LabelledMatrix
 
@@ -15,6 +16,7 @@ def get_practice_date_matrix_alternative(sample_data, query, date_count=None):
     if isinstance(query, BNFQuery):
         values = query_practice_prescribing_data(query, sample_data)
     else:
+        isinstance(query, ListSizeQuery)
         values = query_practice_list_size_data(sample_data)
 
     values_arr = np.array(
@@ -47,6 +49,7 @@ def get_org_date_ratio_matrix_alternative(sample_data, analysis):
             analysis.dtr_query, Org.OrgType.ICB, sample_data
         )
     else:
+        assert isinstance(analysis.dtr_query, ListSizeQuery)
         multiplier = 1000
         dtr_values = query_org_list_size_data(Org.OrgType.ICB, sample_data)
 
