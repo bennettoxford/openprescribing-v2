@@ -1,0 +1,22 @@
+metadata:
+  title: 'Gluten-free products: cost per 1000 patients'
+  description: Cost of gluten-free products per 1000 patients
+  why_it_matters: Gluten-free products are available on prescription for patients who have a biopsy-confirmed diagnosis of coeliac disease. These products are also now available to purchase, e.g. from supermarkets.Following a <a href='https://www.gov.uk/government/consultations/availability-of-gluten-free-foods-on-nhs-prescription' target='_Blank'>consultation</a> in 2017, the Drug Tariff was amended to only allow gluten-free breads or gluten-free food mixes on prescription.Please note this list now excludes low-protein products which are also categorised by dm+d and NHSBSA as being gluten-free, asthese products have different indications for ACBS use.
+  tags:
+    - core
+    - cost
+    - nutrition
+  numerator_short: Gluten-free products cost (£)
+  denominator_short: 1000 patients
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: cost
+  denominator: list_size
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""

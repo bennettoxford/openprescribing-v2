@@ -1,0 +1,24 @@
+metadata:
+  title: Fentanyl immediate release cost per 1000 patients
+  description: Cost of fentanyl immediate release per 1000 patients
+  why_it_matters: '<p><a href=''https://www.england.nhs.uk/long-read/items-which-should-not-routinely-be-prescribed-in-primary-care-policy-guidance/#immediate-release-fentanyl-updated-2023'' target=''_blank''>NHS England guidance states</a>:</p><i><p>Fentanyl is a strong opioid analgesic. It is available as an immediate-release substance in various dosage forms; tablets, lozenges, films and nasal spray. Immediate-release fentanyl is licensed for the treatment of breakthrough pain in adults with cancer who are already receiving at least 60mg oral morphine daily or equivalent. <a href=''https://www.nice.org.uk/guidance/CG140'' target=''_blank''> NICE CG140 Opioids in palliative care states</a>: ''Do not offer fast-acting fentanyl as first-line rescue medication''.</p><p>This recommendation does not apply to longer sustained release versions of fentanyl, which come in patch form.</p><p>Due to the recommendations from NICE and immediate-release fentanyl only being licensed for use in cancer, the joint clinical working group considered immediate-release fentanyl was suitable for inclusion in this guidance with specific exceptions for people receiving palliative care, reflecting NICE and the terms of the product licence.</p><p>The recommendations also reflect findings from the <a href=''https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/940255/PHE_PMR_report_Dec2020.pdf'' target=''_blank''>PHE Prescribed Review (September 2019)</a>, which outlined the risks of prescribing that can cause dependence or withdrawal and could cause problems for people taking them or coming off them, especially those who have been taking them for a long time.</p></i><p><b>For guidance on when prescribing may be appropriate in some exceptional circumstances, please see the <a href=''https://www.england.nhs.uk/long-read/items-which-should-not-routinely-be-prescribed-in-primary-care-policy-guidance/#items-where-prescribing-may-be-appropriate-in-some-exceptional-circumstances'' target=''_blank''>full NHS England guidance document.</a></b>'
+  tags:
+    - cost
+    - lowpriority
+    - opioids
+    - pain
+    - safety
+  numerator_short: Fentanyl immediate release cost (£)
+  denominator_short: 1000 patients
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: cost
+  denominator: list_size
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""

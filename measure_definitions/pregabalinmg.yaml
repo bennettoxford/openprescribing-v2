@@ -1,0 +1,22 @@
+metadata:
+  title: pregabalin mg per 1000 patients
+  description: Prescribing of pregabalin (total mg) per 1000 patients
+  why_it_matters: Pregabalin is increasingly used in neuropathic and other types of pain. There are <a href='https://www.gov.uk/government/uploads/system/uploads/attachment_data/file/385791/PHE-NHS_England_pregabalin_and_gabapentin_advice_Dec_2014.pdf' target='_Blank'>concerns about the potential for abuse</a>. This measure shows the total amount in milligrams of pregabalin prescribed.
+  tags:
+    - core
+    - pain
+    - safety
+  numerator_short: Total pregabalin prescribed (in milligrams)
+  denominator_short: 1000 patients
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: custom
+  denominator: list_size
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""

@@ -1,0 +1,21 @@
+metadata:
+  title: Toothpaste prescribing cost per 1000 patients
+  description: Toothpaste prescribing cost per 1000 patients
+  why_it_matters: OpenPrescribing currently has data on GP prescriptions and does not have information on NHS dentists' prescribing.Dentists are best placed to assess, prescribe and monitor dental problems, and it is recommended that they shouldissue any prescriptions for dental conditions.<p>NHS England <a href='https://www.england.nhs.uk/wp-content/uploads/2018/03/otc-guidance-for-ccgs.pdf'>recommends that</a> <i>there should be no routine prescribing for the treatment of dental caries.</i> Therefore there should be limited,if any, prescribing of toothpastes in general practice. </p><p><b>Please note that this is an experimental measure. We would be grateful for any feedback at<a href='mailto:bennett@phc.ox.ac.uk?Subject=Toothpaste%20Measure'>bennett@phc.ox.ac.uk</a>.</b></p>
+  tags:
+    - core
+    - cost
+  numerator_short: Toothpaste cost (£)
+  denominator_short: 1000 patients
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: cost
+  denominator: list_size
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""

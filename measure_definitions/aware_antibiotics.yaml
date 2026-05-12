@@ -1,0 +1,23 @@
+metadata:
+  title: Prescription items for Watch and Reserve group antibiotics as a percentage of total prescription items for Access, Watch and Reserve antibiotics.
+  description: Prescription items for Watch and Reserve group antibiotics as a percentage of total prescription items for Access, Watch and Reserve antibiotics.
+  why_it_matters: '<p>The UK Health Security Agency (UKHSA) have developed the <a href=''https://www.gov.uk/government/publications/uk-aware-antibiotic-classification/uk-access-watch-reserve-and-other-classification-for-antibiotics-uk-aware-antibiotic-classification'' target=''_blank''>UK-AWaRe antibiotic classification</a> adapted from the <a href=''https://www.who.int/publications/i/item/WHO-MHP-HPS-EML-2023.04'' target=''_blank''>World Health Organization’s (WHO) AWaRe classification</a>, taking into account antibiotic resistance profiles, antibiotic prescribing and stewardship practice in the UK. The classification groups antibiotics into four categories: <i>Access</i>, <i>Watch</i>, <i>Reserve</i> and <i>Other</i>, to support appropriate prescribing and promote effective antimicrobial stewardship.</p><ul><li><b><i>Access</i> antibiotics</b> are generally narrow-spectrum and associated with a lower risk of resistance. They are recommended as first or second choice options for common infections and should be readily available.</li><li><b><i>Watch</i> antibiotics</b> are broader-spectrum with a higher resistance potential. Their use should be limited to specific indications and monitored closely.</li><li><b><i>Reserve</i> antibiotics</b> are last-line treatments, often reserved for severe infections caused by multidrug-resistant organisms. These medicines require strict oversight to maintain their effectiveness.</li></ul><p>Monitoring the use of <i>Watch</i> and <i>Reserve</i> antibiotics can help identify areas to improve prescribing, encouraging the appropriate use of <i>Access</i> antibiotics where clinically suitable, and ensuring that higher-risk antibiotics are used only when necessary.</p>'
+  tags:
+    - antimicrobial
+    - core
+    - infections
+    - nice
+  numerator_short: Watch and Reserve group items
+  denominator_short: Access, Watch and Reserve group items
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: items
+  denominator: items
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""

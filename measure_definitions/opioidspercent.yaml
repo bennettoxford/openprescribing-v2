@@ -1,0 +1,24 @@
+metadata:
+  title: High dose opioid items compared with prescribing of high and lower dose opioids
+  description: Opioid items with likely daily dose of ≥90mg morphine equivalence compared with prescribing of all items of these opioids
+  why_it_matters: The <a href='https://www.rcoa.ac.uk/faculty-of-pain-medicine/opioids-aware' target='_Blank'> Opioids Aware</a> project seeks to improve prescribing of opioid analgesia.  There is little evidence that opioids are helpful in long term pain, and the risk of harm increases significantly above 90mg morphine (or equivalent) per day (recently reduced from 120mg), without much increase in benefit. We have assumed that if a patient is on regular doses of 90mg morphine a day or above that they are likely to have also had additional opioids for breakthrough pain.  This is why we have set the threshold at ≥90mg morphine equivalence per day. The calculations are based on likely doses of long-acting, regular opioids, for example morphine sulphate tablets or fentanyl patches. For example, we have assumed that Longtec 30mg tablets are “high dose”, as they are usually taken as one tablet twice daily (60mg daily dose, equivalent to 90mg of oral morphine), whereas Longtec 20mg are not, as the daily dose is 40mg (60mg of oral morphine). We have not included preparations used for breakthrough pain, e.g. Oramorph, or opioid injections which tend to be used more commonly in palliative care.  We have calculated morphine equivalencies using the updated August 2020 <a href='https://www.rcoa.ac.uk/faculty-of-pain-medicine/opioids-aware/structured-approach-to-prescribing/dose-equivalents-and-changing-opioids' target='_Blank'> tables available </a> from the Faculty of Pain Medicine, Royal College of Anaesthetists.</p><p>The <a href='https://www.england.nhs.uk/long-read/national-medicines-optimisation-opportunities-2023-24/#15-reducing-opioid-use-in-chronic-non-cancer-pain' target='_Blank'>NHS England National Medicines Optimisation Opportunities for 2024/25</a> identify reducing opioid use in chronic non-cancer pain as an area for improvement.</p>
+  tags:
+    - core
+    - opioids
+    - pain
+    - opportunities
+    - safety
+  numerator_short: High dose opioid items
+  denominator_short: All opioid items
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: custom
+  denominator: custom
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""

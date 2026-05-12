@@ -1,0 +1,23 @@
+metadata:
+  title: 'Antibiotic stewardship: co-amoxiclav, cephalosporins & quinolones: number of prescription items for co-amoxiclav, cephalosporins and quinolones per 1000 patients'
+  description: Number of prescription items for co-amoxiclav, cephalosporins and quinolones per 1000 patients
+  why_it_matters: Co-amoxiclav, cephalosporins and quinolones are broad spectrum antibiotics that can be used when others have failed. However they should <a href='https://www.england.nhs.uk/long-read/infection-prevention-and-control-education-framework/' target='_Blank'>only be used where narrow spectrum antibiotics are not likely to be effective</a>,as they can increase the risk of <em>Clostridioides difficile</em>, MRSA and other drug-resistant bacteria developing. </p><p>We are no longer using STAR-PUs in this measure.  Read more about why we have to decided to do this on our <a href='https://www.bennett.ox.ac.uk/blog/2024/08/openprescribing-summer-2024-newsletter/#planned-removal-of-star-pus-from-openprescribing' target='_Blank'>blog<a>.
+  tags:
+    - antimicrobial
+    - core
+    - infections
+    - nice
+  numerator_short: Selected items
+  denominator_short: 1000 patients
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: items
+  denominator: list_size
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""

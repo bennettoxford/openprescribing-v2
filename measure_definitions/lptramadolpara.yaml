@@ -1,0 +1,22 @@
+metadata:
+  title: Paracetamol and tramadol combination cost per 1000 patients
+  description: Cost of paracetamol and tramadol combination per 1000 patients
+  why_it_matters: <p><a href='https://www.england.nhs.uk/long-read/items-which-should-not-routinely-be-prescribed-in-primary-care-policy-guidance/#paracetamol-and-tramadol-combination-product-updated-2023' target='_blank'>NHS England guidance states</a>:</p><i><p>Although the combination product has reduced in price since this guidance was first published in 2017, there is no further evidence that indicates significant advantages over individual products.</p><p>A PrescQIPP CIC <a href='https://www.prescqipp.info/-tramacet/send/59-tramacet/946-bulletin-62-tramacet' target='_blank'>bulletin</a> did not identify any significant advantages over individual products; however, it recognised that some people may prefer to take one product instead of two. While the strengths of tramadol (37.5mg) and paracetamol (325mg) in the combination product are lower than those in commonly available individual preparations of tramadol (50mg) and paracetamol (500mg), the <a href='https://www.prescqipp.info/-tramacet/send/59-tramacet/946-bulletin-62-tramacet' target='_blank'>PrescQIPP CIC review</a> found no evidence that the combination product is more effective or safer than the individual preparations.</p></i><p><b>For guidance on when prescribing may be appropriate in some exceptional circumstances, please see the <a href='https://www.england.nhs.uk/long-read/items-which-should-not-routinely-be-prescribed-in-primary-care-policy-guidance/#items-where-prescribing-may-be-appropriate-in-some-exceptional-circumstances' target='_blank'>full NHS England guidance document.</a></b>
+  tags:
+    - cost
+    - lowpriority
+    - pain
+  numerator_short: Paracetamol and tramadol combination cost (£)
+  denominator_short: 1000 patients
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: cost
+  denominator: list_size
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""

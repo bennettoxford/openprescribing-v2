@@ -1,0 +1,23 @@
+metadata:
+  title: Higher dose Proton Pump Inhibitors, compared with prescribing of all PPIs (excluding liquids)
+  description: Prescribing of higher dose Proton Pump Inhibitors compared with prescribing of all PPIs (excluding liquids)
+  why_it_matters: PPIs are used to reduce acid levels in the stomach, in order to treat conditions such as gastro-oesophageal reflux disease. NICE guidance recommends that the lowest dose is used to treat the symptoms. Although PPIs are safe drugs, their use has been associated with an increase in a number of disorders, including Clostridium difficile infection and a higher risk of community-aquired pneunmonia. This measure looks at strengths of PPIs issued that exceed the low doses of PPIs defined in the <a href='https://www.nice.org.uk/guidance/cg184/chapter/appendix-a-dosage-information-on-proton-pump-inhibitors'> NICE guidance</a>.
+  tags:
+    - core
+    - gastrointestinal
+    - nice
+    - safety
+  numerator_short: Higher dose PPI items (excluding liquids)
+  denominator_short: All PPI items (excluding liquids)
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: custom
+  denominator: custom
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""

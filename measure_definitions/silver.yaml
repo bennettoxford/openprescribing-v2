@@ -1,0 +1,23 @@
+metadata:
+  title: silver dressings compared with prescribing of all dressings
+  description: Prescribing of silver dressings compared with prescribing of all dressings
+  why_it_matters: <a href:'https://www.nice.org.uk/advice/esmpb2/chapter/key-points-from-the-evidence'>NICE states </a>:<i>Systematic reviews and meta‑analyses have identified little good quality evidence from randomised controlled trials (RCTs) to support the use of advanced or antimicrobial dressings (such as iodine, honey or silver dressings) for chronic wounds. As well as being few in number, many of the RCTs have significant limitations and the evidence is generally of low quality There is at present no robust clinical- or cost-effectiveness evidence to support the use of antimicrobial dressings</i>.
+  tags:
+    - core
+    - efficacy
+    - infections
+    - nice
+  numerator_short: Silver dressing items
+  denominator_short: All dressing items
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: items
+  denominator: items
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""

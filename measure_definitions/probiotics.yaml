@@ -1,0 +1,23 @@
+metadata:
+  title: Cost of non-ACBS probiotics per 1000 patients
+  description: Cost of non-ACBS probiotics per 1000 patients
+  why_it_matters: <p>The Advisory Committee on Borderline Substances (ACBS) is responsible for assessing and recommending products applying for listing in Part XV of the Drug Tariff. In 2018 the ACBS reviewed some products listed in Part XV to ensure they are still clinically effective and appropriate to be listed. They considered the probiotics VSL#3 and Vivomixx and advised the Secretary of State for Health and Social Care to remove these products. The Secretary of State accepted this recommendation and removed the products from the Drug Tariff in November 2018.This is consistent with <a href='https://www.england.nhs.uk/medicines/conditions-for-which-over-the-counter-items-should-not-routinely-be-prescribed/'> NHS England guidance </a> that recommends probiotics should no longer be routinely prescribed.</p><p> The ACBS concluded that the evidence did not sufficiently demonstrate that the products are clinically effective. Additionallythe ACBS & MHRA consider the presentation of a product to prevent a clinical condition such as pouchitis as a specific medicinal claim.Therefore these products now fall within the definition of a medicine (not a borderline substance) and should be regulated as such. </p><p>Importantly this means that they are also allowed on prescription, despite not currentlybeing licensed as a medicine, and having been removed from the drug tariff as the evidence does not support them meeting the thresholdfor Part XV of the Drug Tariff.</p>
+  tags:
+    - core
+    - cost
+    - efficacy
+    - nutrition
+  numerator_short: Probiotics cost (£)
+  denominator_short: 1000 patients
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: cost
+  denominator: list_size
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""

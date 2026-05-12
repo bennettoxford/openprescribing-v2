@@ -1,0 +1,23 @@
+metadata:
+  title: 'Antibiotic stewardship: fluoroquinolone items per 1000 patients'
+  description: Number of prescription items for systemic fluoroquinolones per 1000 patients
+  why_it_matters: The <a href='https://www.gov.uk/drug-safety-update/fluoroquinolone-antibiotics-must-now-only-be-prescribed-when-other-commonly-recommended-antibiotics-are-inappropriate'>MHRA advise</a> that due to the risk of disabling and potentially long-lasting or irreversible side effects, systemic fluoroquinolones must only be used in situations when other antibiotics, that are commonly recommended for the infection, are inappropriate.
+  tags:
+    - antimicrobial
+    - core
+    - infections
+    - safety
+  numerator_short: Fluoroquinolone items
+  denominator_short: 1000 patients
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: items
+  denominator: list_size
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""

@@ -1,0 +1,21 @@
+metadata:
+  title: Number of items for zuclopenthixol acetate items as a proportion of all injectable zuclopenthixol items
+  description: Number of items for zuclopenthixol acetate items as a proportion of all injectable zuclopenthixol items
+  why_it_matters: The <a href='https://bnf.nice.org.uk/drug/zuclopenthixol-acetate.html' target='_blank'> BNF has a safety warning advising that</a>zuclopenthixol <b>acetate</b> should only be used in hospitals as it is a relatively short-acting antipsychotic.Sometimes it may be confused with zuclopenthixol <b>decanoate</b>, a long-acting antipsychotic which ismore commonly prescribed in primary care supporting long term maintenance.</p>You can read more about the measure <a href='https://www.bennett.ox.ac.uk/blog/2019/10/zuclopenthixol-acetate-a-new-kind-of-measure-on-openprescribing' target='_blank'>on our blog</a>.</p>
+  tags:
+    - mentalhealth
+    - safety
+  numerator_short: Zuclopenthixol Acetate Items
+  denominator_short: All injectable zuclopenthixol items
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: items
+  denominator: items
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""

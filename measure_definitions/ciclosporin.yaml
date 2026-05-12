@@ -1,0 +1,22 @@
+metadata:
+  title: ciclosporin and tacrolimus preparations (whether branded or generic)
+  description: Total items of generic ciclosporin and tacrolimus preparations as a proportion of total items of all ciclosporin and tacrolimus items
+  why_it_matters: It is recommended for both <a href='https://bnf.nice.org.uk/drug/ciclosporin.html#important-safety-information'> ciclosporin </a>and  <a href='https://bnf.nice.org.uk/drug/tacrolimus.html#important-safety-information'> tacrolimus </a>that patients are prescribed and dispensed by brand name, to reduce the problems of patients switching formulations.You can read more in our detailed paper on <a href='https://doi.org/10.2196/17003'> unsafe prescribing of tacrolimus and ciclosporin</a>.
+  tags:
+    - core
+    - generic
+    - safety
+  numerator_short: Generic ciclosporin and tacrolimus items
+  denominator_short: Ciclosporin and tacrolimus items
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: items
+  denominator: items
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""
