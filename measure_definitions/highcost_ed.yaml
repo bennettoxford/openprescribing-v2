@@ -1,12 +1,22 @@
 metadata:
-  title: WIP High cost drugs for erectile dysfunction
-  tags:
-    - demo
+  title: WIP Spend on high-cost drugs for erectile dysfunction per 1000 patients
+  description: Spend on drugs for erectile dysfunction which are not low-cost generic PD5E-inhibitor tablets per 1000 patients
   why_it_matters: |
     Phosphodiesterase-5 (PDE-5) inhibitors are the recommended as the [first line treatment for erectile dysfunction](https://cks.nice.org.uk/erectile-dysfunction).
     Most of these are now generic and inexpensive, and should ideally be considered before more expensive treatments.  Other treatments are also available, usually following specialist referral.
+  tags:
+    - core
+    - cost
+    - erectiledysfunction
+    - reproductive
+  numerator_short: Spend on high-cost drugs for erectile dysfunction (£)
+  denominator_short: 1000 patients
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
 output:
-  numerator: items
+  numerator: cost
   denominator: list_size
 queries:
   - numerator:
