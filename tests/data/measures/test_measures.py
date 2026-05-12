@@ -6,7 +6,8 @@ from openprescribing.data.measures import load_measure, measures
 from tests.utils.ingest_utils import ingest_dmd_data
 
 
-def test_load_measure():
+def test_load_measure(settings):
+    settings.MEASURE_DEFINITIONS_PATH = Path(__file__).parent / "fixtures"
     m = load_measure("demo-branded-ratio")
     assert m == {
         "metadata": {
