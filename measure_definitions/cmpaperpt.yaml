@@ -1,0 +1,21 @@
+metadata:
+  title: Prescribing for Cow's Milk Protein Allergy (CMPA) per listed patients aged 0-4
+  description: Cost of milk formulas for Cow's Milk Protein Allergy (CMPA) per listed patients aged 0-4
+  why_it_matters: Prescribing for Cow's Milk Protein Allergy is increasing. Milk formulas are expensive, and should be reviewed regularly to ensure that they are still required, particularly when Amino Acid Formula (AAF) products are used.
+  tags:
+    - nutrition
+    - core
+  numerator_short: AAF cost (£)
+  denominator_short: Listed patients aged 0-4
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: cost
+  denominator: custom
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""

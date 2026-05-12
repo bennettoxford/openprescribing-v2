@@ -1,0 +1,23 @@
+metadata:
+  title: Aliskiren cost per 1000 patients
+  description: Cost of Aliskiren per 1000 patients
+  why_it_matters: <p><a href='https://www.england.nhs.uk/long-read/items-which-should-not-routinely-be-prescribed-in-primary-care-policy-guidance/#aliskiren-updated-2023' target='_blank'>NHS England guidance states</a>:</p><p><i>Aliskiren is a direct renin inhibitor; renin converts angiotensinogen to angiotensin. It is indicated for essential hypertension either alone or in combination with other antihypertensives. The patent expired April 2020 but no generics are available yet.<p>NICE states there is insufficient evidence of its effectiveness to determine its suitability for use in resistant hypertension.<p>While aliskiren has shown comparable efficacy to other antihypertensive agents in terms of blood pressure reduction, its effects on mortality and long-term morbidity are currently unknown.</i></p><p><b>For guidance on when prescribing may be appropriate in some exceptional circumstances, please see the <a href='https://www.england.nhs.uk/long-read/items-which-should-not-routinely-be-prescribed-in-primary-care-policy-guidance/#items-where-prescribing-may-be-appropriate-in-some-exceptional-circumstances' target='_blank'>full NHS England guidance document.</a></b>
+  tags:
+    - cost
+    - cardiovascular
+    - lowpriority
+    - nice
+  numerator_short: Aliskiren cost (£)
+  denominator_short: 1000 patients
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: cost
+  denominator: list_size
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""

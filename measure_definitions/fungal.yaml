@@ -1,0 +1,22 @@
+metadata:
+  title: topical treatment of fungal nail infections per 1000 patients
+  description: Items prescribed for topical treatment of fungal nail infections per 1000 patients
+  why_it_matters: These treatments have <a href='https://www.bad.org.uk/pils/fungal-nail-infections/'>a low cure rate</a>, and treatment is required for three to six months.Consideration should be given as to whether this is an effective treatment.
+  tags:
+    - core
+    - efficacy
+    - infections
+  numerator_short: Topical antifungal items
+  denominator_short: 1000 patients
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: items
+  denominator: list_size
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""

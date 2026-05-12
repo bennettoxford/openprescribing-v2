@@ -1,0 +1,23 @@
+metadata:
+  title: Pprescription items for co-amoxiclav, cephalosporins and quinolones as a percentage of the total prescription items for oral antibiotics (excluding antituberculosis drugs and antileprotic drugs)
+  description: Prescription items for co-amoxiclav, cephalosporins and quinolones as a percentage of total prescription items for oral antibiotics (excluding antituberculosis drugs and antileprotic drugs).
+  why_it_matters: Co-amoxiclav, cephalosporins and quinolones are broad spectrum antibiotics that can be used when others have failed. However they should <a href='https://www.england.nhs.uk/long-read/infection-prevention-and-control-education-framework/' target='_Blank'>only be used where narrow spectrum antibiotics are not likely to be effective</a>, as they can increase the risk of <em>Clostridioides difficile</em>, MRSA and other drug-resistant bacteria developing.
+  tags:
+    - antimicrobial
+    - core
+    - infections
+    - nice
+  numerator_short: Co-amoxiclav, cephalosporins and quinolones items
+  denominator_short: All oral antibiotic items
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: items
+  denominator: items
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""

@@ -1,0 +1,21 @@
+metadata:
+  title: Blood glucose testing lancets not included in NHS England commissioning recommendations
+  description: Percentage of prescriptions for blood glucose testing lancets not included in NHS England commissioning recommendations
+  why_it_matters: Many people with diabetes test their blood glucose levels, using a blood glucose meter, in order to help control their diabetes by adjusting diet and the dose of medicines. Users use a “lancet” in order to prick their finger to draw a drop of blood for use with the meter.  These lancets fit specific lancing devices, and are only used once.</p><p>In September 2025 NHS England published <a href='https://www.england.nhs.uk/publication/commissioning-recommendations-blood-glucose-and-ketone-meters-testing-strips-and-lancets/' target='_blank'>updated commissioning guidelines, recommending specific meters, test strips and lancets.</a></p><p>The <a href='https://www.england.nhs.uk/long-read/national-medicines-optimisation-opportunities-2023-24/#8-appropriate-prescribing-and-supply-of-blood-glucose-and-ketone-meters-and-testing-strips' target='_Blank'>NHS England National Medicines Optimisation Opportunities for 2024/25</a> identify promoting uptake of best value testing strips as an area for improvement.</p><p>As NHS England publish periodic updates to their commissioning recommendations, this measure is designed to track the recommendations during the time period each guideline is valid.</p><p><b>Please note:</b> OpenPrescribing.net measures also have a consistent way of visualising measures, where 'lower is better', and therefore in this case we show the proportion of lancets which are NOT in the NHS commissioning recommendations.</p>
+  tags:
+    - diabetes
+    - core
+  numerator_short: Prescriptions for lancets not included in guidance
+  denominator_short: All lancets prescriptions
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: custom
+  denominator: custom
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""

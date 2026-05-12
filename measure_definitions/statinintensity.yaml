@@ -1,0 +1,23 @@
+metadata:
+  title: Prescribing of low and medium intensity statins as a percentage of prescribing of all statins
+  description: Items of low and medium intensity statins as a percentage of items of all statins.
+  why_it_matters: NICE guidance on <a href='https://www.nice.org.uk/guidance/ng238'>lipid modification</a>recommends the use of a high-intensity statin (i.e. one that reduces LDL cholesterol by 40% or more). A table showing the percentage reduction of LDL cholesterol by statin doses can be found <a href='https://bnf.nice.org.uk/treatment-summaries/dyslipidaemias/'> in the BNF</a> and you can read our research paper on suboptimal  statin treatment regimens in the <a href='https://doi.org/10.3399/bjgp20X710873'>British Journal of General Practice</a>.Please note, we have excluded liquid preparations from this measure.
+  tags:
+    - cardiovascular
+    - core
+    - efficacy
+    - nice
+  numerator_short: Low and medium intensity statin items
+  denominator_short: All statins items
+  authored_by: n/a
+  checked_by: n/a
+  date_reviewed: n/a
+  date_next_review: n/a
+output:
+  numerator: custom
+  denominator: custom
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - ""
