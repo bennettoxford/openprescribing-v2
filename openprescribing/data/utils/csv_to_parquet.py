@@ -10,6 +10,7 @@ def csv_to_parquet(
     parquet_version=2,
     compression="zstd",
     compression_level=10,
+    skip=0,
 ):
     """
     Reads a CSV file and writes it out as a Parquet file
@@ -31,7 +32,8 @@ def csv_to_parquet(
               header=true,
               encoding={escape(encoding)},
                /* disable type guessing and leave columns as strings */
-              all_varchar=true
+              all_varchar=true,
+              skip={escape(skip)}
             )
         )
         TO {escape(parquet_filename)} (
