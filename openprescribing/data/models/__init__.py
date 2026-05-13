@@ -47,6 +47,7 @@ from .dmd import (
     VirtualProductPresStatus,
 )
 from .dmd_bnf_map import DmdBnfMap
+from .drug_tariff import TariffPrice
 from .org import Org, OrgRelation
 
 
@@ -93,6 +94,7 @@ __all__ = [
     "Route",
     "SpecCont",
     "Supplier",
+    "TariffPrice",
     "UnitOfMeasure",
     "VMP",
     "VMPP",
