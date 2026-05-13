@@ -23,6 +23,7 @@ def csv_to_parquet(
     """
     assert isinstance(parquet_version, int)
     assert isinstance(compression_level, int)
+    assert isinstance(skip, int)
     duckdb.sql(
         f"""
         COPY (
@@ -33,7 +34,7 @@ def csv_to_parquet(
               encoding={escape(encoding)},
                /* disable type guessing and leave columns as strings */
               all_varchar=true,
-              skip={escape(skip)}
+              skip={skip}
             )
         )
         TO {escape(parquet_filename)} (
