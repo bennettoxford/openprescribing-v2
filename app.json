@@ -4,6 +4,11 @@
       "command": "scripts/post_output_to_slack.py --task-name 'OpenPrescribing data import' './manage.py fetch all --quiet && ./manage.py ingest all --quiet'",
       "schedule": "38 2 * * *",
       "concurrency_policy": "forbid"
+    },
+    {
+      "command": "./manage.py upload_databases_to_gcs",
+      "schedule": "38 6 * * *",
+      "concurrency_policy": "forbid"
     }
   ]
 }
