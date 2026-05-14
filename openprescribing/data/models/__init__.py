@@ -48,6 +48,7 @@ from .dmd import (
 )
 from .dmd_bnf_map import DmdBnfMap
 from .drug_tariff import TariffPrice
+from .ncso_concessions import NCSOConcessions
 from .org import Org, OrgRelation
 
 
@@ -81,6 +82,7 @@ __all__ = [
     "LicensingAuthority",
     "LicensingAuthorityChangeReason",
     "NamechangeReason",
+    "NCSOConcessions",
     "Ont",
     "OntFormRoute",
     "Org",
