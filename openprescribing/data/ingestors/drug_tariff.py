@@ -73,13 +73,14 @@ def drug_tariff_file_date(filename):
 
 def get_tariff_cat_id(cat):
     # These IDs correspond to the dmd.DtPaymentCategory model.
-    if "Category A" in cat:
-        return 1
-    elif "Category C" in cat:
-        return 3
-    elif "Category H" in cat:
-        return 15
-    elif "Category M" in cat:
-        return 11
-    else:
-        assert False, f"Unknown category: {cat}"
+    category_ids = [
+        ("Category A", 1),
+        ("Category C", 3),
+        ("Category H", 15),
+        ("Category M", 11),
+    ]
+
+    for category_name, category_id in category_ids:
+        if category_name in cat:
+            return category_id
+    assert False, f"Unknown category: {cat}"
