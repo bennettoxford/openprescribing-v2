@@ -93,6 +93,13 @@ def ingest(force=False):
     # Ingest all the data by querying the source views and writing the results to tables
     ingest_sources(conn)
 
+    max_date, twelve_months_start_date = conn.execute(
+        "SELECT MAX(date), CAST(MAX(date) - INTERVAL 11 MONTH AS DATE) FROM date"
+    ).fetchone()
+    build_subset_tables(conn, "1m", max_date, max_date)
+    build_subset_tables(conn, "12m", twelve_months_start_date, max_date)
+    build_subset_tables(conn, "2025", "2025-01-01", "2025-12-01")
+
     conn.close()
     tmp_file.replace(target_file)
 
@@ -198,20 +205,7 @@ def ingest_sources(conn):
     # decide whether to ingest less, or to change the type here and pay the extra cost
     # in storage and performance. Nothing else in the system depends on these exact
     # types though, so it shouldn't be a disruptive change.
-    conn.sql(
-        """
-        CREATE TABLE prescribing_norm (
-            presentation_id INT4,
-            date_id UTINYINT,
-            practice_id USMALLINT,
-            quantity_value FLOAT4,
-            items USMALLINT,
-            quantity FLOAT4,
-            net_cost UINTEGER,
-            actual_cost UINTEGER
-        )
-        """
-    )
+    conn.sql(f"CREATE TABLE prescribing_norm ({sql_for_prescribing_norm_schema()})")
 
     # The order in which we insert the normalised prescribing data is important because
     # it allows DuckDB to produce more useful zonemaps, which improves query performance.
@@ -269,6 +263,82 @@ def ingest_sources(conn):
     LEFT JOIN bnf_code_changes_source
         ON presentation.bnf_code = bnf_code_changes_source.old_code
     """)
+
+
+def build_subset_tables(conn, suffix, start_date, end_date):
+    # Build a date-restricted subset of the prescribing and list_size data as
+    # standalone tables named `prescribing_{suffix}` etc, covering dates in
+    # [start_date, end_date] inclusive.
+
+    date_ids = [
+        row[0]
+        for row in conn.execute(
+            "SELECT id FROM date WHERE date BETWEEN ? AND ? ORDER BY id",
+            [start_date, end_date],
+        ).fetchall()
+    ]
+    if not date_ids:
+        log.info(f"No data in [{start_date}, {end_date}]; skipping `{suffix}` tables")
+        return
+
+    date_id_list = ",".join(str(d) for d in date_ids)
+    prescribing_norm_name = f"prescribing_norm_{suffix}"
+    prescribing_name = f"prescribing_{suffix}"
+    list_size_norm_name = f"list_size_norm_{suffix}"
+    list_size_name = f"list_size_{suffix}"
+
+    log.info(
+        f"Building `{suffix}` subset tables for {len(date_ids)} date_ids "
+        f"({start_date} -> {end_date})"
+    )
+
+    log.info(f"Building `{list_size_norm_name}`")
+    conn.sql(
+        f"CREATE TABLE {list_size_norm_name} AS"
+        f" SELECT * FROM list_size_norm WHERE date_id IN ({date_id_list})"
+    )
+
+    conn.sql(
+        f"CREATE TABLE {prescribing_norm_name} ({sql_for_prescribing_norm_schema()})"
+    )
+
+    for bnf_start, bnf_end in get_bnf_code_ranges(conn, batch_size=750):
+        conn.execute(
+            f"INSERT INTO {prescribing_norm_name}"
+            " SELECT prescribing_norm.* FROM prescribing_norm"
+            " JOIN presentation ON prescribing_norm.presentation_id = presentation.id"
+            " WHERE presentation.bnf_code >= ? AND presentation.bnf_code < ?"
+            f"  AND prescribing_norm.date_id IN ({date_id_list})"
+            " ORDER BY"
+            " prescribing_norm.presentation_id,"
+            " prescribing_norm.date_id,"
+            " prescribing_norm.practice_id",
+            [bnf_start, bnf_end],
+        )
+
+    log.info(f"Building `{prescribing_name}` view")
+    conn.sql(
+        f"CREATE VIEW {prescribing_name} AS "
+        + sql_for_prescribing_denormalised().replace(
+            "prescribing_norm", prescribing_norm_name
+        )
+    )
+
+    log.info(f"Building `{list_size_name}` view")
+    conn.sql(
+        f"CREATE VIEW {list_size_name} AS "
+        + sql_for_list_size_denormalised().replace(
+            "list_size_norm", list_size_norm_name
+        )
+    )
+
+    log.info(
+        f"Ingested {count_table(conn, prescribing_norm_name):,} "
+        f"`{suffix}` prescribing rows"
+    )
+    log.info(
+        f"Ingested {count_table(conn, list_size_norm_name):,} `{suffix}` list size rows"
+    )
 
 
 def sql_for_date_table():
@@ -359,6 +429,19 @@ def sql_for_presentation_table():
     FROM (
         SELECT DISTINCT bnf_code, snomed_code FROM prescribing_source
     )
+    """
+
+
+def sql_for_prescribing_norm_schema():
+    return """
+        presentation_id INT4,
+        date_id UTINYINT,
+        practice_id USMALLINT,
+        quantity_value FLOAT4,
+        items USMALLINT,
+        quantity FLOAT4,
+        net_cost UINTEGER,
+        actual_cost UINTEGER
     """
 
 
