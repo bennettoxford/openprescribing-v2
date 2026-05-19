@@ -1,4 +1,5 @@
 import csv
+import datetime
 
 import duckdb
 
@@ -34,6 +35,18 @@ def test_prescribing_ingest(tmp_path, settings):
         "list_size_norm",
         "list_size",
         "ingested_file",
+        "prescribing_norm_2025",
+        "prescribing_2025",
+        "list_size_norm_2025",
+        "list_size_2025",
+        "prescribing_norm_12m",
+        "prescribing_12m",
+        "list_size_norm_12m",
+        "list_size_12m",
+        "prescribing_norm_1m",
+        "prescribing_1m",
+        "list_size_norm_1m",
+        "list_size_1m",
     }
     for name, table in tables.items():
         assert len(table) > 0, f"table '{name}' is empty"
@@ -146,6 +159,23 @@ def test_prescribing_ingest_applies_bnf_code_changes(tmp_path, settings):
     ]
 
 
+def test_build_subset_tables_skips_empty_window():
+    conn = duckdb.connect()
+    conn.sql("CREATE TABLE date (id UTINYINT, date DATE)")
+    conn.execute("INSERT INTO date VALUES (0, ?)", [datetime.date(2020, 1, 1)])
+
+    prescribing.build_subset_tables(
+        conn, "empty", datetime.date(2030, 1, 1), datetime.date(2031, 1, 1)
+    )
+
+    cursor = conn.execute(
+        "SELECT table_name FROM information_schema.tables WHERE table_schema = 'main'"
+    )
+    table_names = {r[0] for r in cursor.fetchall()}
+    assert "prescribing_norm_empty" not in table_names
+    assert "list_size_norm_empty" not in table_names
+
+
 def generate_prescribing_data():
     # TODO: Randomly generate a whole load of prescribing data
     return {
@@ -173,6 +203,15 @@ def generate_prescribing_data():
             },
         ],
         ("list_size", "2020-01-01", "v2"): [
+            {
+                "ORG_CODE": "ABC123",
+                "NUMBER_OF_PATIENTS": "12345",
+                "ORG_TYPE": "GP",
+                "SEX": "ALL",
+                "AGE_GROUP_5": "ALL",
+            },
+        ],
+        ("list_size", "2025-01-01", "v2"): [
             {
                 "ORG_CODE": "ABC123",
                 "NUMBER_OF_PATIENTS": "12345",
