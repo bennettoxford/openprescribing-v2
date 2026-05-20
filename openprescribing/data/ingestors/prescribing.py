@@ -13,6 +13,12 @@ from openprescribing.data.utils.filename_utils import (
 log = logging.getLogger(__name__)
 
 
+# Size of batch used when iterating over BNF codes for inserting data into
+# prescribing_norm table.  Larger batches consume more memory, so if ingestor is killed
+# by OOM killer, reducing the batch size may help.
+BNF_RANGE_BATCH_SIZE = 650
+
+
 def ingest(force=False):
     target_file = settings.PRESCRIBING_DATABASE
     prescribing_files = get_latest_files_by_date(
@@ -228,7 +234,9 @@ def ingest_sources(conn):
     # relatively cheap. If these were CSV files we'd need to do a full scan over all the
     # data every time. But thanks the magic of Parquet these queries are reasonably
     # efficient.
-    for bnf_start, bnf_end in get_bnf_code_ranges(conn, batch_size=750):
+    for bnf_start, bnf_end in get_bnf_code_ranges(
+        conn, batch_size=BNF_RANGE_BATCH_SIZE
+    ):
         log.info(f"Building `prescribing_norm` table: {bnf_start} -> {bnf_end}")
         conn.sql(
             "INSERT INTO prescribing_norm "
@@ -307,7 +315,9 @@ def build_subset_tables(conn, suffix, start_date, end_date):
         f"CREATE TABLE {prescribing_norm_name} ({sql_for_prescribing_norm_schema()})"
     )
 
-    for bnf_start, bnf_end in get_bnf_code_ranges(conn, batch_size=750):
+    for bnf_start, bnf_end in get_bnf_code_ranges(
+        conn, batch_size=BNF_RANGE_BATCH_SIZE
+    ):
         conn.execute(
             f"INSERT INTO {prescribing_norm_name}"
             " SELECT prescribing_norm.* FROM prescribing_norm"
