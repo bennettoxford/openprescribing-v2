@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 import os
+import subprocess
 from pathlib import Path
 
 
@@ -42,6 +43,19 @@ def get_env_var(name):
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parents[2]
+
+# Identifier for the deployed code.
+if "GITREF" in os.environ:  # pragma: no cover
+    # GITREF is baked into the Docker image.
+    VERSION = os.environ["GITREF"]
+else:
+    VERSION = subprocess.run(
+        ["git", "rev-parse", "--short", "HEAD"],
+        cwd=BASE_DIR,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
 
 # Directories for application state. Note that these are not necessarily relative to
 # BASE_DIR: if they are absolute paths then they can point anywhere.
@@ -105,6 +119,7 @@ TEMPLATES = [
         "OPTIONS": {
             "context_processors": [
                 "django.template.context_processors.request",
+                "openprescribing.web.context_processors.version",
             ],
         },
     },
