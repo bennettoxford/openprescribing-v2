@@ -1,4 +1,5 @@
 import logging
+import os
 
 import duckdb
 from django.conf import settings
@@ -16,7 +17,7 @@ log = logging.getLogger(__name__)
 # Size of batch used when iterating over BNF codes for inserting data into
 # prescribing_norm table.  Larger batches consume more memory, so if ingestor is killed
 # by OOM killer, reducing the batch size may help.
-BNF_RANGE_BATCH_SIZE = 650
+BNF_RANGE_BATCH_SIZE = int(os.environ.get("OPENPRESCRIBING_BNF_RANGE_BATCH_SIZE", 650))
 
 
 def ingest(force=False):
