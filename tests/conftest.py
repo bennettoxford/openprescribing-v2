@@ -52,8 +52,12 @@ def prevent_rxdb_access():
             "use the `rxdb` fixture to enable it"
         )
 
+    def get_cache_key():
+        return (0.0, 0.0)
+
     with pytest.MonkeyPatch.context() as monkeypatch:
         monkeypatch.setattr(openprescribing.data.rxdb, "get_cursor", get_cursor)
+        monkeypatch.setattr(openprescribing.data.rxdb, "get_cache_key", get_cache_key)
         yield
 
 

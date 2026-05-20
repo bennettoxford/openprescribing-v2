@@ -7,6 +7,7 @@ from openprescribing.data import rxdb
 from openprescribing.data.analysis import Analysis
 from openprescribing.data.models import AMP, VMP, VTM, BNFCode, Ing, OntFormRoute, Org
 from openprescribing.data.queries import get_org_date_ratio_matrix
+from openprescribing.web.decorators import add_cache_headers
 
 
 # We currently have about 8 years (96 months) of list size data.  In future we could
@@ -83,6 +84,7 @@ def prescribing_deciles(request):
     )
 
 
+@add_cache_headers
 def metadata_medications(request):
     """Return details of all medications that have been prescribed.
 
@@ -116,6 +118,7 @@ def metadata_medications(request):
     return JsonResponse({"medications": medications})
 
 
+@add_cache_headers
 def metadata_dmd(request):
     """Return details of dm+d objects that will be used to query and display
     medications."""
@@ -130,6 +133,7 @@ def metadata_dmd(request):
     return JsonResponse(payload)
 
 
+@add_cache_headers
 def metadata_bnf(request):
     """Return details of BNF objects that will be used to query and display
     medications.
