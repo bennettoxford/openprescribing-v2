@@ -58,12 +58,28 @@ def ingest(force=False):
     for filename in all_files:
         log.info(f"Preparing to ingest file: {filename.name}")
 
+    # We build the database in a new file, and atomically replace the old file with the
+    # new one.
+    target_file.parent.mkdir(parents=True, exist_ok=True)
+    tmp_file = get_temp_filename_for(target_file)
+
+    try:
+        build_database(
+            conn, tmp_file, target_file, all_files, prescribing_files, list_size_files
+        )
+        conn.close()
+        tmp_file.replace(target_file)
+    finally:
+        tmp_file.unlink(missing_ok=True)
+
+
+def build_database(
+    conn, tmp_file, target_file, all_files, prescribing_files, list_size_files
+):
     # Attach the file we're in the process of building under the schema name "new". The
     # STORAGE_VERSION setting allows us to opt-in to newer DuckDB file format features
     # which can't be read by older clients. If a newer release offers a feature we want
     # we can bump the version here.
-    target_file.parent.mkdir(parents=True, exist_ok=True)
-    tmp_file = get_temp_filename_for(target_file)
     conn.sql(f"ATTACH {escape(tmp_file)} AS new (STORAGE_VERSION 'v1.2.0')")
 
     # Record the names of the files we're ingesting
@@ -99,9 +115,6 @@ def ingest(force=False):
 
     # Ingest all the data by querying the source views and writing the results to tables
     ingest_sources(conn)
-
-    conn.close()
-    tmp_file.replace(target_file)
 
 
 def sql_for_prescribing_source_view(prescribing_files_by_date):

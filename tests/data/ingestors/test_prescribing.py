@@ -1,6 +1,7 @@
 import csv
 
 import duckdb
+import pytest
 
 from openprescribing.data.ingestors import prescribing
 from tests.utils.parquet_utils import parquet_from_dicts
@@ -144,6 +145,25 @@ def test_prescribing_ingest_applies_bnf_code_changes(tmp_path, settings):
         "NEW12345",
         "01234ABC",
     ]
+
+
+def test_prescribing_ingest_cleans_up_tmp_file_on_failure(
+    tmp_path, settings, monkeypatch
+):
+    settings.DOWNLOAD_DIR = tmp_path / "downloads"
+    settings.PRESCRIBING_DATABASE = tmp_path / "data" / "prescribing.duckdb"
+
+    write_as_parquet_files(generate_prescribing_data(), settings.DOWNLOAD_DIR)
+
+    def oom(conn):
+        raise RuntimeError("oom")
+
+    monkeypatch.setattr(prescribing, "ingest_sources", oom)
+
+    with pytest.raises(RuntimeError, match="oom"):
+        prescribing.ingest()
+
+    assert list(settings.PRESCRIBING_DATABASE.parent.glob(".*.tmp")) == []
 
 
 def generate_prescribing_data():
