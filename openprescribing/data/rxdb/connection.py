@@ -8,7 +8,7 @@ from django.conf import settings
 from openprescribing.data.utils.duckdb_utils import escape
 
 
-__all__ = ["get_cursor"]
+__all__ = ["get_cursor", "get_cache_key"]
 
 # Force DuckDB to look for extension modules in the virtualenv rather than the user's
 # home directory (!)
@@ -20,6 +20,16 @@ CONNECTION_MANAGER = None
 
 
 def get_cursor():
+    return _get_connection_manager().get_cursor()
+
+
+def get_cache_key():  # pragma: no cover
+    """Return cache key that changes whenever the underlying data changes."""
+
+    return _get_connection_manager().get_cache_key()
+
+
+def _get_connection_manager():
     global CONNECTION_MANAGER
     if CONNECTION_MANAGER is None:
         CONNECTION_MANAGER = ConnectionManager(
@@ -27,7 +37,7 @@ def get_cursor():
             sqlite_file=settings.SQLITE_DATABASE,
             init_sql=CREATE_VIEWS_PATH.read_text(),
         )
-    return CONNECTION_MANAGER.get_cursor()
+    return CONNECTION_MANAGER
 
 
 class ConnectionManager:
@@ -102,31 +112,33 @@ class ConnectionManager:
         # in the attached DuckDB file.
         cursor.execute("SET search_path = 'memory,sqlite_db,duckdb_db'")
 
+    def get_cache_key(self):
+        # This cache key will change when the contents of either of the two databases is
+        # updated.
+        #
+        # There's a harmless edge case here in that the contents of the SQLite database
+        # could change between the time this is called and the time a query is executed.
+        # (The same is not true for DuckDB where each database file is immutable.) If
+        # this happens then we could end up caching newer data under an old cache key.
+        # However subsequent queries will use the newer cache key and so the effect is
+        # just a small amount of wasted work in storing a cached value that will never
+        # be used. And given how short-lived the cursors are and how infrequently the
+        # data changes I expect these to be extremely rare in any case.
+        self.reconnect_if_duckdb_modified()
+        return (
+            self.duckdb_last_modified,
+            self.sqlite_file.stat().st_mtime,
+        )
+
     @contextlib.contextmanager
     def get_cursor(self):
-        self.reconnect_if_duckdb_modified()
+        cache_key = self.get_cache_key()
         cursor = self.connection.cursor()
         # Search path needs to be set per-cursor for some reason; it isn't persistent on
         # the connection.
         self.set_search_path(cursor)
         # Wrap the cursor in a class that allows it to function as a cache key
-        wrapped = CursorCacheKeyWrapper(
-            cursor,
-            cache_key=(
-                # Invalidate the cache if either database file changes
-                self.duckdb_last_modified,
-                self.sqlite_file.stat().st_mtime,
-                # There's a harmless edge case here in that the contents of the SQLite
-                # database could change between the time the cursor is created and the
-                # time a query is executed. (The same is not true for DuckDB where each
-                # database file is immutable.) If this happens then we could end up
-                # caching newer data under an old cache key. However subsequent queries
-                # will use the newer cache key and so the effect is just a small amount
-                # of wasted work in storing a cached value that will never be used. And
-                # given how short-lived the cursors are and how infrequently the data
-                # changes I expect these to be extremely rare in any case.
-            ),
-        )
+        wrapped = CursorCacheKeyWrapper(cursor, cache_key=cache_key)
         try:
             yield wrapped
         finally:

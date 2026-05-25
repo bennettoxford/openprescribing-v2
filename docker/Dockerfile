@@ -159,6 +159,7 @@ RUN DJANGO_SECRET_KEY=dummy-key \
     OPENPRESCRIBING_DATA_DIR=. \
     TRUD_API_KEY=. \
     DJANGO_CSRF_TRUSTED_ORIGINS=. \
+    GITREF=dummy \
     python /app/manage.py collectstatic --no-input
 
 # set the entrypoint to ensure some basic tasks are performed before the cli command
@@ -172,6 +173,7 @@ ARG BUILD_DATE=unknown
 LABEL org.opencontainers.image.created=$BUILD_DATE
 ARG GITREF=unknown
 LABEL org.opencontainers.image.revision=$GITREF
+ENV GITREF=$GITREF
 
 ##################################################
 #
@@ -207,3 +209,8 @@ ENTRYPOINT ["/app/docker/entrypoints/dev.sh"]
 ARG USERID
 ARG GROUPID
 USER ${USERID}:${GROUPID}
+
+# Set identifier for the deployed code, as for the production image. This is read by
+# settings.VERSION.
+ARG GITREF=unknown
+ENV GITREF=$GITREF
