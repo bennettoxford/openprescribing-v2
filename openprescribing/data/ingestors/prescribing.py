@@ -64,18 +64,14 @@ def ingest(force=False):
     tmp_file = get_temp_filename_for(target_file)
 
     try:
-        build_database(
-            conn, tmp_file, target_file, all_files, prescribing_files, list_size_files
-        )
+        build_database(conn, tmp_file, all_files, prescribing_files, list_size_files)
         conn.close()
         tmp_file.replace(target_file)
     finally:
         tmp_file.unlink(missing_ok=True)
 
 
-def build_database(
-    conn, tmp_file, target_file, all_files, prescribing_files, list_size_files
-):
+def build_database(conn, tmp_file, all_files, prescribing_files, list_size_files):
     # Attach the file we're in the process of building under the schema name "new". The
     # STORAGE_VERSION setting allows us to opt-in to newer DuckDB file format features
     # which can't be read by older clients. If a newer release offers a feature we want
