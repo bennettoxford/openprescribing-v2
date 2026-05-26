@@ -10,15 +10,23 @@ metadata:
     - nice
   numerator_short: Oral antibacterial items
   denominator_short: 1000 patients
-  authored_by: n/a
-  checked_by: n/a
-  date_reviewed: n/a
-  date_next_review: n/a
+  authored_by: christopher.wood@phc.ox.ac.uk
+  checked_by: caroline.acuda@phc.ox.ac.uk
+  date_reviewed: 2026-03-23
+  date_next_review: 2028-03-23
 output:
   numerator: items
   denominator: list_size
 queries:
   - numerator:
       bnf_codes:
+        query: |
+        SELECT DISTINCT(bnf_code)
+        FROM {measures}.vw__dmd_objs_with_form_route
+        WHERE form_route LIKE '%.oral'
         included:
-          - ""
+          - "0501 # Antibacterial drugs"
+        excluded:
+          - "050109 # Exclude antituberculosis drugs"
+          - "050110 # Exclude antileprotic drugs"
+          - "0501130H0 # Exclude methenamine as this is a urinary antiseptic"        
