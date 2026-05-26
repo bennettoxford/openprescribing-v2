@@ -1,5 +1,5 @@
 metadata:
-  title: Pprescription items for co-amoxiclav, cephalosporins and quinolones as a percentage of the total prescription items for oral antibiotics (excluding antituberculosis drugs and antileprotic drugs)
+  title: Prescription items for co-amoxiclav, cephalosporins and quinolones as a percentage of the total prescription items for oral antibiotics (excluding antituberculosis drugs and antileprotic drugs)
   description: Prescription items for co-amoxiclav, cephalosporins and quinolones as a percentage of total prescription items for oral antibiotics (excluding antituberculosis drugs and antileprotic drugs).
   why_it_matters: Co-amoxiclav, cephalosporins and quinolones are broad spectrum antibiotics that can be used when others have failed. However they should <a href='https://www.england.nhs.uk/long-read/infection-prevention-and-control-education-framework/' target='_Blank'>only be used where narrow spectrum antibiotics are not likely to be effective</a>, as they can increase the risk of <em>Clostridioides difficile</em>, MRSA and other drug-resistant bacteria developing.
   tags:
@@ -22,16 +22,16 @@ queries:
         - oral
       bnf_codes:
           included:
-              - "0501013K0 # Co-Amoxiclav"
-              - "0501021 # Cephalosporins"
-              - "050112 # Quinolones"
+            - "0501013K0 # Co-Amoxiclav"
+            - "0501021 # Cephalosporins"
+            - "050112 # Quinolones"
   - denominator:
       routes:
         - oral
       bnf_codes:
           included:
-              - "0501 #Antibacterial drugs"
+            - "0501 #Antibacterial drugs"
           excluded:
-              - "050109 #Exclude antituberculosis drugs"
-              - "050110 #Exclude antileprotic drugs" 
-              - "0501130H0 # Exclude methenamine as this is a urinary antiseptic" 
+            - "050109 #Exclude antituberculosis drugs"
+            - "050110 #Exclude antileprotic drugs" 
+            - "0501130H0 # Exclude methenamine as this is a urinary antiseptic" 
