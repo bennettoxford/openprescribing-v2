@@ -57,6 +57,13 @@ BNF_CODE_CHANGES_SOURCE_SCHEMA = pyarrow.schema(
     ]
 )
 
+VMP_CODE_CHANGES_SOURCE_SCHEMA = pyarrow.schema(
+    [
+        ("old_vpid", pyarrow.int64()),
+        ("new_vpid", pyarrow.int64()),
+    ]
+)
+
 LIST_SIZE_SOURCE_DEFAULTS = {
     "date": datetime.date(2000, 1, 1),
     "practice_code": "",
@@ -129,14 +136,19 @@ def rxdb_ingest(conn, prescribing_data=(), list_size_data=()):
     bnf_code_changes_source = pyarrow.Table.from_pylist(
         [], schema=BNF_CODE_CHANGES_SOURCE_SCHEMA
     )
+    vmp_code_changes_source = pyarrow.Table.from_pylist(
+        [], schema=VMP_CODE_CHANGES_SOURCE_SCHEMA
+    )
     # Register the PyArrow Tables so they can be queried like any other table in DuckDB
     conn.register("prescribing_source", prescribing_source)
     conn.register("list_size_source", list_size_source)
     conn.register("bnf_code_changes_source", bnf_code_changes_source)
+    conn.register("vmp_code_changes_source", vmp_code_changes_source)
     ingest_sources(conn)
     conn.unregister("prescribing_source")
     conn.unregister("list_size_source")
     conn.unregister("bnf_code_changes_source")
+    conn.unregister("vmp_code_changes_source")
 
 
 def prepare_data(data, defaults):

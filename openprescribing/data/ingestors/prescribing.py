@@ -4,6 +4,7 @@ import os
 import duckdb
 from django.conf import settings
 
+from openprescribing.data.models.dmd import VMP
 from openprescribing.data.utils.duckdb_utils import escape
 from openprescribing.data.utils.filename_utils import (
     get_latest_files_by_date,
@@ -108,6 +109,7 @@ def build_database(conn, tmp_file, all_files, prescribing_files, list_size_files
             settings.BNF_CODE_CHANGES_DIR / "bnf_code_mapping.csv"
         )
     )
+    create_vmp_code_changes_source(conn)
 
     # Set the new database we're building as the default schema
     conn.sql("USE new")
@@ -275,9 +277,10 @@ def ingest_sources(conn):
     log.info("Building `list_size` view")
     conn.sql("CREATE VIEW list_size AS " + sql_for_list_size_denormalised())
 
-    # To support BNF codes changing we need to update the presentation table with the
-    # BNF code that a presentation would have, if it had been prescribed today.  We
-    # keep the original in the original_bnf_code column for debugging purposes.
+    # To support BNF codes and VMP codes changing we need to update the presentation
+    # table with the codes that a presentation would have, if it had been prescribed
+    # today.  We keep the originals in the original_bnf_code and original_snomed_code
+    # columns for debugging purposes.
     log.info("Updating `presentation` table")
     conn.sql("""
     CREATE OR REPLACE TABLE presentation AS
@@ -285,10 +288,13 @@ def ingest_sources(conn):
         presentation.id,
         COALESCE(bnf_code_changes_source.new_code, presentation.bnf_code) AS bnf_code,
         presentation.bnf_code AS original_bnf_code,
-        presentation.snomed_code
+        COALESCE(vmp_code_changes_source.new_vpid, presentation.snomed_code) AS snomed_code,
+        presentation.snomed_code AS original_snomed_code
     FROM presentation
     LEFT JOIN bnf_code_changes_source
         ON presentation.bnf_code = bnf_code_changes_source.old_code
+    LEFT JOIN vmp_code_changes_source
+        ON presentation.snomed_code = vmp_code_changes_source.old_vpid
     """)
 
 
@@ -476,6 +482,47 @@ def sql_for_list_size_denormalised():
     ON
         lst.practice_id = practice.id
     """
+
+
+def create_vmp_code_changes_source(conn):
+    # VMP codes occasionally change.  Each VMP record carries its immediately previous
+    # code in `vpidprev`, so a chain of changes A -> B -> C is recorded across multiple
+    # rows (B has vpidprev=A; C has vpidprev=B).  We resolve chains so that the final
+    # mapping points each old code directly at the current code (A -> C, B -> C).
+    pairs = resolve_vmp_code_changes(get_vmp_code_change_pairs())
+    conn.sql(
+        "CREATE TEMPORARY TABLE vmp_code_changes_source (old_vpid BIGINT, new_vpid BIGINT)"
+    )
+    if pairs:
+        conn.executemany(
+            "INSERT INTO vmp_code_changes_source VALUES (?, ?)",
+            pairs,
+        )
+
+
+def get_vmp_code_change_pairs():
+    # Fetch all (current_vpid, previous_vpid) pairs from the dm+d data.
+    return VMP.objects.exclude(vpidprev__isnull=True).values_list("vpid", "vpidprev")
+
+
+def resolve_vmp_code_changes(raw_pairs):
+    # Given an iterable of (current_vpid, previous_vpid) pairs, resolve any chains so
+    # that each old code maps directly to the current code.  Returns a list of
+    # (old_vpid, new_vpid) tuples.
+    prev_to_current = {prev: current for current, prev in raw_pairs}
+    old_to_new = {}
+    for start in prev_to_current:
+        seen = {start}
+        current = start
+        while current in prev_to_current:
+            current = prev_to_current[current]
+            if current in seen:
+                raise ValueError(
+                    f"Cycle detected in VMP vpidprev chain involving {current}"
+                )
+            seen.add(current)
+        old_to_new[start] = current
+    return sorted(old_to_new.items())
 
 
 def sql_for_bnf_code_changes_view(csv_path):

@@ -7,7 +7,7 @@ from openprescribing.data.ingestors import prescribing
 from tests.utils.parquet_utils import parquet_from_dicts
 
 
-def test_prescribing_ingest(tmp_path, settings):
+def test_prescribing_ingest(tmp_path, settings, data_db):
     settings.DOWNLOAD_DIR = tmp_path / "downloads"
     settings.PRESCRIBING_DATABASE = tmp_path / "data" / "prescribing.duckdb"
 
@@ -46,7 +46,7 @@ def test_prescribing_ingest(tmp_path, settings):
     assert settings.PRESCRIBING_DATABASE.stat().st_mtime == last_modified
 
 
-def test_prescribing_ingest_applies_bnf_code_changes(tmp_path, settings):
+def test_prescribing_ingest_applies_bnf_code_changes(tmp_path, settings, data_db):
     settings.DOWNLOAD_DIR = tmp_path / "downloads"
     settings.PRESCRIBING_DATABASE = tmp_path / "data" / "prescribing.duckdb"
     settings.BNF_CODE_CHANGES_DIR = tmp_path
@@ -122,18 +122,21 @@ def test_prescribing_ingest_applies_bnf_code_changes(tmp_path, settings):
             "bnf_code": "01234ABC",
             "original_bnf_code": "01234ABC",
             "snomed_code": 87654321,
+            "original_snomed_code": 87654321,
         },
         {
             "id": 2,
             "bnf_code": "NEW12345",
             "original_bnf_code": "NEW12345",
             "snomed_code": 12345678,
+            "original_snomed_code": 12345678,
         },
         {
             "id": 3,
             "bnf_code": "NEW12345",
             "original_bnf_code": "OLD12345",
             "snomed_code": 12345678,
+            "original_snomed_code": 12345678,
         },
     ]
 
@@ -147,8 +150,118 @@ def test_prescribing_ingest_applies_bnf_code_changes(tmp_path, settings):
     ]
 
 
+def test_prescribing_ingest_applies_vmp_code_changes(
+    tmp_path, settings, data_db, monkeypatch
+):
+    settings.DOWNLOAD_DIR = tmp_path / "downloads"
+    settings.PRESCRIBING_DATABASE = tmp_path / "data" / "prescribing.duckdb"
+
+    test_data = {
+        ("prescribing", "2023-01-01", "v3"): [
+            {
+                "BNF_CODE": "01234ABC",
+                "SNOMED_CODE": "1000",
+                "PRACTICE_CODE": "ABC123",
+                "QUANTITY": "10.0",
+                "ITEMS": "100",
+                "TOTAL_QUANTITY": "150.0",
+                "NIC": "12.34",
+                "ACTUAL_COST": "15.34",
+            },
+        ],
+        ("prescribing", "2024-01-01", "v3"): [
+            {
+                "BNF_CODE": "01234ABC",
+                "SNOMED_CODE": "2000",
+                "PRACTICE_CODE": "ABC123",
+                "QUANTITY": "12.0",
+                "ITEMS": "110",
+                "TOTAL_QUANTITY": "160.0",
+                "NIC": "14.34",
+                "ACTUAL_COST": "17.34",
+            },
+        ],
+        ("prescribing", "2025-01-01", "v3"): [
+            {
+                "BNF_CODE": "01234ABC",
+                "SNOMED_CODE": "3000",
+                "PRACTICE_CODE": "ABC123",
+                "QUANTITY": "14.0",
+                "ITEMS": "120",
+                "TOTAL_QUANTITY": "170.0",
+                "NIC": "16.34",
+                "ACTUAL_COST": "19.34",
+            },
+        ],
+        ("list_size", "2023-01-01", "v2"): [
+            {
+                "ORG_CODE": "ABC123",
+                "NUMBER_OF_PATIENTS": "12345",
+                "ORG_TYPE": "GP",
+                "SEX": "ALL",
+                "AGE_GROUP_5": "ALL",
+            },
+        ],
+    }
+    write_as_parquet_files(test_data, settings.DOWNLOAD_DIR)
+
+    # Simulate a chain of VMP code changes: 1000 -> 2000 -> 3000. Both old codes should
+    # resolve to the current code (3000).
+    monkeypatch.setattr(
+        prescribing,
+        "get_vmp_code_change_pairs",
+        lambda: [(2000, 1000), (3000, 2000)],
+    )
+
+    prescribing.ingest()
+
+    tables = get_all_tables(settings.PRESCRIBING_DATABASE)
+
+    presentation_rows = sorted(
+        tables["presentation"], key=lambda row: row["original_snomed_code"]
+    )
+    assert presentation_rows == [
+        {
+            "id": 1,
+            "bnf_code": "01234ABC",
+            "original_bnf_code": "01234ABC",
+            "snomed_code": 3000,
+            "original_snomed_code": 1000,
+        },
+        {
+            "id": 2,
+            "bnf_code": "01234ABC",
+            "original_bnf_code": "01234ABC",
+            "snomed_code": 3000,
+            "original_snomed_code": 2000,
+        },
+        {
+            "id": 3,
+            "bnf_code": "01234ABC",
+            "original_bnf_code": "01234ABC",
+            "snomed_code": 3000,
+            "original_snomed_code": 3000,
+        },
+    ]
+
+    prescribing_rows = sorted(tables["prescribing"], key=lambda row: row["date"])
+    assert [r["snomed_code"] for r in prescribing_rows] == [3000, 3000, 3000]
+
+
+def test_resolve_vmp_code_changes():
+    assert prescribing.resolve_vmp_code_changes([(20, 10), (30, 20)]) == [
+        (10, 30),
+        (20, 30),
+    ]
+
+
+def test_resolve_vmp_code_changes_detects_cycle():
+    with pytest.raises(ValueError, match="Cycle"):
+        prescribing.resolve_vmp_code_changes([(10, 20), (20, 10)])
+
+
 def test_prescribing_ingest_cleans_up_tmp_file_on_failure(
-    tmp_path, settings, monkeypatch
+    tmp_path, settings, data_db, monkeypatch
 ):
     settings.DOWNLOAD_DIR = tmp_path / "downloads"
     settings.PRESCRIBING_DATABASE = tmp_path / "data" / "prescribing.duckdb"
