@@ -9,15 +9,29 @@ metadata:
     - nice
   numerator_short: Co-amoxiclav, cephalosporins and quinolones items
   denominator_short: All oral antibiotic items
-  authored_by: n/a
-  checked_by: n/a
-  date_reviewed: n/a
-  date_next_review: n/a
+  authored_by: christopher.wood@phc.ox.ac.uk
+  checked_by: andrew.brown@phc.ox.ac.uk
+  date_reviewed: 2026-03-23
+  date_next_review: 2028-03-23
 output:
   numerator: items
   denominator: items
 queries:
   - numerator:
+      routes:
+        - oral
       bnf_codes:
-        included:
-          - ""
+          included:
+              - "0501013K0 # Co-Amoxiclav"
+              - "0501021 # Cephalosporins"
+              - "050112 # Quinolones"
+  - denominator:
+      routes:
+        - oral
+      bnf_codes:
+          included:
+              - "0501 #Antibacterial drugs"
+          excluded:
+              - "050109 #Exclude antituberculosis drugs"
+              - "050110 #Exclude antileprotic drugs" 
+              - "0501130H0 # Exclude methenamine as this is a urinary antiseptic" 
