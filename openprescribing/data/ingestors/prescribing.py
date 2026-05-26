@@ -42,6 +42,9 @@ def ingest(force=False):
 
     conn = duckdb.connect()
 
+    # 8GB is a finger in the air guess, for testing
+    conn.sql("SET memory_limit = '8GB';")
+
     if not force and target_file.exists():
         conn.sql(f"ATTACH {escape(target_file)} AS old (READONLY)")
         ingested_files = {
