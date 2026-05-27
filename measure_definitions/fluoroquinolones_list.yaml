@@ -18,6 +18,10 @@ output:
   denominator: list_size
 queries:
   - numerator:
+      routes:
+        - oral
+        - intravenous
+        - inhalation
       bnf_codes:
         included:
-          - ""
+          - "050112" # Quinolones
