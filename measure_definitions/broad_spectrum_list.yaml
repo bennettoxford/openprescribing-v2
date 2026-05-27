@@ -18,6 +18,11 @@ output:
   denominator: list_size
 queries:
   - numerator:
+      routes:
+        - oral
       bnf_codes:
         included:
-          - ""
+          - "0501013K0" # Co-Amoxiclav
+          - "0501021" # Cephalosporins
+          - "050112" # Quinolones
+
