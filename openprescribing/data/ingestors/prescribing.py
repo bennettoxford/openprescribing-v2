@@ -272,7 +272,7 @@ def ingest_sources(conn):
         )
 
     conn.sql(
-        "INSERT INTO prescribing_norm * FROM prescribing_norm_tmp "
+        "INSERT INTO prescribing_norm SELECT * FROM prescribing_norm_tmp "
         " ORDER BY presentation_id, date_id, practice_id"
     )
     conn.sql("DROP TABLE prescribing_norm_tmp ")
