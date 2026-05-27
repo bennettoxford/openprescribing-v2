@@ -25,7 +25,7 @@ queries:
             - "0501013K0 # Co-Amoxiclav"
             - "0501021 # Cephalosporins"
             - "050112 # Quinolones"
-  - denominator:
+    denominator:
       routes:
         - oral
       bnf_codes:
