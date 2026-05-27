@@ -43,7 +43,7 @@ def ingest(force=False):
     conn = duckdb.connect()
 
     # 8GB is a finger in the air guess, for testing
-    conn.sql("SET memory_limit = '8GB';")
+    conn.sql("SET memory_limit = '16GB';")
 
     # In production the container runs as user 10001, so we need
     # to direct this to a directory where we have write access
