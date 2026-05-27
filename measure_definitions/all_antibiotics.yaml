@@ -23,8 +23,8 @@ queries:
         - "oral"
       bnf_codes:
         included:
-          - "0501 # Antibacterial drugs"
+          - "0501" # Antibacterial drugs
         excluded:
-          - "050109 # Exclude antituberculosis drugs"
-          - "050110 # Exclude antileprotic drugs"
-          - "0501130H0 # Exclude methenamine as this is a urinary antiseptic"        
+          - "050109" # Exclude antituberculosis drugs
+          - "050110" # Exclude antileprotic drugs
+          - "0501130H0" # Exclude methenamine as this is a urinary antiseptic
