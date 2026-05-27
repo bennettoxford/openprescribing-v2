@@ -265,13 +265,17 @@ def ingest_sources(conn):
     ):
         log.info(f"Building `prescribing_norm` table: {bnf_start} -> {bnf_end}")
         conn.sql(
-            "INSERT INTO prescribing_norm "
+            "CREATE TEMP TABLE prescribing_norm_tmp AS "
             + sql_for_prescribing_normalised()
-            + " WHERE prescribing_source.bnf_code >= ? AND prescribing_source.bnf_code < ?"
-            + " ORDER BY presentation_id, date_id, practice_id",
+            + " WHERE prescribing_source.bnf_code >= ? AND prescribing_source.bnf_code < ?",
             params=[bnf_start, bnf_end],
         )
 
+    conn.sql(
+        "INSERT INTO prescribing_norm * FROM prescribing_norm_tmp "
+        " ORDER BY presentation_id, date_id, practice_id"
+    )
+    conn.sql("DROP TABLE prescribing_norm_tmp ")
     log.info(f"Ingested {count_table(conn, 'prescribing_norm'):,} prescribing rows")
 
     # To make ad-hoc queries of the data easier we create denormalised views which
