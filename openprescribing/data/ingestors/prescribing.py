@@ -260,22 +260,18 @@ def ingest_sources(conn):
     # relatively cheap. If these were CSV files we'd need to do a full scan over all the
     # data every time. But thanks the magic of Parquet these queries are reasonably
     # efficient.
-    for bnf_start, bnf_end in get_bnf_code_ranges(
-        conn, batch_size=BNF_RANGE_BATCH_SIZE
-    ):
-        log.info(f"Building `prescribing_norm` table: {bnf_start} -> {bnf_end}")
-        conn.sql(
-            "CREATE TEMP TABLE prescribing_norm_tmp AS "
-            + sql_for_prescribing_normalised()
-            + " WHERE prescribing_source.bnf_code >= ? AND prescribing_source.bnf_code < ?",
-            params=[bnf_start, bnf_end],
-        )
+    log.info("Building `prescribing_norm_tmp` table")
+    conn.sql(
+        "CREATE TEMP TABLE prescribing_norm_tmp AS " + sql_for_prescribing_normalised()
+    )
 
+    log.info("Building `prescribing_norm` table")
     conn.sql(
         "INSERT INTO prescribing_norm SELECT * FROM prescribing_norm_tmp "
         " ORDER BY presentation_id, date_id, practice_id"
     )
     conn.sql("DROP TABLE prescribing_norm_tmp ")
+
     log.info(f"Ingested {count_table(conn, 'prescribing_norm'):,} prescribing rows")
 
     # To make ad-hoc queries of the data easier we create denormalised views which
