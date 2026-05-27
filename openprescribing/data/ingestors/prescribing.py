@@ -45,6 +45,13 @@ def ingest(force=False):
     # 8GB is a finger in the air guess, for testing
     conn.sql("SET memory_limit = '8GB';")
 
+    # In production the container runs as user 10001, so we need
+    # to direct this to a directory where we have write access
+    conn.sql(f"SET temp_directory = '{settings.DUCKDB_TMP_DIRECTORY}';")
+    # At the time of writing, total imported db size is typically 22GB
+    # and we have around 60GB free disk space.
+    conn.sql("SET max_temp_directory_size = '40GB';")
+
     if not force and target_file.exists():
         conn.sql(f"ATTACH {escape(target_file)} AS old (READONLY)")
         ingested_files = {
