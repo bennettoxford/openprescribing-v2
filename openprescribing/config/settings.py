@@ -61,6 +61,7 @@ else:
 # BASE_DIR: if they are absolute paths then they can point anywhere.
 DOWNLOAD_DIR = BASE_DIR / get_env_var("OPENPRESCRIBING_DOWNLOAD_DIR")
 DATA_DIR = BASE_DIR / get_env_var("OPENPRESCRIBING_DATA_DIR")
+DUCKDB_TMP_DIRECTORY = BASE_DIR / get_env_var("DUCKDB_TMP_DIRECTORY")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
