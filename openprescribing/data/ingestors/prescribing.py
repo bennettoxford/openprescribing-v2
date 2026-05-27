@@ -260,12 +260,20 @@ def ingest_sources(conn):
     # relatively cheap. If these were CSV files we'd need to do a full scan over all the
     # data every time. But thanks the magic of Parquet these queries are reasonably
     # efficient.
+
+    # This will create an empty table, and duckdb will resolve the column types
+    conn.sql(
+        "CREATE TEMP TABLE prescribing_norm_tmp AS "
+        + sql_for_prescribing_normalised()
+        + " WHERE false"
+    )
+
     for bnf_start, bnf_end in get_bnf_code_ranges(
         conn, batch_size=BNF_RANGE_BATCH_SIZE
     ):
-        log.info(f"Building `prescribing_norm` table: {bnf_start} -> {bnf_end}")
+        log.info(f"Building `prescribing_norm_tmp` table: {bnf_start} -> {bnf_end}")
         conn.sql(
-            "CREATE TEMP TABLE prescribing_norm_tmp AS "
+            "INSERT INTO prescribing_norm_tmp "
             + sql_for_prescribing_normalised()
             + " WHERE prescribing_source.bnf_code >= ? AND prescribing_source.bnf_code < ?",
             params=[bnf_start, bnf_end],
