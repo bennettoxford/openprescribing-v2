@@ -404,14 +404,14 @@ def sql_for_prescribing_normalised():
     FROM
         prescribing_source
     JOIN
-        presentation
+        (SELECT id, bnf_code, snomed_code FROM presentation) AS presentation
     ON
         prescribing_source.bnf_code = presentation.bnf_code
         AND prescribing_source.snomed_code = presentation.snomed_code
     JOIN
-        date ON prescribing_source.date = date.date
+        (SELECT date, id FROM date) AS date ON prescribing_source.date = date.date
     JOIN
-        practice ON prescribing_source.practice_code = practice.code
+        (SELECT id, code FROM practice) as practice ON prescribing_source.practice_code = practice.code
     """
 
 
