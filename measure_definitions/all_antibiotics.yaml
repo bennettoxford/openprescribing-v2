@@ -19,9 +19,9 @@ output:
   denominator: list_size
 queries:
   - numerator:
+      routes:
+        - "oral"
       bnf_codes:
-        routes: 
-          - "oral"
         included:
           - "0501 # Antibacterial drugs"
         excluded:
