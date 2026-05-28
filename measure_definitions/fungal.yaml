@@ -19,4 +19,5 @@ queries:
   - numerator:
       bnf_codes:
         included:
-          - ""
+          - "1310020A0" # Amorolfine Hydrochloride
+          - "1310020T0_AA" # Tioconazole_Medic Nail Lacquer 283mg/ml (branded and generic)
