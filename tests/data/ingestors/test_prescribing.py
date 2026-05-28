@@ -10,6 +10,8 @@ from tests.utils.parquet_utils import parquet_from_dicts
 def test_prescribing_ingest(tmp_path, settings):
     settings.DOWNLOAD_DIR = tmp_path / "downloads"
     settings.PRESCRIBING_DATABASE = tmp_path / "data" / "prescribing.duckdb"
+    settings.DUCKDB_MEMORY_LIMIT = "8GB"
+    settings.DUCKDB_TMP_DIRECTORY_LIMIT = "20GB"
 
     test_data = generate_prescribing_data()
     write_as_parquet_files(test_data, settings.DOWNLOAD_DIR)
@@ -50,6 +52,8 @@ def test_prescribing_ingest_applies_bnf_code_changes(tmp_path, settings):
     settings.DOWNLOAD_DIR = tmp_path / "downloads"
     settings.PRESCRIBING_DATABASE = tmp_path / "data" / "prescribing.duckdb"
     settings.BNF_CODE_CHANGES_DIR = tmp_path
+    settings.DUCKDB_MEMORY_LIMIT = "8GB"
+    settings.DUCKDB_TMP_DIRECTORY_LIMIT = "20GB"
 
     test_data = {
         ("prescribing", "2023-01-01", "v3"): [
@@ -152,6 +156,8 @@ def test_prescribing_ingest_cleans_up_tmp_file_on_failure(
 ):
     settings.DOWNLOAD_DIR = tmp_path / "downloads"
     settings.PRESCRIBING_DATABASE = tmp_path / "data" / "prescribing.duckdb"
+    settings.DUCKDB_MEMORY_LIMIT = "8GB"
+    settings.DUCKDB_TMP_DIRECTORY_LIMIT = "20GB"
 
     write_as_parquet_files(generate_prescribing_data(), settings.DOWNLOAD_DIR)
 
