@@ -50,7 +50,7 @@ def ingest(force=False):
     conn.sql(f"SET temp_directory = '{settings.DUCKDB_TMP_DIRECTORY}';")
     # At the time of writing, total imported db size is typically 22GB
     # and we have around 60GB free disk space.
-    conn.sql("SET max_temp_directory_size = '40GB';")
+    conn.sql("SET max_temp_directory_size = '200GB';")
 
     if not force and target_file.exists():
         conn.sql(f"ATTACH {escape(target_file)} AS old (READONLY)")
