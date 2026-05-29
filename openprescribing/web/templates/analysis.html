@@ -72,9 +72,7 @@
                                      <circle cx="8" cy="4.5" r="1" />
                                  </svg>
                              </a>
-                             <span id="decile_org_type">
-                                 for selected org type
-                             </span>
+                             for {{ org_type_label }}s
                          </label>
                          <br>
                          <input
@@ -84,12 +82,7 @@
                              value="all-orgs-line"
                              {% if analysis_presentation.chart_type == "all-orgs-line" %}checked{% endif %}
                          >
-                         <label for="all-orgs-line">All
-                             <span id="line_chart_org_types">
-                                 organisations
-                             </span>
-                             (line chart)
-                         </label><br>
+                         <label for="all-orgs-line">All {{ org_type_label }}s (line chart)</label><br>
                          <input
                              type="radio"
                              id="all-orgs-dots"
@@ -97,11 +90,7 @@
                              value="all-orgs-dots"
                              {% if analysis_presentation.chart_type == "all-orgs-dots" %}checked{% endif %}
                          >
-                         <label for="all-orgs-dots">All
-                             <span id="dots_chart_org_types">
-                             organisations
-                         </span>
-                         (dots chart)</label><br>
+                         <label for="all-orgs-dots">All {{ org_type_label }}s (dots chart)</label><br>
                      </fieldset>
                 </section>
 

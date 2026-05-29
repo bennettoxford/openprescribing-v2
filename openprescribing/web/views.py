@@ -52,12 +52,15 @@ def _build_analysis_context(analysis):
 
     orgs = make_orgs()
 
+    org_type = Org.OrgType(org.org_type) if org is not None else Org.OrgType.ICB
+
     ctx = {
         "analysis": analysis,
         "ntr_dtr_intersection_table": ntr_dtr_intersection_table,
         "org": org,
         "orgs": orgs,
         "org_types": Org.OrgType.choices,
+        "org_type_label": org_type.label,
         "build_analysis_url": build_analysis_url,
         "prescribing_deciles_url": deciles_api_url,
         "prescribing_all_orgs_url": all_orgs_api_url,

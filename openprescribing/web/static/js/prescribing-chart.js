@@ -69,18 +69,6 @@ const createTypeahead = ({
   });
 };
 
-const updateOrgTypeLabel = (orgType) => {
-  const orgTypes = Object.fromEntries(
-    JSON.parse(document.getElementById("org-types").textContent),
-  );
-
-  document.getElementById("decile_org_type").textContent =
-    ` for ${orgTypes[orgType]}s`;
-  ["line_chart_org_types", "dots_chart_org_types"].forEach((o) => {
-    document.getElementById(o).textContent = `${orgTypes[orgType]}s`;
-  });
-};
-
 var chartResult;
 
 const createChart = (chartContainer) => {
@@ -115,7 +103,6 @@ const updateChart = (dataUrl, apiDatasetName, addDatasetName) => {
           record.month = new Date(record.month);
         });
       }
-      updateOrgTypeLabel(response.org_type);
       chartResult.then((result) => {
         result.view.insert(addDatasetName, response[apiDatasetName]);
         if (response.org) {
