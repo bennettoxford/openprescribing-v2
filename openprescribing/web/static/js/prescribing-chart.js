@@ -78,7 +78,8 @@ const createChart = (chartContainer) => {
   chartResult = vegaEmbed(chartContainer, chartSpec, opt);
 };
 
-const updateChart = (dataUrl, apiDatasetName, addDatasetName) => {
+const updateChart = (chartConfig) => {
+  const { dataUrl, apiDatasetName, addDatasetName } = chartConfig;
   const chartLoading = document.querySelector("#chart-loading");
   const chartContainer = document.querySelector("#chart-container");
   if (!chartContainer.classList.contains("vega-embed")) {
@@ -157,12 +158,7 @@ const chartConfigs = {
 };
 
 const renderChartType = (chartType) => {
-  const chartConfig = chartConfigs[chartType];
-  updateChart(
-    chartConfig.dataUrl,
-    chartConfig.apiDatasetName,
-    chartConfig.addDatasetName,
-  );
+  updateChart(chartConfigs[chartType]);
 };
 
 const chartTypeFromUrl = () => {
