@@ -85,7 +85,6 @@ const updateChart = (dataUrl, apiDatasetName, addDatasetName) => {
     createChart(chartContainer);
   }
 
-  const all_dataset_names = ["deciles", "all_orgs_dots", "all_orgs_line"];
   chartLoading.textContent = "Loading chart...";
   fetch(dataUrl)
     .then((response) => {
@@ -104,15 +103,14 @@ const updateChart = (dataUrl, apiDatasetName, addDatasetName) => {
         });
       }
       chartResult.then((result) => {
+        const datasetNames = result.spec.layer.map((layer) => layer.data.name);
+        datasetNames.forEach((datasetName) => {
+          result.view.remove(datasetName, () => true);
+        });
         result.view.insert(addDatasetName, response[apiDatasetName]);
         if (response.org) {
           result.view.insert("org", response.org);
         }
-        all_dataset_names.forEach((removeDatasetName) => {
-          if (removeDatasetName !== addDatasetName) {
-            result.view.remove(removeDatasetName, () => true);
-          }
-        });
         result.view.run();
 
         chartLoading.classList.add("invisible");
