@@ -53,14 +53,7 @@ def prescribing_all_orgs(request):
     nans_to_nones(all_orgs_records)
     org_records = _get_org_records(odm, org)
 
-    if org is None:
-        org_type = "icb"
-    else:
-        org_type = org.org_type
-
-    return JsonResponse(
-        {"all_orgs": all_orgs_records, "org": org_records, "org_type": org_type}
-    )
+    return JsonResponse({"all_orgs": all_orgs_records, "org": org_records})
 
 
 def prescribing_deciles(request):
@@ -74,14 +67,7 @@ def prescribing_deciles(request):
     deciles_records = list(cdm.to_records(row_name="centile", col_name="month"))
     org_records = _get_org_records(odm, org)
 
-    if org is None:
-        org_type = "icb"
-    else:
-        org_type = org.org_type
-
-    return JsonResponse(
-        {"deciles": deciles_records, "org": org_records, "org_type": org_type}
-    )
+    return JsonResponse({"deciles": deciles_records, "org": org_records})
 
 
 @add_cache_headers
