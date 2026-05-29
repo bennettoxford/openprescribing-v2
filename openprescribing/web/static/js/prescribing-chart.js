@@ -128,84 +128,82 @@ const updateChart = (dataUrl, apiDatasetName, addDatasetName) => {
     });
 };
 
-document.addEventListener("DOMContentLoaded", () => {
-  setupOrgSearch();
+setupOrgSearch();
 
-  const prescribingDecilesUrl = JSON.parse(
-    document.getElementById("prescribing-deciles-url").textContent,
-  );
-  const prescribingAllOrgsUrl = JSON.parse(
-    document.getElementById("prescribing-all-orgs-url").textContent,
-  );
+const prescribingDecilesUrl = JSON.parse(
+  document.getElementById("prescribing-deciles-url").textContent,
+);
+const prescribingAllOrgsUrl = JSON.parse(
+  document.getElementById("prescribing-all-orgs-url").textContent,
+);
 
-  if (prescribingDecilesUrl) {
-    const chartConfigs = {
-      deciles: {
-        radio: document.getElementById("deciles"),
-        dataUrl: prescribingDecilesUrl,
-        apiDatasetName: "deciles",
-        addDatasetName: "deciles",
-      },
-      "all-orgs-line": {
-        radio: document.getElementById("all-orgs-line"),
-        dataUrl: prescribingAllOrgsUrl,
-        apiDatasetName: "all_orgs",
-        addDatasetName: "all_orgs_line",
-      },
-      "all-orgs-dots": {
-        radio: document.getElementById("all-orgs-dots"),
-        dataUrl: prescribingAllOrgsUrl,
-        apiDatasetName: "all_orgs",
-        addDatasetName: "all_orgs_dots",
-      },
-    };
+if (prescribingDecilesUrl) {
+  const chartConfigs = {
+    deciles: {
+      radio: document.getElementById("deciles"),
+      dataUrl: prescribingDecilesUrl,
+      apiDatasetName: "deciles",
+      addDatasetName: "deciles",
+    },
+    "all-orgs-line": {
+      radio: document.getElementById("all-orgs-line"),
+      dataUrl: prescribingAllOrgsUrl,
+      apiDatasetName: "all_orgs",
+      addDatasetName: "all_orgs_line",
+    },
+    "all-orgs-dots": {
+      radio: document.getElementById("all-orgs-dots"),
+      dataUrl: prescribingAllOrgsUrl,
+      apiDatasetName: "all_orgs",
+      addDatasetName: "all_orgs_dots",
+    },
+  };
 
-    const renderChartType = (chartType) => {
-      const chartConfig = chartConfigs[chartType];
-      updateChart(
-        chartConfig.dataUrl,
-        chartConfig.apiDatasetName,
-        chartConfig.addDatasetName,
-      );
-    };
+  const renderChartType = (chartType) => {
+    const chartConfig = chartConfigs[chartType];
+    updateChart(
+      chartConfig.dataUrl,
+      chartConfig.apiDatasetName,
+      chartConfig.addDatasetName,
+    );
+  };
 
-    const chartTypeFromUrl = () => {
-      const chartType = new URL(window.location.href).searchParams.get(
-        "chart_type",
-      );
-      if (!chartType || !chartConfigs[chartType]) {
-        // default to decile view!
-        return "deciles";
-      }
-      return chartType;
-    };
+  const chartTypeFromUrl = () => {
+    const chartType = new URL(window.location.href).searchParams.get(
+      "chart_type",
+    );
+    if (!chartType || !chartConfigs[chartType]) {
+      // default to decile view!
+      return "deciles";
+    }
+    return chartType;
+  };
 
-    const setChartType = (chartType, pushHistory = false) => {
-      chartConfigs[chartType].radio.checked = true;
-      renderChartType(chartType);
+  const setChartType = (chartType, pushHistory = false) => {
+    chartConfigs[chartType].radio.checked = true;
+    renderChartType(chartType);
 
-      if (!pushHistory) {
+    if (!pushHistory) {
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    url.searchParams.set("chart_type", chartType);
+    window.history.pushState({}, "", url);
+  };
+
+  Object.entries(chartConfigs).forEach(([chartType, chartConfig]) => {
+    chartConfig.radio.addEventListener("change", () => {
+      if (!chartConfig.radio.checked) {
         return;
       }
-
-      const url = new URL(window.location.href);
-      url.searchParams.set("chart_type", chartType);
-      window.history.pushState({}, "", url);
-    };
-
-    Object.entries(chartConfigs).forEach(([chartType, chartConfig]) => {
-      chartConfig.radio.addEventListener("change", () => {
-        if (!chartConfig.radio.checked) {
-          return;
-        }
-        setChartType(chartType, true);
-      });
+      setChartType(chartType, true);
     });
+  });
 
-    window.addEventListener("popstate", () => {
-      setChartType(chartTypeFromUrl());
-    });
-
+  window.addEventListener("popstate", () => {
     setChartType(chartTypeFromUrl());
-  }
-});
+  });
+
+  setChartType(chartTypeFromUrl());
+}
