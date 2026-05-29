@@ -90,7 +90,7 @@ const createChart = (chartContainer) => {
   chartResult = vegaEmbed(chartContainer, chartSpec, opt);
 };
 
-const updateChart = (dataUrl, api_dataset_name, add_dataset_name) => {
+const updateChart = (dataUrl, apiDatasetName, addDatasetName) => {
   const chartLoading = document.querySelector("#chart-loading");
   const chartContainer = document.querySelector("#chart-container");
   if (!chartContainer.classList.contains("vega-embed")) {
@@ -107,7 +107,7 @@ const updateChart = (dataUrl, api_dataset_name, add_dataset_name) => {
       return response.json();
     })
     .then((response) => {
-      response[api_dataset_name].forEach((record) => {
+      response[apiDatasetName].forEach((record) => {
         record.month = new Date(record.month);
       });
       if (response.org) {
@@ -117,13 +117,13 @@ const updateChart = (dataUrl, api_dataset_name, add_dataset_name) => {
       }
       updateOrgTypeLabel(response.org_type);
       chartResult.then((result) => {
-        result.view.insert(add_dataset_name, response[api_dataset_name]);
+        result.view.insert(addDatasetName, response[apiDatasetName]);
         if (response.org) {
           result.view.insert("org", response.org);
         }
-        all_dataset_names.forEach((remove_dataset_name) => {
-          if (remove_dataset_name !== add_dataset_name) {
-            result.view.remove(remove_dataset_name, () => true);
+        all_dataset_names.forEach((removeDatasetName) => {
+          if (removeDatasetName !== addDatasetName) {
+            result.view.remove(removeDatasetName, () => true);
           }
         });
         result.view.run();
