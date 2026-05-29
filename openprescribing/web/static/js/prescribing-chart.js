@@ -138,19 +138,16 @@ const prescribingAllOrgsUrl = JSON.parse(
 
 const chartConfigs = {
   deciles: {
-    radio: document.getElementById("deciles"),
     dataUrl: prescribingDecilesUrl,
     apiDatasetName: "deciles",
     addDatasetName: "deciles",
   },
   "all-orgs-line": {
-    radio: document.getElementById("all-orgs-line"),
     dataUrl: prescribingAllOrgsUrl,
     apiDatasetName: "all_orgs",
     addDatasetName: "all_orgs_line",
   },
   "all-orgs-dots": {
-    radio: document.getElementById("all-orgs-dots"),
     dataUrl: prescribingAllOrgsUrl,
     apiDatasetName: "all_orgs",
     addDatasetName: "all_orgs_dots",
@@ -173,7 +170,7 @@ const chartTypeFromUrl = () => {
 };
 
 const setChartType = (chartType, pushHistory = false) => {
-  chartConfigs[chartType].radio.checked = true;
+  document.getElementById(chartType).checked = true;
   renderChartType(chartType);
 
   if (!pushHistory) {
@@ -185,9 +182,10 @@ const setChartType = (chartType, pushHistory = false) => {
   window.history.pushState({}, "", url);
 };
 
-Object.entries(chartConfigs).forEach(([chartType, chartConfig]) => {
-  chartConfig.radio.addEventListener("change", () => {
-    if (!chartConfig.radio.checked) {
+Object.keys(chartConfigs).forEach((chartType) => {
+  const radio = document.getElementById(chartType);
+  radio.addEventListener("change", () => {
+    if (!radio.checked) {
       return;
     }
     setChartType(chartType, true);
