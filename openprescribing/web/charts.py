@@ -5,11 +5,13 @@ from openprescribing.data.list_size_query import ListSizeQuery
 
 
 def build_chart_spec(analysis):
-    if analysis and isinstance(analysis.dtr_query, BNFQuery):
+    if not analysis:
+        return
+
+    if isinstance(analysis.dtr_query, BNFQuery):
         title = "%"
     else:
-        if analysis:
-            assert isinstance(analysis.dtr_query, ListSizeQuery)
+        assert isinstance(analysis.dtr_query, ListSizeQuery)
         title = "Items per 1000 patients"
 
     x = alt.X("month:T", title="Month", axis=alt.Axis(format="%Y %b"))
