@@ -83,29 +83,23 @@ const updateOrgTypeLabel = (orgType) => {
 
 var chartResult;
 
-const createDecilesChart = (chartContainer) => {
-  const chartSpec = JSON.parse(
-    document.getElementById("deciles-chart").textContent,
-  );
+const createChart = (chartContainer) => {
+  const chartSpec = JSON.parse(document.getElementById("chart").textContent);
 
   const opt = { renderer: "svg" };
   chartResult = vegaEmbed(chartContainer, chartSpec, opt);
 };
 
-const updateDecilesChart = (
-  prescribingDecilesUrl,
-  api_dataset_name,
-  add_dataset_name,
-) => {
-  const chartLoading = document.querySelector("#deciles-chart-loading");
-  const chartContainer = document.querySelector("#deciles-chart-container");
+const updateChart = (dataUrl, apiDatasetName, addDatasetName) => {
+  const chartLoading = document.querySelector("#chart-loading");
+  const chartContainer = document.querySelector("#chart-container");
   if (!chartContainer.classList.contains("vega-embed")) {
-    createDecilesChart(chartContainer);
+    createChart(chartContainer);
   }
 
   const all_dataset_names = ["deciles", "all_orgs_dots", "all_orgs_line"];
   chartLoading.textContent = "Loading chart...";
-  fetch(prescribingDecilesUrl)
+  fetch(dataUrl)
     .then((response) => {
       if (!response.ok) {
         throw new Error(`Failed to fetch chart data: ${response.status}`);
@@ -113,7 +107,7 @@ const updateDecilesChart = (
       return response.json();
     })
     .then((response) => {
-      response[api_dataset_name].forEach((record) => {
+      response[apiDatasetName].forEach((record) => {
         record.month = new Date(record.month);
       });
       if (response.org) {
@@ -123,13 +117,13 @@ const updateDecilesChart = (
       }
       updateOrgTypeLabel(response.org_type);
       chartResult.then((result) => {
-        result.view.insert(add_dataset_name, response[api_dataset_name]);
+        result.view.insert(addDatasetName, response[apiDatasetName]);
         if (response.org) {
           result.view.insert("org", response.org);
         }
-        all_dataset_names.forEach((remove_dataset_name) => {
-          if (remove_dataset_name !== add_dataset_name) {
-            result.view.remove(remove_dataset_name, () => true);
+        all_dataset_names.forEach((removeDatasetName) => {
+          if (removeDatasetName !== addDatasetName) {
+            result.view.remove(removeDatasetName, () => true);
           }
         });
         result.view.run();
@@ -160,19 +154,19 @@ document.addEventListener("DOMContentLoaded", () => {
   if (prescribingDecilesUrl) {
     const chartConfigs = {
       deciles: {
-        radio: document.getElementById("decile"),
+        radio: document.getElementById("deciles"),
         dataUrl: prescribingDecilesUrl,
         apiDatasetName: "deciles",
         addDatasetName: "deciles",
       },
       "all-orgs-line": {
-        radio: document.getElementById("all_orgs_line_chart"),
+        radio: document.getElementById("all-orgs-line"),
         dataUrl: prescribingAllOrgsUrl,
         apiDatasetName: "all_orgs",
         addDatasetName: "all_orgs_line",
       },
       "all-orgs-dots": {
-        radio: document.getElementById("all_orgs_dots_chart"),
+        radio: document.getElementById("all-orgs-dots"),
         dataUrl: prescribingAllOrgsUrl,
         apiDatasetName: "all_orgs",
         addDatasetName: "all_orgs_dots",
@@ -181,7 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const renderChartType = (chartType) => {
       const chartConfig = chartConfigs[chartType];
-      updateDecilesChart(
+      updateChart(
         chartConfig.dataUrl,
         chartConfig.apiDatasetName,
         chartConfig.addDatasetName,

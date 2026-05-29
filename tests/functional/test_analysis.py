@@ -29,4 +29,4 @@ def test_analysis(live_server, page, sample_data, settings, tmp_path):
     page.wait_for_load_state("domcontentloaded")
 
     expect(page).to_have_url(live_server.url + "/?ntr_vtm_ids=108502004")
-    expect(page.locator("#deciles-chart-container")).to_be_attached()
+    expect(page.locator("#chart-container")).to_be_attached()
