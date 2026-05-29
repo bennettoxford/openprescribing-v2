@@ -54,7 +54,7 @@ def test_analysis(client, sample_data):
     rsp = client.get("?ntr_bnf_codes=1001030U0&chart_type=all-orgs-line")
     assert rsp.status_code == 200
     assert rsp.context["analysis_presentation"].chart_type == ChartType.ALL_ORGS_LINE
-    assert re.search(r'id="all_orgs_line_chart"[^>]*checked', rsp.content.decode())
+    assert re.search(r'id="all-orgs-line"[^>]*checked', rsp.content.decode())
 
     rsp = client.get("?ntr_bnf_codes=1001030U0&chart_type=invalid")
     assert rsp.status_code == 200

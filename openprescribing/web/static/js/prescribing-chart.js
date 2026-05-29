@@ -154,19 +154,19 @@ document.addEventListener("DOMContentLoaded", () => {
   if (prescribingDecilesUrl) {
     const chartConfigs = {
       deciles: {
-        radio: document.getElementById("decile"),
+        radio: document.getElementById("deciles"),
         dataUrl: prescribingDecilesUrl,
         apiDatasetName: "deciles",
         addDatasetName: "deciles",
       },
       "all-orgs-line": {
-        radio: document.getElementById("all_orgs_line_chart"),
+        radio: document.getElementById("all-orgs-line"),
         dataUrl: prescribingAllOrgsUrl,
         apiDatasetName: "all_orgs",
         addDatasetName: "all_orgs_line",
       },
       "all-orgs-dots": {
-        radio: document.getElementById("all_orgs_dots_chart"),
+        radio: document.getElementById("all-orgs-dots"),
         dataUrl: prescribingAllOrgsUrl,
         apiDatasetName: "all_orgs",
         addDatasetName: "all_orgs_dots",

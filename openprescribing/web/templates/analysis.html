@@ -51,12 +51,12 @@
                          <h2 class="h5">Show prescribing</h2>
                          <input
                              type="radio"
-                             id="decile"
+                             id="deciles"
                              name="chart_type"
                              value="deciles"
                              {% if analysis_presentation.chart_type == "deciles" %}checked{% endif %}
                          >
-                         <label for="decile">Deciles
+                         <label for="deciles">Deciles
                              <a href="#deciles-help" class="link-secondary d-inline-flex align-items-center" data-bs-toggle="modal">
                                  <svg
                                      xmlns="http://www.w3.org/2000/svg"
@@ -79,12 +79,12 @@
                          <br>
                          <input
                              type="radio"
-                             id="all_orgs_line_chart"
+                             id="all-orgs-line"
                              name="chart_type"
                              value="all-orgs-line"
                              {% if analysis_presentation.chart_type == "all-orgs-line" %}checked{% endif %}
                          >
-                         <label for="all_orgs_line_chart">All
+                         <label for="all-orgs-line">All
                              <span id="line_chart_org_types">
                                  organisations
                              </span>
@@ -92,12 +92,12 @@
                          </label><br>
                          <input
                              type="radio"
-                             id="all_orgs_dots_chart"
+                             id="all-orgs-dots"
                              name="chart_type"
                              value="all-orgs-dots"
                              {% if analysis_presentation.chart_type == "all-orgs-dots" %}checked{% endif %}
                          >
-                         <label for="all_orgs_dots_chart">All
+                         <label for="all-orgs-dots">All
                              <span id="dots_chart_org_types">
                              organisations
                          </span>
