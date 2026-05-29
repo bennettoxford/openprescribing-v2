@@ -61,7 +61,7 @@ def _build_analysis_context(analysis):
         "build_analysis_url": build_analysis_url,
         "prescribing_deciles_url": deciles_api_url,
         "prescribing_all_orgs_url": all_orgs_api_url,
-        "deciles_chart": build_chart_spec(analysis),
+        "chart_spec": build_chart_spec(analysis),
     }
 
     return ctx

@@ -19,7 +19,7 @@ def build_chart_spec(analysis):
     stroke_width = (
         alt.when(alt.datum.centile == 50).then(alt.value(3)).otherwise(alt.value(1))
     )
-    deciles_chart = (
+    chart_spec = (
         alt.Chart(alt.NamedData("deciles"))
         .mark_line(color="#3182BD")
         .encode(x=x, y=y, detail="centile:O", strokeWidth=stroke_width)
@@ -29,7 +29,7 @@ def build_chart_spec(analysis):
         .mark_line(color="grey", opacity=0.2)
         .encode(x=x, y=y, detail="org:O")
     )
-    deciles_chart += all_orgs_line_chart
+    chart_spec += all_orgs_line_chart
 
     all_orgs_dots_chart = (
         alt.Chart(alt.NamedData("all_orgs_dots"))
@@ -42,7 +42,7 @@ def build_chart_spec(analysis):
         # 14 days in ms = 14*24*60*60*1000 = 1209600000
         .transform_calculate(x_jitter="time(datum.month)+(random()*1209600000)")
     )
-    deciles_chart += all_orgs_dots_chart
+    chart_spec += all_orgs_dots_chart
 
     # Org line should go on top of any other charts
     org_chart = (
@@ -50,10 +50,10 @@ def build_chart_spec(analysis):
         .mark_line(color="#DE2D26", strokeWidth=3)
         .encode(x=x, y=y)
     )
-    deciles_chart += org_chart
+    chart_spec += org_chart
 
-    deciles_chart = deciles_chart.configure(
+    chart_spec = chart_spec.configure(
         autosize={"type": "fit", "resize": True}
     ).properties(width="container", height=360)
 
-    return deciles_chart.to_dict()
+    return chart_spec.to_dict()

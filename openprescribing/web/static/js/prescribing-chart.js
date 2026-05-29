@@ -83,29 +83,23 @@ const updateOrgTypeLabel = (orgType) => {
 
 var chartResult;
 
-const createDecilesChart = (chartContainer) => {
-  const chartSpec = JSON.parse(
-    document.getElementById("deciles-chart").textContent,
-  );
+const createChart = (chartContainer) => {
+  const chartSpec = JSON.parse(document.getElementById("chart").textContent);
 
   const opt = { renderer: "svg" };
   chartResult = vegaEmbed(chartContainer, chartSpec, opt);
 };
 
-const updateDecilesChart = (
-  prescribingDecilesUrl,
-  api_dataset_name,
-  add_dataset_name,
-) => {
-  const chartLoading = document.querySelector("#deciles-chart-loading");
-  const chartContainer = document.querySelector("#deciles-chart-container");
+const updateChart = (dataUrl, api_dataset_name, add_dataset_name) => {
+  const chartLoading = document.querySelector("#chart-loading");
+  const chartContainer = document.querySelector("#chart-container");
   if (!chartContainer.classList.contains("vega-embed")) {
-    createDecilesChart(chartContainer);
+    createChart(chartContainer);
   }
 
   const all_dataset_names = ["deciles", "all_orgs_dots", "all_orgs_line"];
   chartLoading.textContent = "Loading chart...";
-  fetch(prescribingDecilesUrl)
+  fetch(dataUrl)
     .then((response) => {
       if (!response.ok) {
         throw new Error(`Failed to fetch chart data: ${response.status}`);
@@ -181,7 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const renderChartType = (chartType) => {
       const chartConfig = chartConfigs[chartType];
-      updateDecilesChart(
+      updateChart(
         chartConfig.dataUrl,
         chartConfig.apiDatasetName,
         chartConfig.addDatasetName,
