@@ -1,9 +1,35 @@
-const setupOrgSearch = () => {
-  const orgs = JSON.parse(document.getElementById("orgs").textContent);
-  const orgTypes = Object.fromEntries(
-    JSON.parse(document.getElementById("org-types").textContent),
-  );
+const orgs = JSON.parse(document.getElementById("orgs").textContent);
+const orgTypes = Object.fromEntries(
+  JSON.parse(document.getElementById("org-types").textContent),
+);
+const chartSpec = JSON.parse(document.getElementById("chart").textContent);
 
+const prescribingDecilesUrl = JSON.parse(
+  document.getElementById("prescribing-deciles-url").textContent,
+);
+const prescribingAllOrgsUrl = JSON.parse(
+  document.getElementById("prescribing-all-orgs-url").textContent,
+);
+
+const chartConfigs = {
+  deciles: {
+    dataUrl: prescribingDecilesUrl,
+    apiDatasetName: "deciles",
+    addDatasetName: "deciles",
+  },
+  "all-orgs-line": {
+    dataUrl: prescribingAllOrgsUrl,
+    apiDatasetName: "all_orgs",
+    addDatasetName: "all_orgs_line",
+  },
+  "all-orgs-dots": {
+    dataUrl: prescribingAllOrgsUrl,
+    apiDatasetName: "all_orgs",
+    addDatasetName: "all_orgs_dots",
+  },
+};
+
+const setupOrgSearch = () => {
   const input = document.getElementById("org-search");
   const results = document.getElementById("org-results");
 
@@ -49,8 +75,6 @@ const setupOrgSearch = () => {
 var chartResult;
 
 const createChart = (chartContainer) => {
-  const chartSpec = JSON.parse(document.getElementById("chart").textContent);
-
   const opt = { renderer: "svg" };
   chartResult = vegaEmbed(chartContainer, chartSpec, opt);
 };
@@ -105,31 +129,6 @@ const updateChart = (chartConfig) => {
 };
 
 setupOrgSearch();
-
-const prescribingDecilesUrl = JSON.parse(
-  document.getElementById("prescribing-deciles-url").textContent,
-);
-const prescribingAllOrgsUrl = JSON.parse(
-  document.getElementById("prescribing-all-orgs-url").textContent,
-);
-
-const chartConfigs = {
-  deciles: {
-    dataUrl: prescribingDecilesUrl,
-    apiDatasetName: "deciles",
-    addDatasetName: "deciles",
-  },
-  "all-orgs-line": {
-    dataUrl: prescribingAllOrgsUrl,
-    apiDatasetName: "all_orgs",
-    addDatasetName: "all_orgs_line",
-  },
-  "all-orgs-dots": {
-    dataUrl: prescribingAllOrgsUrl,
-    apiDatasetName: "all_orgs",
-    addDatasetName: "all_orgs_dots",
-  },
-};
 
 const renderChartType = (chartType) => {
   updateChart(chartConfigs[chartType]);
