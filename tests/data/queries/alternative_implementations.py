@@ -28,6 +28,19 @@ def get_practice_date_matrix_alternative(sample_data, query, date_count=None):
     return LabelledMatrix(values_arr, row_labels=practice_ids, col_labels=dates)
 
 
+def get_medication_date_matrix_alternative(sample_data, query, date_count=None):
+    dates = get_dates(sample_data, date_count)
+    values = query_medication_prescribing_data(query, sample_data)
+
+    # Rows are the distinct BNF codes prescribed for the query within the date window.
+    bnf_codes = tuple(sorted({code for (code, date) in values if date in dates}))
+
+    values_arr = np.array(
+        [[values[(code, date)] for date in dates] for code in bnf_codes]
+    ).reshape(len(bnf_codes), len(dates))
+    return LabelledMatrix(values_arr, row_labels=bnf_codes, col_labels=dates)
+
+
 def get_org_date_ratio_matrix_alternative(sample_data, analysis):
     """Alternative implementation of get_org_date_ratio_matrix.
 
@@ -65,6 +78,18 @@ def query_practice_prescribing_data(query, sample_data):
     were prescribed by each practice on each date.
     """
 
+    return query_prescribing_data(query, sample_data, "practice_code")
+
+
+def query_medication_prescribing_data(query, sample_data):
+    """Return dict mapping (bnf_code, date) pairs to the sum of items matching query that
+    were prescribed for each BNF code on each date.
+    """
+
+    return query_prescribing_data(query, sample_data, "bnf_code")
+
+
+def query_prescribing_data(query, sample_data, field):
     # We're not interested in testing complicated BNFQuery objects; those are adequately
     # tested in test_bnf_query.py.
     assert len(query.bnf_codes) == 1
@@ -78,7 +103,7 @@ def query_practice_prescribing_data(query, sample_data):
         bnf_code = record["bnf_code"]
         if not bnf_code.startswith(code):
             continue
-        key = (record["practice_code"], record["date"])
+        key = (record[field], record["date"])
         values[key] += record["items"]
     return values
 
