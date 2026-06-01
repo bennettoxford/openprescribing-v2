@@ -101,6 +101,19 @@ const setupOrgSearch = () => {
   });
 };
 
+const setChartType = (chartType, pushHistory = false) => {
+  document.getElementById(chartType).checked = true;
+  updateChart(chartConfigs[chartType]);
+
+  if (!pushHistory) {
+    return;
+  }
+
+  const url = new URL(window.location.href);
+  url.searchParams.set("chart_type", chartType);
+  window.history.pushState({}, "", url);
+};
+
 const updateChart = (chartConfig) => {
   const { dataUrl, apiDatasetName, addDatasetName } = chartConfig;
 
@@ -154,19 +167,6 @@ const chartTypeFromUrl = () => {
     return "deciles";
   }
   return chartType;
-};
-
-const setChartType = (chartType, pushHistory = false) => {
-  document.getElementById(chartType).checked = true;
-  updateChart(chartConfigs[chartType]);
-
-  if (!pushHistory) {
-    return;
-  }
-
-  const url = new URL(window.location.href);
-  url.searchParams.set("chart_type", chartType);
-  window.history.pushState({}, "", url);
 };
 
 initialisePage();
