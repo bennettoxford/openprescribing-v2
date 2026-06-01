@@ -41,10 +41,9 @@ const initialisePage = async () => {
   Object.keys(chartConfigs).forEach((chartType) => {
     const radio = document.getElementById(chartType);
     radio.addEventListener("change", () => {
-      if (!radio.checked) {
-        return;
+      if (radio.checked) {
+        setChartType(chartType, true);
       }
-      setChartType(chartType, true);
     });
   });
 
