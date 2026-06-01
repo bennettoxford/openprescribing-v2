@@ -4,63 +4,40 @@ const setupOrgSearch = () => {
     JSON.parse(document.getElementById("org-types").textContent),
   );
 
-  const orgSearch = document.getElementById("org-search");
-  const orgResults = document.getElementById("org-results");
+  const input = document.getElementById("org-search");
+  const results = document.getElementById("org-results");
 
-  createTypeahead({
-    input: orgSearch,
-    results: orgResults,
-    minChars: 2,
-    getMatches: (query) =>
-      orgs.filter((org) => {
-        return (
-          org.name.toLowerCase().includes(query) ||
-          org.id.toLowerCase().includes(query)
-        );
-      }),
-    renderItem: (org) => `
-            <div class="fw-semibold">${org.name}</div>
-            <div class="text-muted small">${org.id} - ${orgTypes[org.org_type]}</div>
-        `,
-    onSelect: (org) => {
-      const url = new URL(window.location.href);
-      url.searchParams.set("org_id", org.id);
-      window.location.assign(url);
-    },
-  });
-};
-
-const createTypeahead = ({
-  input,
-  results,
-  minChars,
-  getMatches,
-  renderItem,
-  onSelect,
-}) => {
   input.addEventListener("input", () => {
     const query = input.value.trim().toLowerCase();
-    if (query.length < minChars) {
-      results.innerHTML = "";
-      results.classList.add("d-none");
-      return;
-    }
-
-    const matches = getMatches(query);
     results.innerHTML = "";
+
+    const matches =
+      query.length < 2
+        ? []
+        : orgs.filter(
+            (org) =>
+              org.name.toLowerCase().includes(query) ||
+              org.id.toLowerCase().includes(query),
+          );
+
     if (!matches.length) {
       results.classList.add("d-none");
       return;
     }
 
     const fragment = document.createDocumentFragment();
-    matches.forEach((match) => {
+    matches.forEach((org) => {
       const item = document.createElement("button");
       item.type = "button";
       item.className = "list-group-item list-group-item-action";
-      item.innerHTML = renderItem(match);
+      item.innerHTML = `
+            <div class="fw-semibold">${org.name}</div>
+            <div class="text-muted small">${org.id} - ${orgTypes[org.org_type]}</div>
+        `;
       item.addEventListener("click", () => {
-        onSelect(match);
+        const url = new URL(window.location.href);
+        url.searchParams.set("org_id", org.id);
+        window.location.assign(url);
       });
       fragment.appendChild(item);
     });
