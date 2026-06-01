@@ -29,10 +29,18 @@ const chartConfigs = {
   },
 };
 
+const chartLoading = document.querySelector("#chart-loading");
+const chartContainer = document.querySelector("#chart-container");
+
+// We'll store the Vega chart result here.
+let chartResult;
+
 const initialisePage = async () => {
   // Set the chart type and set up event handlers.
 
   setChartType(chartTypeFromUrl());
+
+  chartResult = vegaEmbed(chartContainer, chartSpec, { renderer: "svg" });
 
   window.addEventListener("popstate", () => {
     setChartType(chartTypeFromUrl());
@@ -93,20 +101,8 @@ const setupOrgSearch = () => {
   });
 };
 
-var chartResult;
-
-const createChart = (chartContainer) => {
-  const opt = { renderer: "svg" };
-  chartResult = vegaEmbed(chartContainer, chartSpec, opt);
-};
-
 const updateChart = (chartConfig) => {
   const { dataUrl, apiDatasetName, addDatasetName } = chartConfig;
-  const chartLoading = document.querySelector("#chart-loading");
-  const chartContainer = document.querySelector("#chart-container");
-  if (!chartContainer.classList.contains("vega-embed")) {
-    createChart(chartContainer);
-  }
 
   chartLoading.textContent = "Loading chart...";
   fetch(dataUrl)
