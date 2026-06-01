@@ -105,13 +105,9 @@ const setChartType = (chartType, pushHistory = false) => {
   document.getElementById(chartType).checked = true;
   updateChart(chartConfigs[chartType]);
 
-  if (!pushHistory) {
-    return;
+  if (pushHistory) {
+    updateUrl(chartType);
   }
-
-  const url = new URL(window.location.href);
-  url.searchParams.set("chart_type", chartType);
-  window.history.pushState({}, "", url);
 };
 
 const updateChart = (chartConfig) => {
@@ -156,6 +152,12 @@ const updateChart = (chartConfig) => {
       chartLoading.textContent =
         "Unable to load chart data. Please try again later.";
     });
+};
+
+const updateUrl = (chartType) => {
+  const url = new URL(window.location.href);
+  url.searchParams.set("chart_type", chartType);
+  window.history.pushState({}, "", url);
 };
 
 const chartTypeFromUrl = () => {
