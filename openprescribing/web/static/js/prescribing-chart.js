@@ -78,14 +78,14 @@ const createChart = (chartContainer) => {
   chartResult = vegaEmbed(chartContainer, chartSpec, opt);
 };
 
-const updateChart = (dataUrl, apiDatasetName, addDatasetName) => {
+const updateChart = (chartConfig) => {
+  const { dataUrl, apiDatasetName, addDatasetName } = chartConfig;
   const chartLoading = document.querySelector("#chart-loading");
   const chartContainer = document.querySelector("#chart-container");
   if (!chartContainer.classList.contains("vega-embed")) {
     createChart(chartContainer);
   }
 
-  const all_dataset_names = ["deciles", "all_orgs_dots", "all_orgs_line"];
   chartLoading.textContent = "Loading chart...";
   fetch(dataUrl)
     .then((response) => {
@@ -104,15 +104,14 @@ const updateChart = (dataUrl, apiDatasetName, addDatasetName) => {
         });
       }
       chartResult.then((result) => {
+        const datasetNames = result.spec.layer.map((layer) => layer.data.name);
+        datasetNames.forEach((datasetName) => {
+          result.view.remove(datasetName, () => true);
+        });
         result.view.insert(addDatasetName, response[apiDatasetName]);
         if (response.org) {
           result.view.insert("org", response.org);
         }
-        all_dataset_names.forEach((removeDatasetName) => {
-          if (removeDatasetName !== addDatasetName) {
-            result.view.remove(removeDatasetName, () => true);
-          }
-        });
         result.view.run();
 
         chartLoading.classList.add("invisible");
@@ -128,84 +127,73 @@ const updateChart = (dataUrl, apiDatasetName, addDatasetName) => {
     });
 };
 
-document.addEventListener("DOMContentLoaded", () => {
-  setupOrgSearch();
+setupOrgSearch();
 
-  const prescribingDecilesUrl = JSON.parse(
-    document.getElementById("prescribing-deciles-url").textContent,
+const prescribingDecilesUrl = JSON.parse(
+  document.getElementById("prescribing-deciles-url").textContent,
+);
+const prescribingAllOrgsUrl = JSON.parse(
+  document.getElementById("prescribing-all-orgs-url").textContent,
+);
+
+const chartConfigs = {
+  deciles: {
+    dataUrl: prescribingDecilesUrl,
+    apiDatasetName: "deciles",
+    addDatasetName: "deciles",
+  },
+  "all-orgs-line": {
+    dataUrl: prescribingAllOrgsUrl,
+    apiDatasetName: "all_orgs",
+    addDatasetName: "all_orgs_line",
+  },
+  "all-orgs-dots": {
+    dataUrl: prescribingAllOrgsUrl,
+    apiDatasetName: "all_orgs",
+    addDatasetName: "all_orgs_dots",
+  },
+};
+
+const renderChartType = (chartType) => {
+  updateChart(chartConfigs[chartType]);
+};
+
+const chartTypeFromUrl = () => {
+  const chartType = new URL(window.location.href).searchParams.get(
+    "chart_type",
   );
-  const prescribingAllOrgsUrl = JSON.parse(
-    document.getElementById("prescribing-all-orgs-url").textContent,
-  );
-
-  if (prescribingDecilesUrl) {
-    const chartConfigs = {
-      deciles: {
-        radio: document.getElementById("deciles"),
-        dataUrl: prescribingDecilesUrl,
-        apiDatasetName: "deciles",
-        addDatasetName: "deciles",
-      },
-      "all-orgs-line": {
-        radio: document.getElementById("all-orgs-line"),
-        dataUrl: prescribingAllOrgsUrl,
-        apiDatasetName: "all_orgs",
-        addDatasetName: "all_orgs_line",
-      },
-      "all-orgs-dots": {
-        radio: document.getElementById("all-orgs-dots"),
-        dataUrl: prescribingAllOrgsUrl,
-        apiDatasetName: "all_orgs",
-        addDatasetName: "all_orgs_dots",
-      },
-    };
-
-    const renderChartType = (chartType) => {
-      const chartConfig = chartConfigs[chartType];
-      updateChart(
-        chartConfig.dataUrl,
-        chartConfig.apiDatasetName,
-        chartConfig.addDatasetName,
-      );
-    };
-
-    const chartTypeFromUrl = () => {
-      const chartType = new URL(window.location.href).searchParams.get(
-        "chart_type",
-      );
-      if (!chartType || !chartConfigs[chartType]) {
-        // default to decile view!
-        return "deciles";
-      }
-      return chartType;
-    };
-
-    const setChartType = (chartType, pushHistory = false) => {
-      chartConfigs[chartType].radio.checked = true;
-      renderChartType(chartType);
-
-      if (!pushHistory) {
-        return;
-      }
-
-      const url = new URL(window.location.href);
-      url.searchParams.set("chart_type", chartType);
-      window.history.pushState({}, "", url);
-    };
-
-    Object.entries(chartConfigs).forEach(([chartType, chartConfig]) => {
-      chartConfig.radio.addEventListener("change", () => {
-        if (!chartConfig.radio.checked) {
-          return;
-        }
-        setChartType(chartType, true);
-      });
-    });
-
-    window.addEventListener("popstate", () => {
-      setChartType(chartTypeFromUrl());
-    });
-
-    setChartType(chartTypeFromUrl());
+  if (!chartType || !chartConfigs[chartType]) {
+    // default to decile view!
+    return "deciles";
   }
+  return chartType;
+};
+
+const setChartType = (chartType, pushHistory = false) => {
+  document.getElementById(chartType).checked = true;
+  renderChartType(chartType);
+
+  if (!pushHistory) {
+    return;
+  }
+
+  const url = new URL(window.location.href);
+  url.searchParams.set("chart_type", chartType);
+  window.history.pushState({}, "", url);
+};
+
+Object.keys(chartConfigs).forEach((chartType) => {
+  const radio = document.getElementById(chartType);
+  radio.addEventListener("change", () => {
+    if (!radio.checked) {
+      return;
+    }
+    setChartType(chartType, true);
+  });
 });
+
+window.addEventListener("popstate", () => {
+  setChartType(chartTypeFromUrl());
+});
+
+setChartType(chartTypeFromUrl());
