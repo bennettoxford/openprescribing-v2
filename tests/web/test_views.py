@@ -18,6 +18,7 @@ def test_analysis(client, sample_data):
         == "/api/prescribing-deciles/?analysis=%7B%22queries%22%3A+%5B%7B%22numerator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001030U0%22%5D%7D%7D%7D%5D%7D"
     )
     assert rsp.context["analysis_presentation"].chart_type == ChartType.DECILES
+    assert rsp.context["org_type_label"] == "ICB"
 
     rsp = client.get("?ntr_bnf_codes=1001030U0&dtr_bnf_codes=1001")
     assert rsp.status_code == 200
@@ -50,6 +51,7 @@ def test_analysis(client, sample_data):
         rsp.context["prescribing_deciles_url"]
         == "/api/prescribing-deciles/?analysis=%7B%22queries%22%3A+%5B%7B%22numerator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001030U0AA%22%5D%2C+%22excluded%22%3A+%5B%221001030U0AAABAB%22%5D%7D%7D%7D%5D%2C+%22org_id%22%3A+%22PRA00%22%7D"
     )
+    assert rsp.context["org_type_label"] == "Practice"
 
     rsp = client.get("?ntr_bnf_codes=1001030U0&chart_type=all-orgs-line")
     assert rsp.status_code == 200
