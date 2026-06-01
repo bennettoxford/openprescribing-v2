@@ -12,20 +12,24 @@ const prescribingAllOrgsUrl = JSON.parse(
 );
 
 const chartConfigs = {
+  // Each record defines a how data should be displayed in a chart.
+  //  - apiUrl: the URL that returns the chart data
+  //  - responseKey: the key in the URL response that contains the chart data
+  //  - vegaDatasetName: the name of the dataset in the Vega chart spec
   deciles: {
-    dataUrl: prescribingDecilesUrl,
-    apiDatasetName: "deciles",
-    addDatasetName: "deciles",
+    apiUrl: prescribingDecilesUrl,
+    responseKey: "deciles",
+    vegaDatasetName: "deciles",
   },
   "all-orgs-line": {
-    dataUrl: prescribingAllOrgsUrl,
-    apiDatasetName: "all_orgs",
-    addDatasetName: "all_orgs_line",
+    apiUrl: prescribingAllOrgsUrl,
+    responseKey: "all_orgs",
+    vegaDatasetName: "all_orgs_line",
   },
   "all-orgs-dots": {
-    dataUrl: prescribingAllOrgsUrl,
-    apiDatasetName: "all_orgs",
-    addDatasetName: "all_orgs_dots",
+    apiUrl: prescribingAllOrgsUrl,
+    responseKey: "all_orgs",
+    vegaDatasetName: "all_orgs_dots",
   },
 };
 
@@ -111,10 +115,10 @@ const setChartType = (chartType, pushHistory = false) => {
 };
 
 const updateChart = (chartConfig) => {
-  const { dataUrl, apiDatasetName, addDatasetName } = chartConfig;
+  const { apiUrl, responseKey, vegaDatasetName } = chartConfig;
 
   chartLoading.textContent = "Loading chart...";
-  fetch(dataUrl)
+  fetch(apiUrl)
     .then((response) => {
       if (!response.ok) {
         throw new Error(`Failed to fetch chart data: ${response.status}`);
@@ -122,7 +126,7 @@ const updateChart = (chartConfig) => {
       return response.json();
     })
     .then((response) => {
-      response[apiDatasetName].forEach((record) => {
+      response[responseKey].forEach((record) => {
         record.month = new Date(record.month);
       });
       if (response.org) {
@@ -136,7 +140,7 @@ const updateChart = (chartConfig) => {
       datasetNames.forEach((datasetName) => {
         chartResult.view.remove(datasetName, () => true);
       });
-      chartResult.view.insert(addDatasetName, response[apiDatasetName]);
+      chartResult.view.insert(vegaDatasetName, response[responseKey]);
       if (response.org) {
         chartResult.view.insert("org", response.org);
       }
