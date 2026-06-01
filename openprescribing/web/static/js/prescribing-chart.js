@@ -40,7 +40,7 @@ const initialisePage = async () => {
 
   setChartType(chartTypeFromUrl());
 
-  chartResult = vegaEmbed(chartContainer, chartSpec, { renderer: "svg" });
+  chartResult = await vegaEmbed(chartContainer, chartSpec, { renderer: "svg" });
 
   window.addEventListener("popstate", () => {
     setChartType(chartTypeFromUrl());
@@ -121,22 +121,22 @@ const updateChart = (chartConfig) => {
           record.month = new Date(record.month);
         });
       }
-      chartResult.then((result) => {
-        const datasetNames = result.spec.layer.map((layer) => layer.data.name);
-        datasetNames.forEach((datasetName) => {
-          result.view.remove(datasetName, () => true);
-        });
-        result.view.insert(addDatasetName, response[apiDatasetName]);
-        if (response.org) {
-          result.view.insert("org", response.org);
-        }
-        result.view.run();
-
-        chartLoading.classList.add("invisible");
-        chartContainer.classList.add("visible");
-        chartLoading.classList.remove("visible");
-        chartContainer.classList.remove("invisible");
+      const datasetNames = chartResult.spec.layer.map(
+        (layer) => layer.data.name,
+      );
+      datasetNames.forEach((datasetName) => {
+        chartResult.view.remove(datasetName, () => true);
       });
+      chartResult.view.insert(addDatasetName, response[apiDatasetName]);
+      if (response.org) {
+        chartResult.view.insert("org", response.org);
+      }
+      chartResult.view.run();
+
+      chartLoading.classList.add("invisible");
+      chartContainer.classList.add("visible");
+      chartLoading.classList.remove("visible");
+      chartContainer.classList.remove("invisible");
     })
     .catch((error) => {
       console.error("Unable to render deciles chart", error);
