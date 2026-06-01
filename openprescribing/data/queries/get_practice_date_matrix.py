@@ -1,35 +1,12 @@
 import functools
 
-import numpy as np
-from scipy.sparse._sparsetools import coo_todense
-
 from openprescribing.data.rxdb.labelled_matrix import LabelledMatrix
-from openprescribing.data.utils.duckdb_utils import (
-    FLOAT_TYPES,
-    NUMERIC_TYPES,
-    UNSIGNED_INTEGER_TYPES,
-)
+
+from .query_utils import get_dates, get_grouped_sum_ndarray, get_index_tuple
 
 
 __all__ = ["get_practice_date_matrix"]
 
-
-# Sets the number of rows we fetch in each batch from DuckDB. There's no perfect answer
-# to what size these batches should be, but here are some considerations:
-#
-#  * They should probably be a multiple of 2048 as that's the natural DuckDB "data
-#    chunk" size (see https://duckdb.org/docs/stable/clients/c/data_chunk).
-#
-#  * If they are too small then we will spend too much time hopping back and forth
-#    between fast native code and Python and that will slow things down.
-#
-#  * If they are too large then we force DuckDB to consume lots of memory while building
-#    the batch and, observationally, this seems to be slower (maybe while we're
-#    processing each batch DuckDB is preparing the next one in parallel?).
-#
-# The current value was determined by some crude profiling and a simple binary search to
-# land on what looked like the optimal value. It may well be possible to improve it.
-RECORD_BATCH_SIZE = 2048 * 64
 
 # The largest of these matrices are about 16MB in size (140 dates x 15,000 practices x 8
 # bytes per value). Caching the most recently used 128 only takes 2GB of RAM and should
@@ -90,95 +67,9 @@ def get_practice_codes_and_dates(cursor, date_count):
     return practice_codes, dates
 
 
-def get_dates(cursor, date_count):
-    results = cursor.execute(
-        "SELECT id, date FROM date ORDER BY date DESC LIMIT ?",
-        [date_count if date_count is not None else 9999999],
-    )
-    return get_index_tuple(results.fetchall())
-
-
 def get_practice_codes(cursor, oldest_date):
     results = cursor.execute(
         "SELECT id, code FROM practice WHERE latest_prescribing_date >= ?",
         [oldest_date],
     )
     return get_index_tuple(results.fetchall())
-
-
-def get_index_tuple(index_value_pairs):
-    """
-    Given a list of (<index>, <value>) pairs return a tuple:
-
-        (<value_0>, <value_1>, <value_2> ...)
-
-    Place each value at its specified index. Where there is no value for a given index
-    use `None`.
-    """
-    index_to_value = {index: value for index, value in index_value_pairs}
-    assert index_to_value, "No prescribing data in database"
-    all_indexes = range(0, max(index_to_value.keys()) + 1)
-    return tuple(index_to_value.get(index) for index in all_indexes)
-
-
-def get_grouped_sum_ndarray(cursor, row_count, col_count, sql):
-    """
-    Given a SQL query of the form:
-
-        SELECT row_index, column_index, value FROM ...
-
-    Build a two-dimensional `np.ndarray` from the results.
-
-    It's expected that we'll see multiple values for the same coordinate in the array
-    and these values will be summed together. The effect is thus the same as doing:
-
-        SELECT row_index, column_index, SUM(value)
-        FROM ...
-        GROUP BY row_index, column_index
-
-    This is the key data-heavy operation which OpenPrescribing needs to perform and so
-    it's worth a bit of complexity here to make this fast.
-    """
-    # The `sql` method is lazy so it parses the query and determines the column types
-    # but doesn't yet execute it
-    results = cursor.sql(sql)
-
-    assert results.columns == ["row_index", "column_index", "value"]
-    row_type, col_type, value_type = results.types
-    assert row_type.id in UNSIGNED_INTEGER_TYPES
-    assert col_type.id in UNSIGNED_INTEGER_TYPES
-    assert value_type.id in NUMERIC_TYPES
-    value_is_float = value_type.id in FLOAT_TYPES
-
-    # Add a filter so that we can guarantee the row and column indexes will be in range
-    results = results.filter(f"row_index < {row_count} AND column_index < {col_count}")
-
-    # Make a zero-valued accumulator matrix of the right type
-    accumulator = np.zeros(
-        shape=(row_count, col_count),
-        dtype=np.float64 if value_is_float else np.int64,
-    )
-
-    # Prepare some values that `coo_todense` needs (based on reading the SciPy source)
-    accumulator_ravel = accumulator.ravel("A")
-    is_fortran_order = int(accumulator.flags.f_contiguous)
-
-    for batch in results.to_arrow_reader(batch_size=RECORD_BATCH_SIZE):
-        row_indexes = batch.column(0).to_numpy()
-        col_indexes = batch.column(1).to_numpy()
-        values = batch.column(2).to_numpy()
-
-        # Add each batch of results into our accumulator matrix using a fast routine
-        # borrowed from `scipy.sparse`
-        coo_todense(
-            row_count,
-            col_count,
-            len(values),
-            row_indexes,
-            col_indexes,
-            values,
-            accumulator_ravel,
-            is_fortran_order,
-        )
-
-    return accumulator
