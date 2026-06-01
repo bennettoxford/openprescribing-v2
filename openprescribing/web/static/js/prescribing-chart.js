@@ -1,9 +1,68 @@
-const setupOrgSearch = () => {
-  const orgs = JSON.parse(document.getElementById("orgs").textContent);
-  const orgTypes = Object.fromEntries(
-    JSON.parse(document.getElementById("org-types").textContent),
-  );
+const orgs = JSON.parse(document.getElementById("orgs").textContent);
+const orgTypes = Object.fromEntries(
+  JSON.parse(document.getElementById("org-types").textContent),
+);
+const chartSpec = JSON.parse(document.getElementById("chart").textContent);
 
+const prescribingDecilesUrl = JSON.parse(
+  document.getElementById("prescribing-deciles-url").textContent,
+);
+const prescribingAllOrgsUrl = JSON.parse(
+  document.getElementById("prescribing-all-orgs-url").textContent,
+);
+
+const chartConfigs = {
+  // Each record defines a how data should be displayed in a chart.
+  //  - apiUrl: the URL that returns the chart data
+  //  - responseKey: the key in the URL response that contains the chart data
+  //  - vegaDatasetName: the name of the dataset in the Vega chart spec
+  deciles: {
+    apiUrl: prescribingDecilesUrl,
+    responseKey: "deciles",
+    vegaDatasetName: "deciles",
+  },
+  "all-orgs-line": {
+    apiUrl: prescribingAllOrgsUrl,
+    responseKey: "all_orgs",
+    vegaDatasetName: "all_orgs_line",
+  },
+  "all-orgs-dots": {
+    apiUrl: prescribingAllOrgsUrl,
+    responseKey: "all_orgs",
+    vegaDatasetName: "all_orgs_dots",
+  },
+};
+
+const chartLoading = document.querySelector("#chart-loading");
+const chartContainer = document.querySelector("#chart-container");
+
+// We'll store the Vega chart result here.
+let chartResult;
+
+const initialisePage = async () => {
+  // Set the chart type and set up event handlers.
+
+  setChartType(chartTypeFromUrl());
+
+  chartResult = await vegaEmbed(chartContainer, chartSpec, { renderer: "svg" });
+
+  window.addEventListener("popstate", () => {
+    setChartType(chartTypeFromUrl());
+  });
+
+  Object.keys(chartConfigs).forEach((chartType) => {
+    const radio = document.getElementById(chartType);
+    radio.addEventListener("change", () => {
+      if (radio.checked) {
+        setChartType(chartType, true);
+      }
+    });
+  });
+
+  setupOrgSearch();
+};
+
+const setupOrgSearch = () => {
   const input = document.getElementById("org-search");
   const results = document.getElementById("org-results");
 
@@ -46,25 +105,20 @@ const setupOrgSearch = () => {
   });
 };
 
-var chartResult;
+const setChartType = (chartType, pushHistory = false) => {
+  document.getElementById(chartType).checked = true;
+  updateChart(chartConfigs[chartType]);
 
-const createChart = (chartContainer) => {
-  const chartSpec = JSON.parse(document.getElementById("chart").textContent);
-
-  const opt = { renderer: "svg" };
-  chartResult = vegaEmbed(chartContainer, chartSpec, opt);
+  if (pushHistory) {
+    updateUrl(chartType);
+  }
 };
 
 const updateChart = (chartConfig) => {
-  const { dataUrl, apiDatasetName, addDatasetName } = chartConfig;
-  const chartLoading = document.querySelector("#chart-loading");
-  const chartContainer = document.querySelector("#chart-container");
-  if (!chartContainer.classList.contains("vega-embed")) {
-    createChart(chartContainer);
-  }
+  const { apiUrl, responseKey, vegaDatasetName } = chartConfig;
 
   chartLoading.textContent = "Loading chart...";
-  fetch(dataUrl)
+  fetch(apiUrl)
     .then((response) => {
       if (!response.ok) {
         throw new Error(`Failed to fetch chart data: ${response.status}`);
@@ -72,7 +126,7 @@ const updateChart = (chartConfig) => {
       return response.json();
     })
     .then((response) => {
-      response[apiDatasetName].forEach((record) => {
+      response[responseKey].forEach((record) => {
         record.month = new Date(record.month);
       });
       if (response.org) {
@@ -80,22 +134,22 @@ const updateChart = (chartConfig) => {
           record.month = new Date(record.month);
         });
       }
-      chartResult.then((result) => {
-        const datasetNames = result.spec.layer.map((layer) => layer.data.name);
-        datasetNames.forEach((datasetName) => {
-          result.view.remove(datasetName, () => true);
-        });
-        result.view.insert(addDatasetName, response[apiDatasetName]);
-        if (response.org) {
-          result.view.insert("org", response.org);
-        }
-        result.view.run();
-
-        chartLoading.classList.add("invisible");
-        chartContainer.classList.add("visible");
-        chartLoading.classList.remove("visible");
-        chartContainer.classList.remove("invisible");
+      const datasetNames = chartResult.spec.layer.map(
+        (layer) => layer.data.name,
+      );
+      datasetNames.forEach((datasetName) => {
+        chartResult.view.remove(datasetName, () => true);
       });
+      chartResult.view.insert(vegaDatasetName, response[responseKey]);
+      if (response.org) {
+        chartResult.view.insert("org", response.org);
+      }
+      chartResult.view.run();
+
+      chartLoading.classList.add("invisible");
+      chartContainer.classList.add("visible");
+      chartLoading.classList.remove("visible");
+      chartContainer.classList.remove("invisible");
     })
     .catch((error) => {
       console.error("Unable to render deciles chart", error);
@@ -104,35 +158,10 @@ const updateChart = (chartConfig) => {
     });
 };
 
-setupOrgSearch();
-
-const prescribingDecilesUrl = JSON.parse(
-  document.getElementById("prescribing-deciles-url").textContent,
-);
-const prescribingAllOrgsUrl = JSON.parse(
-  document.getElementById("prescribing-all-orgs-url").textContent,
-);
-
-const chartConfigs = {
-  deciles: {
-    dataUrl: prescribingDecilesUrl,
-    apiDatasetName: "deciles",
-    addDatasetName: "deciles",
-  },
-  "all-orgs-line": {
-    dataUrl: prescribingAllOrgsUrl,
-    apiDatasetName: "all_orgs",
-    addDatasetName: "all_orgs_line",
-  },
-  "all-orgs-dots": {
-    dataUrl: prescribingAllOrgsUrl,
-    apiDatasetName: "all_orgs",
-    addDatasetName: "all_orgs_dots",
-  },
-};
-
-const renderChartType = (chartType) => {
-  updateChart(chartConfigs[chartType]);
+const updateUrl = (chartType) => {
+  const url = new URL(window.location.href);
+  url.searchParams.set("chart_type", chartType);
+  window.history.pushState({}, "", url);
 };
 
 const chartTypeFromUrl = () => {
@@ -146,31 +175,4 @@ const chartTypeFromUrl = () => {
   return chartType;
 };
 
-const setChartType = (chartType, pushHistory = false) => {
-  document.getElementById(chartType).checked = true;
-  renderChartType(chartType);
-
-  if (!pushHistory) {
-    return;
-  }
-
-  const url = new URL(window.location.href);
-  url.searchParams.set("chart_type", chartType);
-  window.history.pushState({}, "", url);
-};
-
-Object.keys(chartConfigs).forEach((chartType) => {
-  const radio = document.getElementById(chartType);
-  radio.addEventListener("change", () => {
-    if (!radio.checked) {
-      return;
-    }
-    setChartType(chartType, true);
-  });
-});
-
-window.addEventListener("popstate", () => {
-  setChartType(chartTypeFromUrl());
-});
-
-setChartType(chartTypeFromUrl());
+initialisePage();
