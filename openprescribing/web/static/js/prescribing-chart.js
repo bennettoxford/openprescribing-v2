@@ -145,10 +145,6 @@ const updateChart = (chartConfig) => {
     });
 };
 
-const renderChartType = (chartType) => {
-  updateChart(chartConfigs[chartType]);
-};
-
 const chartTypeFromUrl = () => {
   const chartType = new URL(window.location.href).searchParams.get(
     "chart_type",
@@ -162,7 +158,7 @@ const chartTypeFromUrl = () => {
 
 const setChartType = (chartType, pushHistory = false) => {
   document.getElementById(chartType).checked = true;
-  renderChartType(chartType);
+  updateChart(chartConfigs[chartType]);
 
   if (!pushHistory) {
     return;
