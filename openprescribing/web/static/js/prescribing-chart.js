@@ -29,6 +29,28 @@ const chartConfigs = {
   },
 };
 
+const initialisePage = async () => {
+  // Set the chart type and set up event handlers.
+
+  setChartType(chartTypeFromUrl());
+
+  window.addEventListener("popstate", () => {
+    setChartType(chartTypeFromUrl());
+  });
+
+  Object.keys(chartConfigs).forEach((chartType) => {
+    const radio = document.getElementById(chartType);
+    radio.addEventListener("change", () => {
+      if (!radio.checked) {
+        return;
+      }
+      setChartType(chartType, true);
+    });
+  });
+
+  setupOrgSearch();
+};
+
 const setupOrgSearch = () => {
   const input = document.getElementById("org-search");
   const results = document.getElementById("org-results");
@@ -128,8 +150,6 @@ const updateChart = (chartConfig) => {
     });
 };
 
-setupOrgSearch();
-
 const renderChartType = (chartType) => {
   updateChart(chartConfigs[chartType]);
 };
@@ -158,18 +178,4 @@ const setChartType = (chartType, pushHistory = false) => {
   window.history.pushState({}, "", url);
 };
 
-Object.keys(chartConfigs).forEach((chartType) => {
-  const radio = document.getElementById(chartType);
-  radio.addEventListener("change", () => {
-    if (!radio.checked) {
-      return;
-    }
-    setChartType(chartType, true);
-  });
-});
-
-window.addEventListener("popstate", () => {
-  setChartType(chartTypeFromUrl());
-});
-
-setChartType(chartTypeFromUrl());
+initialisePage();
