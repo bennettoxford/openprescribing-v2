@@ -17,19 +17,12 @@ PRACTICE_DATE_MATRIX_CACHE_SIZE = 128
 @functools.lru_cache(maxsize=PRACTICE_DATE_MATRIX_CACHE_SIZE)
 def get_practice_date_matrix(cursor, query, date_count=None):
     """
-    Given a SQL query of the form:
-
-        SELECT practice_id, date_id, value FROM ...
-
-    Sum all the values for each practice and date and return a `LabelledMatrix` of these
-    values, where the rows are labelled with practice codes and the columns are labelled
-    with dates.
+    Given BNFQuery or ListSizeQuery, sum all the values for each practice and date and
+    return a `LabelledMatrix` of these values, where the rows are labelled with practice
+    codes and the columns are labelled with dates.
 
     The `date_count` argument allows restricting to just the N most recent months of
     prescribing data.
-
-    Note that the exact form of the SQL doesn't matter so long as it selects at least
-    three columns with those names.
     """
     practice_codes, dates = get_practice_codes_and_dates(cursor, date_count)
 
