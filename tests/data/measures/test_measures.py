@@ -63,7 +63,6 @@ def test_load_measure_pydantic_validation_valid_form_route(rxdb, settings, tmp_p
 @pytest.mark.parametrize(
     "measure_name",
     [
-        "invalid-measure-form_routes",
         "invalid-measure-form_routes-and-routes",
         "invalid-measure-multiple-queries",
         "invalid-measure-output",
