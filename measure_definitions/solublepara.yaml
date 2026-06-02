@@ -19,4 +19,18 @@ queries:
   - numerator:
       bnf_codes:
         included:
-          - ""
+          - "0407010F0_AC" # Co-Codamol Eff_Tab 8mg/500mg (brands and generic)
+          - "0407010F0_AF" # Co-Codamol Eff_Tab 30mg/500mg (brands and generic)
+          - "0407010H0_AQ" # Paracet_Tab Solb 500mg (brands and generic)
+    denominator:
+      bnf_codes:
+        included:
+          - "0407010F0_AA" # Co-Codamol_Tab 8mg/500mg (brands and generic)
+          - "0407010F0_AB" # Co-Codamol_Cap 8mg/500mg (brands and generic)
+          - "0407010F0_AC" # Co-Codamol Eff_Tab 8mg/500mg (brands and generic)
+          - "0407010F0_AD" # Co-Codamol_Cap 30mg/500mg (brands and generic)
+          - "0407010F0_AF" # Co-Codamol Eff_Tab 30mg/500mg (brands and generic)
+          - "0407010F0_AH" # Co-Codamol_Tab 30mg/500mg (brands and generic)
+          - "0407010H0_AA" # Paracet_Cap 500mg (brands and generic)
+          - "0407010H0_AM" # Paracet_Tab 500mg (brands and generic)
+          - "0407010H0_AQ" # Paracet_Tab Solb 500mg (brands and generic)  
