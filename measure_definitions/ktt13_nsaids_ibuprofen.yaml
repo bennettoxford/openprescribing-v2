@@ -21,4 +21,11 @@ queries:
   - numerator:
       bnf_codes:
         included:
-          - ""
+          - "100101" # Non-Steroidal Anti-Inflammatory Drugs
+        excluded:
+          - "1001010J0" # Ibuprofen
+          - "1001010P0" # Naproxen
+    denominator:
+      bnf_codes:
+        included:
+          - "100101" # Non-Steroidal Anti-Inflammatory Drugs       
