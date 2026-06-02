@@ -19,7 +19,7 @@ output:
   denominator: items
 queries:
   - numerator:
-      routes:
+      form_routes:
         - "pressurizedinhalation.inhalation"
       bnf_codes:
         included:
@@ -27,7 +27,7 @@ queries:
         excluded:
           - "0301011R0" # Exclude salbutamol
     denominator:
-      routes: 
+      form_routes: 
         - "pressurizedinhalation.inhalation"
         - "powderinhalation.inhalation"
         - "inhalationsolution.inhalation" 
