@@ -12,8 +12,6 @@ from strictyaml import (
     Str,
 )
 
-from openprescribing.data.models.dmd import OntFormRoute
-
 
 class MeasureValidationError(Exception):
     def __init__(self, measure_name, validation_error):
@@ -45,16 +43,6 @@ class BNFQuery(BaseModel):
     routes: list[str] | None = None
     product_type: Literal["all", "generic", "branded"] = "all"
     ingredient_ids: list[int] | None = None
-
-    @field_validator("form_routes")
-    @classmethod
-    def form_routes_must_be_valid(cls, v):
-        valid_form_route_names = [fr.descr for fr in OntFormRoute.objects.all()]
-
-        for fr in v:
-            if fr not in valid_form_route_names:
-                raise ValueError(f"Invalid form_route specified {fr}")
-        return v
 
     @model_validator(mode="after")
     def check_xor_form_routes_forms_routes(self) -> "BNFQuery":
