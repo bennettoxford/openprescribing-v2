@@ -19,4 +19,12 @@ queries:
   - numerator:
       bnf_codes:
         included:
-          - ""
+          - "0906027G0_AA" # Vit B Co_Tab
+          - "0906027G0_AB" # Vit B Co_Str_Tab
+    denominator:
+      bnf_codes:
+        included:
+          - "0906027G0_AA" # Vit B Co_Tab
+          - "0906027G0_AB" # Vit B Co_Str_Tab
+          - "0906026M0_AF" # Thiamine HCL_Tab 50mg
+          - "0906026M0_AG" # Thiamine HCL_Tab 100mg
