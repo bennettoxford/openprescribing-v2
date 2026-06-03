@@ -22,7 +22,9 @@ def load_measure(measure_name):
 
 
 def all_measure_details():
-    measure_names = [f.stem for f in settings.MEASURE_DEFINITIONS_PATH.iterdir()]
+    measure_names = sorted(
+        [f.stem for f in settings.MEASURE_DEFINITIONS_PATH.iterdir()]
+    )
     measure_details = []
     for f in measure_names:
         measure = load_measure(f)
