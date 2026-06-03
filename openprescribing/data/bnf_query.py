@@ -209,13 +209,13 @@ class BNFQuery:
 
         if codes:
             return f"""
-            SELECT practice_id, date_id, items AS value
+            SELECT presentation_id, practice_id, date_id, items AS value
             FROM prescribing
             WHERE bnf_code IN ({", ".join(f"'{c}'" for c in codes)})
             """
         else:
             return """
-            SELECT practice_id, date_id, items AS value
+            SELECT presentation_id, practice_id, date_id, items AS value
             FROM prescribing
             WHERE false
             """
