@@ -18,6 +18,11 @@ urlpatterns = [
         name="api_prescribing_all_orgs",
     ),
     path(
+        "api/prescribing-medications/",
+        api.prescribing_medications,
+        name="api_prescribing_medications",
+    ),
+    path(
         "api/metadata/medications/",
         api.metadata_medications,
         name="api_metadata_medications",
