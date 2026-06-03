@@ -1,8 +1,11 @@
+import json
 import re
+from urllib.parse import urlencode
 
 import pytest
 from django.urls import reverse
 
+from openprescribing.data.measures.measures import load_measure
 from openprescribing.web.analysis_presentation import ChartType
 from openprescribing.web.models import Feedback
 
@@ -148,3 +151,39 @@ queries:
 
     rsp = client.get("/measures/test-measure/")
     assert rsp.status_code == 200
+
+
+def test_analysis_download(client, sample_data, tmp_path, settings):
+    analysis_dict = {
+        "output": {"numerator": "items", "denominator": "list_size"},
+        "queries": [
+            {
+                "numerator": {
+                    "bnf_codes": {
+                        "included": ["01"],
+                    },
+                    "ingredient_ids": [1],
+                },
+            }
+        ],
+    }
+    analysis_param = urlencode({"analysis": json.dumps(analysis_dict)})
+
+    rsp = client.get(f"/analysis/download/?{analysis_param}")
+    assert rsp.status_code == 200
+
+    (tmp_path / "test-measure.yaml").write_bytes(rsp.content)
+    settings.MEASURE_DEFINITIONS_PATH = tmp_path
+
+    expected_analysis_dict = {
+        **analysis_dict,
+        "metadata": {
+            "tags": [
+                "builder",
+            ],
+            "title": "Analysis created by analysis builder",
+            "why_it_matters": "TODO",
+        },
+    }
+    received_analysis_dict = load_measure("test-measure")
+    assert received_analysis_dict == expected_analysis_dict

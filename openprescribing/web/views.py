@@ -2,7 +2,8 @@ import json
 from urllib.parse import urlencode
 
 import markdown
-from django.http import HttpResponseBadRequest
+import yaml
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -26,6 +27,7 @@ from .presenters import (
 
 def _build_analysis_context(analysis):
     build_analysis_url = reverse("build-analysis")
+    download_analysis_url = reverse("download-analysis")
     deciles_api_url = None
     all_orgs_api_url = None
     org = None
@@ -48,6 +50,7 @@ def _build_analysis_context(analysis):
         url_parameters_params = urlencode(analysis.to_params(), safe=",")
         url_parameters_json = urlencode({"analysis": json.dumps(analysis.to_dict())})
         build_analysis_url = f"{reverse('build-analysis')}?{url_parameters_params}"
+        download_analysis_url = f"{reverse('download-analysis')}?{url_parameters_json}"
         deciles_api_url = f"{reverse('api_prescribing_deciles')}?{url_parameters_json}"
         all_orgs_api_url = (
             f"{reverse('api_prescribing_all_orgs')}?{url_parameters_json}"
@@ -65,6 +68,7 @@ def _build_analysis_context(analysis):
         "org_types": Org.OrgType.choices,
         "org_type_label": org_type.label,
         "build_analysis_url": build_analysis_url,
+        "download_analysis_url": download_analysis_url,
         "prescribing_deciles_url": deciles_api_url,
         "prescribing_all_orgs_url": all_orgs_api_url,
         "chart_spec": build_chart_spec(analysis),
@@ -94,6 +98,23 @@ def build_analysis(request):
         {"prefix": "dtr", "label": "Denominator"},
     ]
     return render(request, "build_analysis.html", {"panels": panels})
+
+
+def download_analysis(request):
+
+    analysis = Analysis.from_dict(json.loads(request.GET["analysis"]))
+    analysis_dict = analysis.to_dict()
+
+    analysis_dict["metadata"] = {
+        "title": "Analysis created by analysis builder",
+        "why_it_matters": "TODO",
+        "tags": ["builder"],
+    }
+
+    response = HttpResponse(yaml.dump(analysis_dict))
+    response["Content-Disposition"] = 'attachment; filename="analysis.yaml"'
+
+    return response
 
 
 def measure(request, measure_name):
