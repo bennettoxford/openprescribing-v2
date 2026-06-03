@@ -81,11 +81,17 @@ class Analysis:
         )
 
     def to_dict(self):
-        analysis_dict = {"queries": []}
+        analysis_dict = {"output": {}, "queries": []}
 
         analysis_dict["queries"].append({"numerator": self.ntr_query.to_dict()})
-        if not isinstance(self.dtr_query, ListSizeQuery):
+        analysis_dict["output"]["numerator"] = "items"
+
+        if isinstance(self.dtr_query, ListSizeQuery):
+            analysis_dict["output"]["denominator"] = "list_size"
+        else:
             analysis_dict["queries"][0]["denominator"] = self.dtr_query.to_dict()
+            analysis_dict["output"]["denominator"] = "items"
+
         if self.org_id:
             analysis_dict["org_id"] = self.org_id
 

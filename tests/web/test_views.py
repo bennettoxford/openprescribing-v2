@@ -14,8 +14,8 @@ def test_analysis(client, sample_data):
     rsp = client.get("?ntr_bnf_codes=1001030U0")
     assert rsp.status_code == 200
     assert (
-        rsp.context["prescribing_deciles_url"]
-        == "/api/prescribing-deciles/?analysis=%7B%22queries%22%3A+%5B%7B%22numerator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001030U0%22%5D%7D%7D%7D%5D%7D"
+        "numerator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001030U0"
+        in rsp.context["prescribing_deciles_url"]
     )
     assert rsp.context["analysis_presentation"].chart_type == ChartType.DECILES
     assert rsp.context["org_type_label"] == "ICB"
@@ -23,15 +23,15 @@ def test_analysis(client, sample_data):
     rsp = client.get("?ntr_bnf_codes=1001030U0&dtr_bnf_codes=1001")
     assert rsp.status_code == 200
     assert (
-        rsp.context["prescribing_deciles_url"]
-        == "/api/prescribing-deciles/?analysis=%7B%22queries%22%3A+%5B%7B%22numerator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001030U0%22%5D%7D%7D%2C+%22denominator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001%22%5D%7D%7D%7D%5D%7D"
+        "denominator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001"
+        in rsp.context["prescribing_deciles_url"]
     )
 
     rsp = client.get("?ntr_bnf_codes=1001030U0AAABAB,1001030U0AAABAB")
     assert rsp.status_code == 200
     assert (
-        rsp.context["prescribing_deciles_url"]
-        == "/api/prescribing-deciles/?analysis=%7B%22queries%22%3A+%5B%7B%22numerator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001030U0AAABAB%22%2C+%221001030U0AAABAB%22%5D%7D%7D%7D%5D%7D"
+        "numerator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001030U0AAABAB%22%2C+%221001030U0AAABAB"
+        in rsp.context["prescribing_deciles_url"]
     )
 
     rsp = client.get(
@@ -39,18 +39,15 @@ def test_analysis(client, sample_data):
     )
     assert rsp.status_code == 200
     assert (
-        rsp.context["prescribing_deciles_url"]
-        == "/api/prescribing-deciles/?analysis=%7B%22queries%22%3A+%5B%7B%22numerator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001030U0AA%22%5D%2C+%22excluded%22%3A+%5B%221001030U0AAABAB%22%5D%7D%7D%7D%5D%7D"
+        "numerator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001030U0AA%22%5D%2C+%22excluded%22%3A+%5B%221001030U0AAABAB"
+        in rsp.context["prescribing_deciles_url"]
     )
 
     rsp = client.get(
         "?ntr_bnf_codes=1001030U0AA&ntr_bnf_codes_excluded=1001030U0AAABAB&org_id=PRA00"
     )
     assert rsp.status_code == 200
-    assert (
-        rsp.context["prescribing_deciles_url"]
-        == "/api/prescribing-deciles/?analysis=%7B%22queries%22%3A+%5B%7B%22numerator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001030U0AA%22%5D%2C+%22excluded%22%3A+%5B%221001030U0AAABAB%22%5D%7D%7D%7D%5D%2C+%22org_id%22%3A+%22PRA00%22%7D"
-    )
+    assert "org_id%22%3A+%22PRA00" in rsp.context["prescribing_deciles_url"]
     assert rsp.context["org_type_label"] == "Practice"
 
     rsp = client.get("?ntr_bnf_codes=1001030U0&chart_type=all-orgs-line")

@@ -105,6 +105,7 @@ def test_to_params_dtr_list_size():
 @pytest.mark.django_db(databases=["data"])
 def test_from_dict():
     analysis_dict = {
+        "output": {"numerator": "items", "denominator": "items"},
         "queries": [
             {
                 "numerator": {
@@ -129,6 +130,7 @@ def test_from_dict():
 @pytest.mark.django_db(databases=["data"])
 def test_from_dict_branded():
     analysis_dict = {
+        "output": {"numerator": "items", "denominator": "items"},
         "queries": [
             {
                 "numerator": {
@@ -145,7 +147,7 @@ def test_from_dict_branded():
                     },
                 },
             }
-        ]
+        ],
     }
     analysis = Analysis.from_dict(analysis_dict)
     assert analysis.to_dict() == analysis_dict
@@ -154,6 +156,7 @@ def test_from_dict_branded():
 @pytest.mark.django_db(databases=["data"])
 def test_from_dict_numerator_only():
     analysis_dict = {
+        "output": {"numerator": "items", "denominator": "list_size"},
         "queries": [
             {
                 "numerator": {
@@ -164,7 +167,7 @@ def test_from_dict_numerator_only():
                     },
                 }
             }
-        ]
+        ],
     }
     analysis = Analysis.from_dict(analysis_dict)
     assert analysis.to_dict() == analysis_dict
@@ -173,6 +176,7 @@ def test_from_dict_numerator_only():
 @pytest.mark.django_db(databases=["data"])
 def test_from_dict_ingredients():
     analysis_dict = {
+        "output": {"numerator": "items", "denominator": "list_size"},
         "queries": [
             {
                 "numerator": {
