@@ -214,7 +214,7 @@ get-prod-data *args:
     }
 
     local_work_dir=$(get_setting DATA_DIR)
-    remote_work_dir=$(ssh $HOST "dokku storage:list openprescribing" | grep -v downloads | cut -d: -f1)
+    remote_work_dir=$(ssh $HOST "dokku storage:list openprescribing" | grep "/storage$" | cut -d: -f1)
 
     if [ "$#" -gt 0 ]; then
         databases=("$@")
