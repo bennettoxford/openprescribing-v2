@@ -281,10 +281,30 @@ def ingest_sources(conn):
             params=[bnf_start, bnf_end],
         )
 
-    conn.sql(
-        "INSERT INTO prescribing_norm SELECT * FROM prescribing_norm_tmp "
-        " ORDER BY presentation_id, date_id, practice_id"
-    )
+    for bnf_start, bnf_end in get_bnf_code_ranges(
+        conn, batch_size=BNF_RANGE_BATCH_SIZE
+    ):
+        log.info(f"Building `prescribing_norm` table: {bnf_start} -> {bnf_end}")
+        conn.sql(
+            # Copy all fields /except/ bnf_code from prescribing_norm_tmp
+            """\
+            INSERT INTO prescribing_norm
+            SELECT
+                presentation_id,
+                date_id,
+                practice_id,
+                quantity_value,
+                items,
+                quantity,
+                net_cost,
+                actual_cost
+            FROM prescribing_norm_tmp
+            WHERE prescribing_norm_tmp.bnf_code >= ? AND prescribing_norm_tmp.bnf_code < ?
+            ORDER BY presentation_id, date_id, practice_id
+            """,
+            params=[bnf_start, bnf_end],
+        )
+
     conn.sql("DROP TABLE prescribing_norm_tmp ")
     log.info(f"Ingested {count_table(conn, 'prescribing_norm'):,} prescribing rows")
 
@@ -412,6 +432,7 @@ def sql_for_prescribing_normalised():
     return """\
     SELECT
         presentation.id AS presentation_id,
+        presentation.bnf_code AS bnf_code,
         date.id AS date_id,
         practice.id AS practice_id,
         prescribing_source.quantity_value,
