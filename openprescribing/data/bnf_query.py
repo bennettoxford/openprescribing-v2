@@ -168,15 +168,30 @@ class BNFQuery:
             query_dict.get("forms", []),
             query_dict.get("routes", []),
         )
+        form_route_ids_excluded = _get_form_route_ids_for_forms_and_routes(
+            query_dict.get("form_routes_excluded", []),
+            query_dict.get("forms_excluded", []),
+            query_dict.get("routes_excluded", []),
+        )
 
         ingredient_ids = tuple(str(i) for i in query_dict.get("ingredient_ids", []))
+        ingredient_ids_excluded = tuple(
+            str(i) for i in query_dict.get("ingredient_ids_excluded", [])
+        )
+
+        vtm_ids = tuple(str(i) for i in query_dict.get("vtm_ids", []))
+        vtm_ids_excluded = tuple(str(i) for i in query_dict.get("vtm_ids_excluded", []))
 
         return cls(
             tuple(bnf_codes_dict["included"]),
             tuple(bnf_codes_dict.get("excluded", [])),
             ProductType(product_type),
             form_route_ids=form_route_ids,
+            form_route_ids_excluded=form_route_ids_excluded,
             ingredient_ids=ingredient_ids,
+            ingredient_ids_excluded=ingredient_ids_excluded,
+            vtm_ids=vtm_ids,
+            vtm_ids_excluded=vtm_ids_excluded,
         )
 
     def to_dict(self):
@@ -194,8 +209,23 @@ class BNFQuery:
                     cd__in=self.form_route_ids
                 )
             ]
+        if self.form_route_ids_excluded:
+            bnf_query_dict["form_routes_excluded"] = [
+                str(form_route.descr)
+                for form_route in OntFormRoute.objects.filter(
+                    cd__in=self.form_route_ids_excluded
+                )
+            ]
         if self.ingredient_ids:
             bnf_query_dict["ingredient_ids"] = list(self.ingredient_ids)
+        if self.ingredient_ids_excluded:
+            bnf_query_dict["ingredient_ids_excluded"] = list(
+                self.ingredient_ids_excluded
+            )
+        if self.vtm_ids:
+            bnf_query_dict["vtm_ids"] = list(self.vtm_ids)
+        if self.vtm_ids_excluded:
+            bnf_query_dict["vtm_ids_excluded"] = list(self.vtm_ids_excluded)
 
         return bnf_query_dict
 

@@ -612,26 +612,151 @@ def test_to_params_with_ingredient_ids():
     }
 
 
-def test_from_dict():
-    test_dict = {
+def test_to_dict_bnf_codes_included():
+    query = BNFQuery(bnf_codes=["1001030U0"])
+    assert query.to_dict() == {"bnf_codes": {"included": ["1001030U0"]}}
+
+
+def test_to_dict_bnf_codes_excluded():
+    query = BNFQuery(bnf_codes=["1001030U0"], bnf_codes_excluded=["1001030U0AAABAB"])
+    assert query.to_dict() == {
         "bnf_codes": {
-            "included": ["01"],
+            "included": ["1001030U0"],
+            "excluded": ["1001030U0AAABAB"],
         }
     }
-    query = BNFQuery.from_dict(test_dict)
-    assert query.to_dict() == test_dict
 
 
-def test_from_dict_generic():
-    test_dict = {
-        "bnf_codes": {
-            "included": ["01"],
-            "excluded": ["0101"],
-        },
+def test_to_dict_product_type():
+    query = BNFQuery(bnf_codes=["1001030U0"], product_type=ProductType.GENERIC)
+    assert query.to_dict() == {
+        "bnf_codes": {"included": ["1001030U0"]},
         "product_type": "generic",
     }
-    query = BNFQuery.from_dict(test_dict)
-    assert query.to_dict() == test_dict
+
+
+def test_to_dict_product_type_all_omitted():
+    query = BNFQuery(bnf_codes=["1001030U0"], product_type=ProductType.ALL)
+    assert query.to_dict() == {"bnf_codes": {"included": ["1001030U0"]}}
+
+
+def test_to_dict_form_routes(dmd_data):
+    query = BNFQuery(form_route_ids=["1"])
+    assert query.to_dict() == {
+        "bnf_codes": {"included": []},
+        "form_routes": ["tablet.oral"],
+    }
+
+
+def test_to_dict_form_routes_excluded(dmd_data):
+    query = BNFQuery(form_route_ids_excluded=["24"])
+    assert query.to_dict() == {
+        "bnf_codes": {"included": []},
+        "form_routes_excluded": ["solutioninjection.intravenous"],
+    }
+
+
+def test_to_dict_ingredient_ids():
+    query = BNFQuery(ingredient_ids=["53034005"])
+    assert query.to_dict() == {
+        "bnf_codes": {"included": []},
+        "ingredient_ids": ["53034005"],
+    }
+
+
+def test_to_dict_ingredient_ids_excluded():
+    query = BNFQuery(ingredient_ids_excluded=["53034005"])
+    assert query.to_dict() == {
+        "bnf_codes": {"included": []},
+        "ingredient_ids_excluded": ["53034005"],
+    }
+
+
+def test_to_dict_vtm_ids():
+    query = BNFQuery(vtm_ids=["15219611000001105"])
+    assert query.to_dict() == {
+        "bnf_codes": {"included": []},
+        "vtm_ids": ["15219611000001105"],
+    }
+
+
+def test_to_dict_vtm_ids_excluded():
+    query = BNFQuery(vtm_ids_excluded=["108502004"])
+    assert query.to_dict() == {
+        "bnf_codes": {"included": []},
+        "vtm_ids_excluded": ["108502004"],
+    }
+
+
+def test_from_dict_bnf_codes_included():
+    query = BNFQuery.from_dict({"bnf_codes": {"included": ["1001030U0"]}})
+    assert query == BNFQuery(bnf_codes=["1001030U0"])
+
+
+def test_from_dict_bnf_codes_excluded():
+    query = BNFQuery.from_dict(
+        {"bnf_codes": {"included": ["1001030U0"], "excluded": ["1001030U0AAABAB"]}}
+    )
+    assert query == BNFQuery(
+        bnf_codes=["1001030U0"], bnf_codes_excluded=["1001030U0AAABAB"]
+    )
+
+
+def test_from_dict_product_type():
+    query = BNFQuery.from_dict({"product_type": "generic"})
+    assert query == BNFQuery(product_type=ProductType.GENERIC)
+
+
+def test_from_dict_form_routes(dmd_data):
+    query = BNFQuery.from_dict({"form_routes": ["tablet.oral"]})
+    assert query == BNFQuery(form_route_ids=["1"])
+
+
+def test_from_dict_forms(dmd_data):
+    query = BNFQuery.from_dict({"forms": ["pressurizedinhalation"]})
+    assert query == BNFQuery(form_route_ids=["4"])
+
+
+def test_from_dict_routes(dmd_data):
+    query = BNFQuery.from_dict({"routes": ["subretinal"]})
+    assert query == BNFQuery(form_route_ids=["320"])
+
+
+def test_from_dict_form_routes_excluded(dmd_data):
+    query = BNFQuery.from_dict(
+        {"form_routes_excluded": ["solutioninjection.intravenous"]}
+    )
+    assert query == BNFQuery(form_route_ids_excluded=["24"])
+
+
+def test_from_dict_forms_excluded(dmd_data):
+    query = BNFQuery.from_dict({"forms_excluded": ["pressurizedinhalation"]})
+    assert query == BNFQuery(form_route_ids_excluded=["4"])
+
+
+def test_from_dict_routes_excluded(dmd_data):
+    query = BNFQuery.from_dict({"routes_excluded": ["subretinal"]})
+    assert query == BNFQuery(form_route_ids_excluded=["320"])
+
+
+def test_from_dict_ingredient_ids():
+    query = BNFQuery.from_dict({"ingredient_ids": [53034005]})
+    assert query == BNFQuery(ingredient_ids=["53034005"])
+
+
+def test_from_dict_ingredient_ids_excluded():
+    query = BNFQuery.from_dict({"ingredient_ids_excluded": [53034005]})
+    assert query == BNFQuery(ingredient_ids_excluded=["53034005"])
+
+
+def test_from_dict_vtm_ids():
+    query = BNFQuery.from_dict({"vtm_ids": [15219611000001105]})
+    assert query == BNFQuery(vtm_ids=["15219611000001105"])
+
+
+def test_from_dict_vtm_ids_excluded():
+    query = BNFQuery.from_dict({"vtm_ids_excluded": [108502004]})
+    assert query == BNFQuery(vtm_ids_excluded=["108502004"])
 
 
 def test_from_dict_form_route(dmd_data):
@@ -643,6 +768,21 @@ def test_from_dict_form_route(dmd_data):
             "included": ["0203020C0AAAAAA"],
         },
         "form_routes": ["solutioninjection.intravenous"],
+    }
+    query = BNFQuery.from_dict(test_dict)
+    assert query.to_dict() == test_dict
+
+
+def test_from_dict_form_route_excluded(dmd_data):
+    # The following appears in the dm+d -> BNF data/mapping data
+    BNFCode(code="0203020C0AAAAAA", level=BNFCode.Level.PRESENTATION).save()
+
+    test_dict = {
+        "bnf_codes": {
+            "included": ["0203020C0AAAAAA"],
+        },
+        "form_routes": ["solutioninjection.intravenous"],
+        "form_routes_excluded": ["suspension.oral"],
     }
     query = BNFQuery.from_dict(test_dict)
     assert query.to_dict() == test_dict
@@ -699,14 +839,3 @@ def test_get_form_route_ids_for_invalid_form_routes(dmd_data):
         _get_form_route_ids_for_forms_and_routes(
             form_routes=[], forms=[], routes=["interstellar"]
         )
-
-
-def test_from_dict_ingredient():
-    test_dict = {
-        "ingredient_ids": ["53034005"],
-    }
-
-    query = BNFQuery.from_dict(test_dict)
-    computed_dict = query.to_dict()
-
-    assert computed_dict["ingredient_ids"] == ["53034005"]
