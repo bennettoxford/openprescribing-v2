@@ -1,18 +1,26 @@
 import json
 import math
 
+import numpy as np
 from django.http import JsonResponse as DjangoJsonResponse
 
 from openprescribing.data import rxdb
 from openprescribing.data.analysis import Analysis
 from openprescribing.data.models import AMP, VMP, VTM, BNFCode, Ing, OntFormRoute, Org
-from openprescribing.data.queries import get_org_date_ratio_matrix
+from openprescribing.data.queries import (
+    get_medication_date_matrix,
+    get_org_date_ratio_matrix,
+)
 from openprescribing.web.decorators import add_cache_headers
 
 
 # We currently have about 8 years (96 months) of list size data.  In future we could
 # allow this to be configured by the user, or calculated directly from the data.
 DATE_COUNT = 96
+
+# The number of individual medications shown as their own band in the "by medication"
+# stacked area chart.  Any further medications are summed into a single "Other" band.
+MEDICATIONS_TOP_N = 10
 
 
 def _get_org(analysis):
@@ -68,6 +76,59 @@ def prescribing_deciles(request):
     org_records = _get_org_records(odm, org)
 
     return JsonResponse({"deciles": deciles_records, "org": org_records})
+
+
+def prescribing_medications(request):
+    """Return national prescribing for the numerator query, broken down by medication.
+
+    The breakdown is limited to the `MEDICATIONS_TOP_N` medications with the most
+    prescribing, with any remaining medications summed into a single "Other" band.  This
+    keeps the resulting stacked area chart (and its legend) readable.
+    """
+    analysis = Analysis.from_dict(json.loads(request.GET["analysis"]))
+
+    with rxdb.get_cursor() as cursor:
+        mdm = get_medication_date_matrix(
+            cursor, analysis.ntr_query, date_count=DATE_COUNT
+        )
+
+    row_label_map = _get_top_n_row_label_map(mdm, MEDICATIONS_TOP_N)
+    grouped = mdm.group_rows(row_label_map)
+
+    medications_records = list(
+        grouped.to_records(row_name="medication", col_name="month")
+    )
+    numpy_scalars_to_native_types(medications_records)
+    nans_to_nones(medications_records)
+
+    return JsonResponse({"medications": medications_records})
+
+
+def _get_top_n_row_label_map(mdm, n):
+    """Build a `group_rows` mapping that keeps the top N medications by total prescribing
+    and rolls the remainder into a single "Other" group.
+
+    The matrix rows are presentation-level BNF codes, which we relabel with their
+    human-readable names.  The "Other" group is placed last so it stacks at the bottom of
+    the chart.
+    """
+    totals = np.nansum(mdm.values, axis=1)
+    # Order row indices by total prescribing, largest first.
+    ordered_indexes = np.argsort(totals)[::-1]
+    top_indexes = ordered_indexes[:n]
+    rest_indexes = ordered_indexes[n:]
+
+    top_codes = [mdm.row_labels[i] for i in top_indexes]
+    code_to_name = dict(
+        BNFCode.objects.filter(code__in=top_codes).values_list("code", "name")
+    )
+
+    row_label_map = [(code_to_name[code], (code,)) for code in top_codes]
+    if len(rest_indexes):
+        rest_codes = tuple(mdm.row_labels[i] for i in rest_indexes)
+        row_label_map.append(("Other", rest_codes))
+
+    return tuple(row_label_map)
 
 
 @add_cache_headers
@@ -163,3 +224,22 @@ def nans_to_nones(records):
         for key, value in record.items():
             if isinstance(value, float) and math.isnan(value):
                 record[key] = None
+
+
+def numpy_scalars_to_native_types(records):
+    """Convert any NumPy scalars in `records` to native Python types, in place.
+
+    `JsonResponse` can serialise NumPy scalars that subclass a native type (eg
+    `np.float64`, which is a `float`), but not those that don't (eg `np.int64`, which
+    is not an `int`).
+
+    Matrices of integer counts -- such as the summed prescribing returned by
+    `to_records` in `prescribing_medications` -- therefore yield values that
+    `JsonResponse` cannot serialise.  Call this on such records before passing them to
+    `JsonResponse`.  It is unnecessary for the ratio endpoints, whose values are already
+    `np.float64`.
+    """
+    for record in records:
+        for key, value in record.items():
+            if isinstance(value, np.generic):
+                record[key] = value.item()

@@ -183,6 +183,63 @@ def test_prescribing_deciles_with_denominator(client, sample_data):
     assert payload["org"] == []
 
 
+def test_prescribing_medications(client, sample_data):
+    # The sample data has four presentations under 1001030U0, which is fewer than the
+    # default top-N, so each is shown under its own name and there is no "Other" band.
+    analysis_dict = {
+        "queries": [
+            {
+                "numerator": {
+                    "bnf_codes": {
+                        "included": ["1001030U0"],
+                    },
+                },
+            },
+        ],
+    }
+    rsp = client.get(
+        f"/api/prescribing-medications/?{_analysis_dict_to_param(analysis_dict)}"
+    )
+
+    payload = rsp.json()
+    assert rsp.status_code == 200
+    medications = {record["medication"] for record in payload["medications"]}
+    assert medications == {
+        "Methotrexate 2.5mg tablets",
+        "Methotrexate 10mg tablets",
+        "Maxtrex 2.5mg tablets",
+        "Maxtrex 10mg tablets",
+    }
+
+
+def test_prescribing_medications_groups_other(client, sample_data, monkeypatch):
+    # With the top-N lowered below the number of matching presentations, the
+    # lower-prescribing medications are summed into a single "Other" band.
+    monkeypatch.setattr(api, "MEDICATIONS_TOP_N", 2)
+
+    analysis_dict = {
+        "queries": [
+            {
+                "numerator": {
+                    "bnf_codes": {
+                        "included": ["1001030U0"],
+                    },
+                },
+            },
+        ],
+    }
+    rsp = client.get(
+        f"/api/prescribing-medications/?{_analysis_dict_to_param(analysis_dict)}"
+    )
+
+    payload = rsp.json()
+    assert rsp.status_code == 200
+    medications = {record["medication"] for record in payload["medications"]}
+    # Two named medications plus "Other".
+    assert len(medications) == 3
+    assert "Other" in medications
+
+
 def test_metadata_medications(client, rxdb, settings, tmp_path):
     rxdb.ingest([{"bnf_code": "1106000X0AAA4A4"}])
     ingest_dmd_data(settings, tmp_path)
