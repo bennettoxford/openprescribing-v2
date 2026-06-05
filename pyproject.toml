@@ -107,6 +107,7 @@ exclude-newer-package = {}
 [dependency-groups]
 dev = [
     "coverage>=7.10.6",
+    "hypothesis>=6.152.9",
     "playwright>=1.56.0",
     "pre-commit>=4.3.0",
     "pytest>=8.4.1",
