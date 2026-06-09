@@ -2,13 +2,11 @@ const orgs = JSON.parse(document.getElementById("orgs").textContent);
 const orgTypes = Object.fromEntries(
   JSON.parse(document.getElementById("org-types").textContent),
 );
-const chartSpec = JSON.parse(document.getElementById("chart").textContent);
-
-const prescribingDecilesUrl = JSON.parse(
-  document.getElementById("prescribing-deciles-url").textContent,
+const chartSpecs = JSON.parse(
+  document.getElementById("chart-specs").textContent,
 );
-const prescribingAllOrgsUrl = JSON.parse(
-  document.getElementById("prescribing-all-orgs-url").textContent,
+const prescribingUrls = JSON.parse(
+  document.getElementById("prescribing-urls").textContent,
 );
 
 const chartConfigs = {
@@ -17,17 +15,17 @@ const chartConfigs = {
   //  - responseKey: the key in the URL response that contains the chart data
   //  - vegaDatasetName: the name of the dataset in the Vega chart spec
   deciles: {
-    apiUrl: prescribingDecilesUrl,
+    apiUrl: prescribingUrls.deciles,
     responseKey: "deciles",
     vegaDatasetName: "deciles",
   },
   "all-orgs-line": {
-    apiUrl: prescribingAllOrgsUrl,
+    apiUrl: prescribingUrls.all_orgs,
     responseKey: "all_orgs",
     vegaDatasetName: "all_orgs_line",
   },
   "all-orgs-dots": {
-    apiUrl: prescribingAllOrgsUrl,
+    apiUrl: prescribingUrls.all_orgs,
     responseKey: "all_orgs",
     vegaDatasetName: "all_orgs_dots",
   },
@@ -44,7 +42,7 @@ const initialisePage = async () => {
 
   setChartType(chartTypeFromUrl());
 
-  chartResult = await vegaEmbed(chartContainer, chartSpec, { renderer: "svg" });
+  chartResult = await vegaEmbed(chartContainer, chartSpecs["org"], { renderer: "svg" });
 
   window.addEventListener("popstate", () => {
     setChartType(chartTypeFromUrl());

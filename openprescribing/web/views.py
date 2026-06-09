@@ -69,9 +69,13 @@ def _build_analysis_context(analysis):
         "org_type_label": org_type.label,
         "build_analysis_url": build_analysis_url,
         "download_analysis_url": download_analysis_url,
-        "prescribing_deciles_url": deciles_api_url,
-        "prescribing_all_orgs_url": all_orgs_api_url,
-        "chart_spec": build_chart_spec(analysis),
+        "prescribing_urls": {
+            "deciles": deciles_api_url,
+            "all_orgs": all_orgs_api_url,
+        },
+        "chart_specs": {
+            "org": build_chart_spec(analysis),
+        },
     }
 
     return ctx
