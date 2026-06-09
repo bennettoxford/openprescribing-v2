@@ -4,7 +4,7 @@ from openprescribing.data.bnf_query import BNFQuery
 from openprescribing.data.list_size_query import ListSizeQuery
 
 
-def build_chart_spec(analysis):
+def build_org_chart_spec(analysis):
     if not analysis:
         return
 

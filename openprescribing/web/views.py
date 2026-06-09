@@ -15,7 +15,7 @@ from openprescribing.data.measures import all_measure_details, load_measure
 from openprescribing.data.models import BNFCode, Org
 
 from .analysis_presentation import AnalysisPresentation
-from .charts import build_chart_spec
+from .charts import build_org_chart_spec
 from .models import Feedback
 from .presenters import (
     make_bnf_table,
@@ -74,7 +74,7 @@ def _build_analysis_context(analysis):
             "all_orgs": all_orgs_api_url,
         },
         "chart_specs": {
-            "org": build_chart_spec(analysis),
+            "org": build_org_chart_spec(analysis),
         },
     }
 
