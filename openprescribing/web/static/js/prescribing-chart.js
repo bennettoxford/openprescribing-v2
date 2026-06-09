@@ -154,6 +154,7 @@ const updateChart = async (chartConfig) => {
   const { apiUrl, responseKey, vegaDatasetName, specName } = chartConfig;
 
   chartLoading.textContent = "Loading chart...";
+  showLoading();
   try {
     await embedSpec(specName);
 
@@ -185,15 +186,26 @@ const updateChart = async (chartConfig) => {
     }
     chartResult.view.run();
 
-    chartLoading.classList.add("invisible");
-    chartContainer.classList.add("visible");
-    chartLoading.classList.remove("visible");
-    chartContainer.classList.remove("invisible");
+    showChart();
   } catch (error) {
     console.error("Unable to render chart", error);
     chartLoading.textContent =
       "Unable to load chart data. Please try again later.";
   }
+};
+
+const showLoading = () => {
+  chartLoading.classList.add("visible");
+  chartContainer.classList.add("invisible");
+  chartLoading.classList.remove("invisible");
+  chartContainer.classList.remove("visible");
+};
+
+const showChart = () => {
+  chartLoading.classList.add("invisible");
+  chartContainer.classList.add("visible");
+  chartLoading.classList.remove("visible");
+  chartContainer.classList.remove("invisible");
 };
 
 const updateUrl = (chartType) => {
