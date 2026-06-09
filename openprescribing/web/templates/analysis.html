@@ -248,7 +248,7 @@
 {% endblock %}
 
 {% block extra_js %}
-{% if chart_spec %}
+{% if analysis %}
 {{ orgs|json_script:"orgs" }}
 {{ org_types|json_script:"org-types" }}
 {{ prescribing_deciles_url|json_script:"prescribing-deciles-url" }}
