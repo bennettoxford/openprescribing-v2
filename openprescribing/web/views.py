@@ -15,7 +15,7 @@ from openprescribing.data.measures import all_measure_details, load_measure
 from openprescribing.data.models import BNFCode, Org
 
 from .analysis_presentation import AnalysisPresentation
-from .charts import build_org_chart_spec
+from .charts import build_medications_chart_spec, build_org_chart_spec
 from .models import Feedback
 from .presenters import (
     make_bnf_table,
@@ -30,6 +30,7 @@ def _build_analysis_context(analysis):
     download_analysis_url = reverse("download-analysis")
     deciles_api_url = None
     all_orgs_api_url = None
+    medications_api_url = None
     org = None
     ntr_dtr_intersection_table = None
 
@@ -55,6 +56,9 @@ def _build_analysis_context(analysis):
         all_orgs_api_url = (
             f"{reverse('api_prescribing_all_orgs')}?{url_parameters_json}"
         )
+        medications_api_url = (
+            f"{reverse('api_prescribing_medications')}?{url_parameters_json}"
+        )
 
     orgs = make_orgs()
 
@@ -72,9 +76,11 @@ def _build_analysis_context(analysis):
         "prescribing_urls": {
             "deciles": deciles_api_url,
             "all_orgs": all_orgs_api_url,
+            "medications": medications_api_url,
         },
         "chart_specs": {
             "org": build_org_chart_spec(analysis),
+            "medications": build_medications_chart_spec(analysis),
         },
     }
 

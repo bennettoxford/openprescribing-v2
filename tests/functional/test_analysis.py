@@ -37,6 +37,7 @@ def test_analysis(live_server, page, sample_data, settings, tmp_path):
     for chart_type, endpoint in [
         ("all-orgs-line", "/api/prescribing-all-orgs/"),
         ("all-orgs-dots", "/api/prescribing-all-orgs/"),
+        ("medications", "/api/prescribing-medications/"),
         # Visit deciles last, because that is the first chart type to be shown.
         ("deciles", "/api/prescribing-deciles/"),
     ]:

@@ -62,6 +62,10 @@ def test_analysis(client, sample_data):
     assert rsp.status_code == 200
     assert rsp.context["analysis_presentation"].chart_type == ChartType.DECILES
 
+    rsp = client.get("?ntr_bnf_codes=1001030U0&chart_type=medications")
+    assert rsp.status_code == 200
+    assert rsp.context["analysis_presentation"].chart_type == ChartType.MEDICATIONS
+
 
 def test_analysis_build(client, sample_data):
     rsp = client.get("/analysis/build/")

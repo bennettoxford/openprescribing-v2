@@ -29,3 +29,4 @@ class ChartType(StrEnum):
     DECILES = "deciles"
     ALL_ORGS_LINE = "all-orgs-line"
     ALL_ORGS_DOTS = "all-orgs-dots"
+    MEDICATIONS = "medications"

@@ -33,6 +33,12 @@ const chartConfigs = {
     vegaDatasetName: "all_orgs_dots",
     specName: "org",
   },
+  medications: {
+    apiUrl: prescribingUrls.medications,
+    responseKey: "medications",
+    vegaDatasetName: "medications",
+    specName: "medications",
+  },
 };
 
 const chartLoading = document.querySelector("#chart-loading");
@@ -116,7 +122,8 @@ const setChartType = (chartType, pushHistory = false) => {
 };
 
 // Embed the named spec, reusing the existing view if it's already embedded. Chart types
-// that share a spec (deciles/all-orgs) avoid re-embedding.
+// that share a spec (deciles/all-orgs) avoid re-embedding; switching to/from the
+// medications chart embeds its separate spec in place of the combined one.
 const embedSpec = async (specName) => {
   if (specName === currentSpecName) {
     return;
@@ -152,8 +159,11 @@ const updateChart = async (chartConfig) => {
         record.month = new Date(record.month);
       });
     }
-    // The combined ("org") spec carries its named datasets on each layer.
-    const datasetNames = chartResult.spec.layer.map((layer) => layer.data.name);
+    // The combined ("org") spec carries its named datasets on each layer; the
+    // single-mark medications spec carries its one dataset at the top level.
+    const datasetNames = chartResult.spec.layer
+      ? chartResult.spec.layer.map((layer) => layer.data.name)
+      : [chartResult.spec.data.name];
     datasetNames.forEach((datasetName) => {
       chartResult.view.remove(datasetName, () => true);
     });

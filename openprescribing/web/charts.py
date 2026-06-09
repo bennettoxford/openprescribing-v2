@@ -57,3 +57,57 @@ def build_org_chart_spec(analysis):
     ).properties(width="container", height=360)
 
     return chart_spec.to_dict()
+
+
+def build_medications_chart_spec(analysis):
+    """Build the spec for the "by medication" stacked area chart.
+
+    Unlike the deciles/all-orgs charts this shows absolute item counts (not a ratio)
+    broken down by medication, so it needs its own y-axis and colour legend.  We
+    therefore give it a separate spec which the frontend embeds in place of the combined
+    chart, rather than adding it as a layer to that chart (which would leak its axis and
+    legend onto the other chart types).
+    """
+    if not analysis:
+        return
+
+    x = alt.X("month:T", title="Month", axis=alt.Axis(format="%Y %b"))
+    chart_spec = (
+        alt.Chart(alt.NamedData("medications"))
+        .mark_area()
+        .transform_joinaggregate(medication_total="sum(value)", groupby=["medication"])
+        .transform_joinaggregate(max_medication_total="max(medication_total)")
+        # Stack "Other" at the bottom, then the named medications largest-first so the
+        # smallest ends up at the top.  Driving both the stack `order` and the colour
+        # legend `sort` from this one field keeps the legend in the same order as the
+        # areas.
+        .transform_calculate(
+            stack_order=(
+                "datum.medication === 'Other' ? -1"
+                " : datum.max_medication_total - datum.medication_total"
+            )
+        )
+        .encode(
+            x=x,
+            y=alt.Y("value:Q", title="Items", stack="zero"),
+            color=alt.Color(
+                "medication:N",
+                title="Medication",
+                sort=alt.EncodingSortField(
+                    field="stack_order", op="max", order="descending"
+                ),
+            ),
+            order=alt.Order("stack_order:Q"),
+            tooltip=[
+                alt.Tooltip("medication:N", title="Medication"),
+                alt.Tooltip("month:T", title="Month", format="%Y %b"),
+                alt.Tooltip("value:Q", title="Items"),
+            ],
+        )
+    )
+
+    chart_spec = chart_spec.configure(
+        autosize={"type": "fit", "resize": True}
+    ).properties(width="container", height=360)
+
+    return chart_spec.to_dict()
