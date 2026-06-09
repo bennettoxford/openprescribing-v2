@@ -114,11 +114,23 @@ const setupOrgSearch = () => {
 
 const setChartType = (chartType, pushHistory = false) => {
   document.getElementById(chartType).checked = true;
+  updateDenominatorVisibility(chartType);
   updateChart(chartConfigs[chartType]);
 
   if (pushHistory) {
     updateUrl(chartType);
   }
+};
+
+const updateDenominatorVisibility = (chartType) => {
+  // The medications chart is derived from the numerator query alone, but it is
+  // generated from an Analysis object that may have a denominator query.  The
+  // denominator description and the numerator/denominator intersection table aren't
+  // relevant and should be hidden.
+  ["denominator-section", "presentations-section"].forEach((id) => {
+    const el = document.getElementById(id);
+    el.classList.toggle("d-none", chartType === "medications");
+  });
 };
 
 // Embed the named spec, reusing the existing view if it's already embedded. Chart types
