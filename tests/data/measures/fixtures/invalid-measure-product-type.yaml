@@ -3,9 +3,9 @@ metadata:
   why_it_matters: Invalid product_type
   tags:
     - demo
-output:
-  numerator: items
-  denominator: list_size
+options:
+  type: prescribing_vs_list_size
+  output_value: items
 queries:
   - numerator:
       product_type: neither_generic_nor_branded

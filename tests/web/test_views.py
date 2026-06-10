@@ -133,9 +133,9 @@ metadata:
   why_it_matters: This is a demo measure
   tags:
     - demo
-output:
-  numerator: items
-  denominator: list_size
+options:
+  type: prescribing_vs_list_size
+  output_value: items
 queries:
   - numerator:
       bnf_codes:
@@ -155,7 +155,10 @@ queries:
 
 def test_analysis_download(client, sample_data, tmp_path, settings):
     analysis_dict = {
-        "output": {"numerator": "items", "denominator": "list_size"},
+        "options": {
+            "type": "prescribing_vs_list_size",
+            "output_value": "items",
+        },
         "queries": [
             {
                 "numerator": {

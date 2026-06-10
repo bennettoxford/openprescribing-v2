@@ -3,9 +3,10 @@ metadata:
   why_it_matters: This is a demo measure which filters by form
   tags:
     - demo
-output:
-  # invalid numerator type
-  numerator: bnf_items
+options:
+  type: prescribing_vs_list_size
+  # invalid output_value type
+  output_value: bnf_items
   denominator: list_size
 queries:
   - numerator:

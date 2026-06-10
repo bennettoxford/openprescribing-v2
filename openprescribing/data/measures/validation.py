@@ -59,19 +59,23 @@ class Query(BaseModel):
     denominator: BNFQuery | None = None
 
 
-output_types = (
+output_values = (
     Literal["items"] | Literal["quantity"] | Literal["cost"] | Literal["custom"]
 )
 
+analysis_types = (
+    Literal["prescribing_vs_prescribing"] | Literal["prescribing_vs_list_size"]
+)
 
-class Output(BaseModel):
-    numerator: output_types
-    denominator: output_types | Literal["list_size"]
+
+class Options(BaseModel):
+    type: analysis_types
+    output_value: output_values
 
 
 class Measure(BaseModel):
     metadata: Metadata
-    output: Output
+    options: Options
     queries: list[Query]
 
     @field_validator("queries")
@@ -131,8 +135,11 @@ def schema():
             Optional("form_routes"): Seq(Str()),
         }
     )
-    # Currently this must be `items`, `quantity`, `cost`, `custom` or `list_size`
-    output = Str()
+    # Currently this must be `items`, `quantity`, `cost`, or `custom`.
+    output_values = Str()
+    # Currently this must be `prescribing_vs_prescribing` or `prescribing_vs_list_size`
+    analysis_types = Str()
+
     query = Map(
         {
             NUMERATOR_KEY: query_params,
@@ -142,7 +149,7 @@ def schema():
     schema = Map(
         {
             "metadata": metadata,
-            "output": Map({NUMERATOR_KEY: output, DENOMINATOR_KEY: output}),
+            "options": Map({"type": analysis_types, "output_value": output_values}),
             "queries": Seq(query),
         }
     )
