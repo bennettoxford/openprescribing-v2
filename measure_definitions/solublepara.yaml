@@ -12,9 +12,9 @@ metadata:
   checked_by: n/a
   date_reviewed: n/a
   date_next_review: n/a
-output:
-  numerator: items
-  denominator: items
+options:
+  type: prescribing_vs_prescribing
+  output_value: items
 queries:
   - numerator:
       bnf_codes:
@@ -33,4 +33,4 @@ queries:
           - "0407010F0_AH" # Co-Codamol_Tab 30mg/500mg (brands and generic)
           - "0407010H0_AA" # Paracet_Cap 500mg (brands and generic)
           - "0407010H0_AM" # Paracet_Tab 500mg (brands and generic)
-          - "0407010H0_AQ" # Paracet_Tab Solb 500mg (brands and generic)  
+          - "0407010H0_AQ" # Paracet_Tab Solb 500mg (brands and generic)

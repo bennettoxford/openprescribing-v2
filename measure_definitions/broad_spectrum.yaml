@@ -13,9 +13,9 @@ metadata:
   checked_by: andrew.brown@phc.ox.ac.uk
   date_reviewed: 2026-03-23
   date_next_review: 2028-03-23
-output:
-  numerator: items
-  denominator: items
+options:
+  type: prescribing_vs_prescribing
+  output_value: items
 queries:
   - numerator:
       routes:
@@ -33,5 +33,5 @@ queries:
             - "0501" #Antibacterial drugs
           excluded:
             - "050109" # Exclude antituberculosis drugs
-            - "050110" # Exclude antileprotic drugs 
-            - "0501130H0" # Exclude methenamine as this is a urinary antiseptic 
+            - "050110" # Exclude antileprotic drugs
+            - "0501130H0" # Exclude methenamine as this is a urinary antiseptic

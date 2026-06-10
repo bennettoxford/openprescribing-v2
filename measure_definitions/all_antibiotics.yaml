@@ -14,9 +14,9 @@ metadata:
   checked_by: caroline.acuda@phc.ox.ac.uk
   date_reviewed: 2026-03-23
   date_next_review: 2028-03-23
-output:
-  numerator: items
-  denominator: list_size
+options:
+  type: prescribing_vs_list_size
+  output_value: items
 queries:
   - numerator:
       routes:
