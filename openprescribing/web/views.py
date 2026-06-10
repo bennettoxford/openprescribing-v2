@@ -25,7 +25,7 @@ from .presenters import (
 )
 
 
-def _build_analysis_context(analysis):
+def _build_analysis_context(analysis, medications_order):
     build_analysis_url = reverse("build-analysis")
     download_analysis_url = reverse("download-analysis")
     deciles_api_url = None
@@ -80,7 +80,7 @@ def _build_analysis_context(analysis):
         },
         "chart_specs": {
             "org": build_org_chart_spec(analysis),
-            "medications": build_medications_chart_spec(analysis),
+            "medications": build_medications_chart_spec(analysis, **medications_order),
         },
     }
 
@@ -95,11 +95,24 @@ def analysis(request):
     else:
         analysis = None
 
-    ctx = _build_analysis_context(analysis)
+    ctx = _build_analysis_context(analysis, _medications_order(request))
     ctx["measure"] = False
     ctx["analysis_presentation"] = analysis_presentation
 
     return render(request, "analysis.html", ctx)
+
+
+def _medications_order(request):
+    """Pull the "by medication" chart ordering from the query string, e.g.
+    ?largest=bottom&other=top.  Unknown values fall back to the chart's defaults.
+
+    Intended to be a temporary solution to get feedback.
+    """
+    order = {}
+    for key in ("largest", "other"):
+        if key in request.GET:  # pragma: no cover
+            order[key] = request.GET[key]
+    return order
 
 
 def build_analysis(request):
@@ -132,7 +145,7 @@ def measure(request, measure_name):
     analysis_dict["org_id"] = request.GET.get("org_id")
     analysis = Analysis.from_dict(analysis_dict)
 
-    ctx = _build_analysis_context(analysis)
+    ctx = _build_analysis_context(analysis, _medications_order(request))
     ctx["measure"] = True
     ctx["measure_title"] = analysis_dict["metadata"]["title"]
     ctx["why_it_matters"] = markdown.markdown(
