@@ -20,26 +20,26 @@ metadata:
   denominator_short: Items for 2.5mg and 10mg methotrexate tablets
   low_is_good: true
   authored_by: caroline.acuda@phc.ox.ac.uk
-  checked_by: 
+  checked_by:
   date_reviewed: 2024-02-12
   next_review: 2026-02-12
   measure_complexity: low
   radar_exclude: false
 
-output:
-  numerator: items
-  denominator: items
+options:
+  type: prescribing_vs_prescribing
+  output_value: items
 
 queries:
   - numerator:
       bnf_codes:
         included:
           # Methotrexate_Tab 10mg
-          - 1001030U0_AC 
+          - 1001030U0_AC
     denominator:
       bnf_codes:
         included:
           # Methotrexate_Tab 10mg
-          - 1001030U0_AC 
+          - 1001030U0_AC
           # Methotrexate_Tab 2.5mg
           - 1001030U0_AB

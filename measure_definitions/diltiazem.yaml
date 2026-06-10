@@ -13,9 +13,9 @@ metadata:
   checked_by: n/a
   date_reviewed: n/a
   date_next_review: n/a
-output:
-  numerator: items
-  denominator: items
+options:
+  type: prescribing_vs_prescribing
+  output_value: items
 queries:
   - numerator:
       bnf_codes:
@@ -23,11 +23,11 @@ queries:
           - "0206020C0AA" # Diltiazem (generic)
         excluded:
           - "00206020C0AAAAAA" # Diltiazem 60mg modified-release tablets
-          - "00206020C0AAAJAJ" # Diltiazem 60mg modified-release capsules          
+          - "00206020C0AAAJAJ" # Diltiazem 60mg modified-release capsules
     denominator:
       bnf_codes:
         included:
           - "0206020C0" # Diltiazem (brand and generic)
-        excluded: 
+        excluded:
           - "0206020C0%AA" # Diltiazem 60mg modified-release tablets (brand and generic)
           - "0206020C0%AJ" # Diltiazem 60mg modified-release capsules (brand and generic)

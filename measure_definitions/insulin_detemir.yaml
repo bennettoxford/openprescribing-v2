@@ -14,9 +14,9 @@ metadata:
   checked_by: n/a
   date_reviewed: n/a
   date_next_review: n/a
-output:
-  numerator: items
-  denominator: list_size
+options:
+  type: prescribing_vs_list_size
+  output_value: items
 queries:
     - numerator:
         bnf_codes:

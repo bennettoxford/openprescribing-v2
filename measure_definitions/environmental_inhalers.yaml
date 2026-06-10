@@ -14,9 +14,9 @@ metadata:
   checked_by: n/a
   date_reviewed: n/a
   date_next_review: n/a
-output:
-  numerator: items
-  denominator: items
+options:
+  type: prescribing_vs_prescribing
+  output_value: items
 queries:
   - numerator:
       form_routes:
@@ -27,13 +27,12 @@ queries:
         excluded:
           - "0301011R0" # Exclude salbutamol
     denominator:
-      form_routes: 
+      form_routes:
         - "pressurizedinhalation.inhalation"
         - "powderinhalation.inhalation"
-        - "inhalationsolution.inhalation" 
+        - "inhalationsolution.inhalation"
       bnf_codes:
         included:
-          - "03" # BNF Chapter 3  
+          - "03" # BNF Chapter 3
         excluded:
-          - "0301011R0" # Exclude salbutamol    
-       
+          - "0301011R0" # Exclude salbutamol

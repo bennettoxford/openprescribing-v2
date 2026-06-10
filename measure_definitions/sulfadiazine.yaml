@@ -20,9 +20,9 @@ metadata:
   next_review: 2026-02-12
   measure_complexity: low
   radar_exclude: false
-output:
-  numerator: items
-  denominator: list_size
+options:
+  type: prescribing_vs_list_size
+  output_value: items
 queries:
   - numerator:
       bnf_codes:
