@@ -17,9 +17,9 @@ def test_load_measure(settings):
             "title": "DEMO Ratio of branded prescribing of a drug to all prescribing of a drug",
             "why_it_matters": "This one doesn't really matter!",
         },
-        "output": {
-            "denominator": "items",
-            "numerator": "items",
+        "options": {
+            "type": "prescribing_vs_prescribing",
+            "output_value": "items",
         },
         "queries": [
             {

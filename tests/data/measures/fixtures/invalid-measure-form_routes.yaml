@@ -3,9 +3,9 @@ metadata:
   why_it_matters: This is a demo measure which filters by form
   tags:
     - demo
-output:
-  numerator: items
-  denominator: list_size
+options:
+  type: prescribing_vs_list_size
+  output_value: items
 queries:
   - numerator:
       form_routes:

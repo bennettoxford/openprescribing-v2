@@ -3,9 +3,9 @@
     why_it_matters: This is a demo measure which uses all BNFQuery params correctly
     tags:
       - demo
-  output:
-    numerator: items
-    denominator: list_size
+  options:
+    type: prescribing_vs_list_size
+    output_value: items
   queries:
     - numerator:
         product_type: generic
