@@ -23,5 +23,4 @@ queries:
         - intravenous
         - inhalation
       bnf_codes:
-        included:
-          - "050112" # Quinolones
+        - "050112" # Quinolones

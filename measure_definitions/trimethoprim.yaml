@@ -17,10 +17,8 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        included:
-          - "0501080W0" # Trimethoprim
+        - "0501080W0" # Trimethoprim
     denominator:
       bnf_codes:
-        included:
-          - "0501080W0" # Trimethoprim
-          - "0501130R0" # Nitrofurantoin
+        - "0501080W0" # Trimethoprim
+        - "0501130R0" # Nitrofurantoin

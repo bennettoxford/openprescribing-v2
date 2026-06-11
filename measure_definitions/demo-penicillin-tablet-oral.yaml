@@ -11,5 +11,4 @@ queries:
       form_routes:
         - tablet.oral
       bnf_codes:
-          included:
-              - "0501013"
+        - "0501013"

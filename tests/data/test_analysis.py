@@ -112,15 +112,11 @@ def test_from_dict():
         "queries": [
             {
                 "numerator": {
-                    "bnf_codes": {
-                        "included": ["01"],
-                        "excluded": ["0101"],
-                    },
+                    "bnf_codes": ["01"],
+                    "bnf_codes_excluded": ["0101"],
                 },
                 "denominator": {
-                    "bnf_codes": {
-                        "included": ["01"],
-                    }
+                    "bnf_codes": ["01"],
                 },
             }
         ],
@@ -141,16 +137,12 @@ def test_from_dict_branded():
             {
                 "numerator": {
                     "product_type": "branded",
-                    "bnf_codes": {
-                        "included": ["01"],
-                        "excluded": ["0101"],
-                    },
+                    "bnf_codes": ["01"],
+                    "bnf_codes_excluded": ["0101"],
                 },
                 "denominator": {
                     "product_type": "branded",
-                    "bnf_codes": {
-                        "included": ["01"],
-                    },
+                    "bnf_codes": ["01"],
                 },
             }
         ],
@@ -170,10 +162,8 @@ def test_from_dict_numerator_only():
             {
                 "numerator": {
                     "product_type": "branded",
-                    "bnf_codes": {
-                        "included": ["01"],
-                        "excluded": ["0101"],
-                    },
+                    "bnf_codes": ["01"],
+                    "bnf_codes_excluded": ["0101"],
                 }
             }
         ],
@@ -192,9 +182,7 @@ def test_from_dict_ingredients():
         "queries": [
             {
                 "numerator": {
-                    "bnf_codes": {
-                        "included": ["01"],
-                    },
+                    "bnf_codes": ["01"],
                     "ingredient_ids": [1],
                 },
             }

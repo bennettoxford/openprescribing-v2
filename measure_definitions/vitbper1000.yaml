@@ -18,5 +18,4 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        included:
-          - "0906027G0" # Vit B Compound
+        - "0906027G0" # Vit B Compound

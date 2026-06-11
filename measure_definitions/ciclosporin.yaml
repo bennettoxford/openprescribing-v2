@@ -18,11 +18,9 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        included:
-          - "0802020G0AA" # Ciclosporin (Systemic) (generic)
-          - "0802020T0AA" # Tacrolimus (Systemic) (generic)
+        - "0802020G0AA" # Ciclosporin (Systemic) (generic)
+        - "0802020T0AA" # Tacrolimus (Systemic) (generic)
     denominator:
       bnf_codes:
-        included:
-          - "0802020G0" # Ciclosporin (Systemic) (brand and generic)
-          - "0802020T0" # Tacrolimus (Systemic) (brand and generic)
+        - "0802020G0" # Ciclosporin (Systemic) (brand and generic)
+        - "0802020T0" # Tacrolimus (Systemic) (brand and generic)

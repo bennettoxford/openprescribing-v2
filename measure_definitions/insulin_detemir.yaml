@@ -20,6 +20,5 @@ options:
 queries:
     - numerator:
         bnf_codes:
-            included:
-                # Insulin detemir
-                - 0601012X0
+          # Insulin detemir
+          - 0601012X0

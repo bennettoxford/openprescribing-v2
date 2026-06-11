@@ -168,7 +168,8 @@ class BNFQuery:
 
     @classmethod
     def from_dict(cls, query_dict):
-        bnf_codes_dict = query_dict.get("bnf_codes", {"included": [], "excluded": []})
+        bnf_codes = tuple(query_dict.get("bnf_codes", []))
+        bnf_codes_excluded = tuple(query_dict.get("bnf_codes_excluded", []))
         product_type = query_dict.get("product_type", cls.PRODUCT_TYPE_DEFAULT)
 
         form_routes = tuple(query_dict.get("form_routes", []))
@@ -185,9 +186,9 @@ class BNFQuery:
         vtm_ids_excluded = tuple(query_dict.get("vtm_ids_excluded", []))
 
         return cls(
-            tuple(bnf_codes_dict["included"]),
-            tuple(bnf_codes_dict.get("excluded", [])),
-            ProductType(product_type),
+            bnf_codes=bnf_codes,
+            bnf_codes_excluded=bnf_codes_excluded,
+            product_type=ProductType(product_type),
             form_routes=form_routes,
             form_routes_excluded=form_routes_excluded,
             forms=forms,
@@ -201,11 +202,11 @@ class BNFQuery:
         )
 
     def to_dict(self):
-        bnf_query_dict = {
-            "bnf_codes": {"included": list(self.bnf_codes)},
-        }
+        bnf_query_dict = {}
+        if self.bnf_codes:
+            bnf_query_dict["bnf_codes"] = list(self.bnf_codes)
         if self.bnf_codes_excluded:
-            bnf_query_dict["bnf_codes"]["excluded"] = list(self.bnf_codes_excluded)
+            bnf_query_dict["bnf_codes_excluded"] = list(self.bnf_codes_excluded)
         if not self.product_type == ProductType.ALL:
             bnf_query_dict["product_type"] = self.product_type.value
         if self.form_routes:

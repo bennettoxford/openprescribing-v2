@@ -17,7 +17,7 @@ def test_analysis(client, sample_data):
     rsp = client.get("?ntr_bnf_codes=1001030U0")
     assert rsp.status_code == 200
     assert (
-        "numerator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001030U0"
+        "numerator%22%3A+%7B%22bnf_codes%22%3A+%5B%221001030U0"
         in rsp.context["prescribing_urls"]["deciles"]
     )
     assert rsp.context["analysis_presentation"].chart_type == ChartType.DECILES
@@ -26,14 +26,14 @@ def test_analysis(client, sample_data):
     rsp = client.get("?ntr_bnf_codes=1001030U0&dtr_bnf_codes=1001")
     assert rsp.status_code == 200
     assert (
-        "denominator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001"
+        "denominator%22%3A+%7B%22bnf_codes%22%3A+%5B%221001"
         in rsp.context["prescribing_urls"]["deciles"]
     )
 
     rsp = client.get("?ntr_bnf_codes=1001030U0AAABAB,1001030U0AAABAB")
     assert rsp.status_code == 200
     assert (
-        "numerator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001030U0AAABAB%22%2C+%221001030U0AAABAB"
+        "numerator%22%3A+%7B%22bnf_codes%22%3A+%5B%221001030U0AAABAB%22%2C+%221001030U0AAABAB"
         in rsp.context["prescribing_urls"]["deciles"]
     )
 
@@ -42,7 +42,7 @@ def test_analysis(client, sample_data):
     )
     assert rsp.status_code == 200
     assert (
-        "numerator%22%3A+%7B%22bnf_codes%22%3A+%7B%22included%22%3A+%5B%221001030U0AA%22%5D%2C+%22excluded%22%3A+%5B%221001030U0AAABAB"
+        "numerator%22%3A+%7B%22bnf_codes%22%3A+%5B%221001030U0AA%22%5D%2C+%22bnf_codes_excluded%22%3A+%5B%221001030U0AAABAB"
         in rsp.context["prescribing_urls"]["deciles"]
     )
 
@@ -143,8 +143,7 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        included:
-          - "1001030U0"
+        - "1001030U0"
 
 """
     (tmp_path / "test-measure.yaml").write_text(test_yaml)
@@ -170,12 +169,10 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        included:
-          - "1001030U0"
+        - "1001030U0"
     denominator:
       bnf_codes:
-        included:
-          - "9999999"
+        - "9999999"
 """
     (tmp_path / "test-measure.yaml").write_text(test_yaml)
     settings.MEASURE_DEFINITIONS_PATH = tmp_path
@@ -195,9 +192,7 @@ def test_analysis_download(client, sample_data, tmp_path, settings):
         "queries": [
             {
                 "numerator": {
-                    "bnf_codes": {
-                        "included": ["01"],
-                    },
+                    "bnf_codes": ["01"],
                     "ingredient_ids": [1],
                 },
             }

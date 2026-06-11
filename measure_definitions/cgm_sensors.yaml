@@ -17,5 +17,4 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        included:
-          - ""
+        - ""

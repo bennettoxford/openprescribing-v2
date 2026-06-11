@@ -19,9 +19,7 @@ def _analysis_dict_to_param(analysis_dict):
                 "queries": [
                     {
                         "numerator": {
-                            "bnf_codes": {
-                                "included": ["1001030U0"],
-                            },
+                            "bnf_codes": ["1001030U0"],
                         },
                     },
                 ],
@@ -33,9 +31,7 @@ def _analysis_dict_to_param(analysis_dict):
                 "queries": [
                     {
                         "numerator": {
-                            "bnf_codes": {
-                                "included": ["1001030U0"],
-                            },
+                            "bnf_codes": ["1001030U0"],
                         },
                     },
                 ],
@@ -48,10 +44,8 @@ def _analysis_dict_to_param(analysis_dict):
                 "queries": [
                     {
                         "numerator": {
-                            "bnf_codes": {
-                                "included": ["1001030U0"],
-                                "excluded": ["1001030U0AAABAB"],
-                            },
+                            "bnf_codes": ["1001030U0"],
+                            "bnf_codes_excluded": ["1001030U0AAABAB"],
                         },
                     },
                 ],
@@ -63,14 +57,10 @@ def _analysis_dict_to_param(analysis_dict):
                 "queries": [
                     {
                         "numerator": {
-                            "bnf_codes": {
-                                "included": ["1001030U0AA"],
-                            },
+                            "bnf_codes": ["1001030U0AA"],
                         },
                         "denominator": {
-                            "bnf_codes": {
-                                "included": ["1001030U0"],
-                            },
+                            "bnf_codes": ["1001030U0"],
                         },
                     },
                 ],
@@ -93,9 +83,7 @@ def test_prescribing_deciles(client, sample_data):
         "queries": [
             {
                 "numerator": {
-                    "bnf_codes": {
-                        "included": ["1001030U0"],
-                    },
+                    "bnf_codes": ["1001030U0"],
                 },
             },
         ],
@@ -115,9 +103,7 @@ def test_prescribing_deciles_with_practice(client, sample_data):
         "queries": [
             {
                 "numerator": {
-                    "bnf_codes": {
-                        "included": ["1001030U0"],
-                    },
+                    "bnf_codes": ["1001030U0"],
                 },
             },
         ],
@@ -138,10 +124,8 @@ def test_prescribing_deciles_with_exclusion(client, sample_data):
         "queries": [
             {
                 "numerator": {
-                    "bnf_codes": {
-                        "included": ["1001030U0"],
-                        "excluded": ["1001030U0AAABAB"],
-                    },
+                    "bnf_codes": ["1001030U0"],
+                    "bnf_codes_excluded": ["1001030U0AAABAB"],
                 },
             },
         ],
@@ -161,14 +145,10 @@ def test_prescribing_deciles_with_denominator(client, sample_data):
         "queries": [
             {
                 "numerator": {
-                    "bnf_codes": {
-                        "included": ["1001030U0AA"],
-                    },
+                    "bnf_codes": ["1001030U0AA"],
                 },
                 "denominator": {
-                    "bnf_codes": {
-                        "included": ["1001030U0"],
-                    },
+                    "bnf_codes": ["1001030U0"],
                 },
             },
         ],
@@ -190,9 +170,7 @@ def test_prescribing_medications(client, sample_data):
         "queries": [
             {
                 "numerator": {
-                    "bnf_codes": {
-                        "included": ["1001030U0"],
-                    },
+                    "bnf_codes": ["1001030U0"],
                 },
             },
         ],
@@ -221,9 +199,7 @@ def test_prescribing_medications_groups_other(client, sample_data, monkeypatch):
         "queries": [
             {
                 "numerator": {
-                    "bnf_codes": {
-                        "included": ["1001030U0"],
-                    },
+                    "bnf_codes": ["1001030U0"],
                 },
             },
         ],
