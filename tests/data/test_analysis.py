@@ -195,7 +195,7 @@ def test_from_dict_ingredients():
                     "bnf_codes": {
                         "included": ["01"],
                     },
-                    "ingredient_ids": ["01"],
+                    "ingredient_ids": [1],
                 },
             }
         ],

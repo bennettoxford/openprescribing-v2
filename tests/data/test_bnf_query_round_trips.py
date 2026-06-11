@@ -16,6 +16,9 @@ from openprescribing.data.bnf_query import (
 tokens = st.text(alphabet=string.ascii_letters + string.digits, min_size=1, max_size=8)
 token_tuples = st.lists(tokens, max_size=4).map(tuple)
 
+# ingredient_ids and vtm_ids are integers (SNOMED ids).
+id_tuples = st.lists(st.integers(min_value=0), max_size=4).map(tuple)
+
 
 @st.composite
 def bnf_queries(draw):
@@ -31,10 +34,10 @@ def bnf_queries(draw):
         forms_excluded=draw(token_tuples),
         routes=draw(token_tuples),
         routes_excluded=draw(token_tuples),
-        ingredient_ids=draw(token_tuples),
-        ingredient_ids_excluded=draw(token_tuples),
-        vtm_ids=draw(token_tuples),
-        vtm_ids_excluded=draw(token_tuples),
+        ingredient_ids=draw(id_tuples),
+        ingredient_ids_excluded=draw(id_tuples),
+        vtm_ids=draw(id_tuples),
+        vtm_ids_excluded=draw(id_tuples),
     )
 
 

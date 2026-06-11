@@ -57,7 +57,7 @@ def _get_bnf_codes_for_ingredient_ids(ingredient_ids):
             f"""
             SELECT bnf_code
             FROM medications
-            WHERE list_has_any(ingredient_ids, [{", ".join(ingredient_ids)}])
+            WHERE list_has_any(ingredient_ids, [{", ".join(str(i) for i in ingredient_ids)}])
             """
         )
         return [x[0] for x in results.fetchall()]
@@ -69,7 +69,7 @@ def _get_bnf_codes_for_vtm_ids(vtm_ids):
             f"""
             SELECT bnf_code
             FROM medications
-            WHERE vtm_id IN ({", ".join(vtm_ids)})
+            WHERE vtm_id IN ({", ".join(str(i) for i in vtm_ids)})
             """
         )
         return [x[0] for x in results.fetchall()]
@@ -88,10 +88,10 @@ class BNFQuery:
     forms_excluded: tuple[str] = ()
     routes: tuple[str] = ()
     routes_excluded: tuple[str] = ()
-    ingredient_ids: tuple[str] = ()
-    ingredient_ids_excluded: tuple[str] = ()
-    vtm_ids: tuple[str] = ()
-    vtm_ids_excluded: tuple[str] = ()
+    ingredient_ids: tuple[int] = ()
+    ingredient_ids_excluded: tuple[int] = ()
+    vtm_ids: tuple[int] = ()
+    vtm_ids_excluded: tuple[int] = ()
 
     PRODUCT_TYPE_DEFAULT = "all"
 
@@ -111,12 +111,18 @@ class BNFQuery:
         object.__setattr__(self, "forms_excluded", tuple(self.forms_excluded))
         object.__setattr__(self, "routes", tuple(self.routes))
         object.__setattr__(self, "routes_excluded", tuple(self.routes_excluded))
-        object.__setattr__(self, "ingredient_ids", tuple(self.ingredient_ids))
         object.__setattr__(
-            self, "ingredient_ids_excluded", tuple(self.ingredient_ids_excluded)
+            self, "ingredient_ids", tuple(int(i) for i in self.ingredient_ids)
         )
-        object.__setattr__(self, "vtm_ids", tuple(self.vtm_ids))
-        object.__setattr__(self, "vtm_ids_excluded", tuple(self.vtm_ids_excluded))
+        object.__setattr__(
+            self,
+            "ingredient_ids_excluded",
+            tuple(int(i) for i in self.ingredient_ids_excluded),
+        )
+        object.__setattr__(self, "vtm_ids", tuple(int(i) for i in self.vtm_ids))
+        object.__setattr__(
+            self, "vtm_ids_excluded", tuple(int(i) for i in self.vtm_ids_excluded)
+        )
 
     @staticmethod
     def has_params(field, params):
@@ -172,13 +178,11 @@ class BNFQuery:
         routes = tuple(query_dict.get("routes", []))
         routes_excluded = tuple(query_dict.get("routes_excluded", []))
 
-        ingredient_ids = tuple(str(i) for i in query_dict.get("ingredient_ids", []))
-        ingredient_ids_excluded = tuple(
-            str(i) for i in query_dict.get("ingredient_ids_excluded", [])
-        )
+        ingredient_ids = tuple(query_dict.get("ingredient_ids", []))
+        ingredient_ids_excluded = tuple(query_dict.get("ingredient_ids_excluded", []))
 
-        vtm_ids = tuple(str(i) for i in query_dict.get("vtm_ids", []))
-        vtm_ids_excluded = tuple(str(i) for i in query_dict.get("vtm_ids_excluded", []))
+        vtm_ids = tuple(query_dict.get("vtm_ids", []))
+        vtm_ids_excluded = tuple(query_dict.get("vtm_ids_excluded", []))
 
         return cls(
             tuple(bnf_codes_dict["included"]),
@@ -358,15 +362,19 @@ class BNFQuery:
         if self.routes_excluded:
             params[f"{field}_routes_excluded"] = ",".join(self.routes_excluded)
         if self.ingredient_ids:
-            params[f"{field}_ingredient_ids"] = ",".join(self.ingredient_ids)
+            params[f"{field}_ingredient_ids"] = ",".join(
+                str(i) for i in self.ingredient_ids
+            )
         if self.ingredient_ids_excluded:
             params[f"{field}_ingredient_ids_excluded"] = ",".join(
-                self.ingredient_ids_excluded
+                str(i) for i in self.ingredient_ids_excluded
             )
         if self.vtm_ids:
-            params[f"{field}_vtm_ids"] = ",".join(self.vtm_ids)
+            params[f"{field}_vtm_ids"] = ",".join(str(i) for i in self.vtm_ids)
         if self.vtm_ids_excluded:
-            params[f"{field}_vtm_ids_excluded"] = ",".join(self.vtm_ids_excluded)
+            params[f"{field}_vtm_ids_excluded"] = ",".join(
+                str(i) for i in self.vtm_ids_excluded
+            )
 
         return params
 
