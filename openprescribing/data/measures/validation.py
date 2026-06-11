@@ -31,13 +31,9 @@ class Metadata(BaseModel):
     why_it_matters: str
 
 
-class BNFCode(BaseModel):
-    included: list[str]
-    excluded: list[str] | None = None
-
-
 class BNFQuery(BaseModel):
-    bnf_codes: BNFCode | None = None
+    bnf_codes: list[str] | None = None
+    bnf_codes_excluded: list[str] | None = None
     form_routes: list[str] | None = None
     forms: list[str] | None = None
     routes: list[str] | None = None
@@ -113,16 +109,11 @@ def schema():
     # nb. schema does not validate this is a valid BNF code
     bnf_code = Str()
     bnf_code_list = Seq(bnf_code)
-    bnf_codes = Map(
-        {
-            Optional("included"): bnf_code_list,
-            Optional("excluded"): bnf_code_list,
-        }
-    )
     # all of these query params are ANDed together
     query_params = Map(
         {
-            Optional("bnf_codes"): bnf_codes,
+            Optional("bnf_codes"): bnf_code_list,
+            Optional("bnf_codes_excluded"): bnf_code_list,
             # corresponds to `cd` in `Ing`
             Optional("ingredient_ids"): Seq(Int()),
             # from a set list like `tablet`

@@ -710,36 +710,33 @@ def test_to_params_with_ingredient_ids():
 
 def test_to_dict_bnf_codes_included():
     query = BNFQuery(bnf_codes=["1001030U0"])
-    assert query.to_dict() == {"bnf_codes": {"included": ["1001030U0"]}}
+    assert query.to_dict() == {"bnf_codes": ["1001030U0"]}
 
 
 def test_to_dict_bnf_codes_excluded():
     query = BNFQuery(bnf_codes=["1001030U0"], bnf_codes_excluded=["1001030U0AAABAB"])
     assert query.to_dict() == {
-        "bnf_codes": {
-            "included": ["1001030U0"],
-            "excluded": ["1001030U0AAABAB"],
-        }
+        "bnf_codes": ["1001030U0"],
+        "bnf_codes_excluded": ["1001030U0AAABAB"],
     }
 
 
 def test_to_dict_product_type():
     query = BNFQuery(bnf_codes=["1001030U0"], product_type=ProductType.GENERIC)
     assert query.to_dict() == {
-        "bnf_codes": {"included": ["1001030U0"]},
+        "bnf_codes": ["1001030U0"],
         "product_type": "generic",
     }
 
 
 def test_to_dict_product_type_all_omitted():
     query = BNFQuery(bnf_codes=["1001030U0"], product_type=ProductType.ALL)
-    assert query.to_dict() == {"bnf_codes": {"included": ["1001030U0"]}}
+    assert query.to_dict() == {"bnf_codes": ["1001030U0"]}
 
 
 def test_to_dict_form_routes():
     query = BNFQuery(form_routes=["tablet.oral"])
     assert query.to_dict() == {
-        "bnf_codes": {"included": []},
         "form_routes": ["tablet.oral"],
     }
 
@@ -747,7 +744,6 @@ def test_to_dict_form_routes():
 def test_to_dict_form_routes_excluded():
     query = BNFQuery(form_routes_excluded=["solutioninjection.intravenous"])
     assert query.to_dict() == {
-        "bnf_codes": {"included": []},
         "form_routes_excluded": ["solutioninjection.intravenous"],
     }
 
@@ -760,7 +756,6 @@ def test_to_dict_forms_and_routes():
         routes_excluded=["intravenous"],
     )
     assert query.to_dict() == {
-        "bnf_codes": {"included": []},
         "forms": ["tablet"],
         "forms_excluded": ["capsule"],
         "routes": ["oral"],
@@ -771,7 +766,6 @@ def test_to_dict_forms_and_routes():
 def test_to_dict_ingredient_ids():
     query = BNFQuery(ingredient_ids=[53034005])
     assert query.to_dict() == {
-        "bnf_codes": {"included": []},
         "ingredient_ids": [53034005],
     }
 
@@ -779,7 +773,6 @@ def test_to_dict_ingredient_ids():
 def test_to_dict_ingredient_ids_excluded():
     query = BNFQuery(ingredient_ids_excluded=[53034005])
     assert query.to_dict() == {
-        "bnf_codes": {"included": []},
         "ingredient_ids_excluded": [53034005],
     }
 
@@ -787,7 +780,6 @@ def test_to_dict_ingredient_ids_excluded():
 def test_to_dict_vtm_ids():
     query = BNFQuery(vtm_ids=[15219611000001105])
     assert query.to_dict() == {
-        "bnf_codes": {"included": []},
         "vtm_ids": [15219611000001105],
     }
 
@@ -795,19 +787,18 @@ def test_to_dict_vtm_ids():
 def test_to_dict_vtm_ids_excluded():
     query = BNFQuery(vtm_ids_excluded=[108502004])
     assert query.to_dict() == {
-        "bnf_codes": {"included": []},
         "vtm_ids_excluded": [108502004],
     }
 
 
 def test_from_dict_bnf_codes_included():
-    query = BNFQuery.from_dict({"bnf_codes": {"included": ["1001030U0"]}})
+    query = BNFQuery.from_dict({"bnf_codes": ["1001030U0"]})
     assert query == BNFQuery(bnf_codes=["1001030U0"])
 
 
 def test_from_dict_bnf_codes_excluded():
     query = BNFQuery.from_dict(
-        {"bnf_codes": {"included": ["1001030U0"], "excluded": ["1001030U0AAABAB"]}}
+        {"bnf_codes": ["1001030U0"], "bnf_codes_excluded": ["1001030U0AAABAB"]}
     )
     assert query == BNFQuery(
         bnf_codes=["1001030U0"], bnf_codes_excluded=["1001030U0AAABAB"]
@@ -873,9 +864,7 @@ def test_from_dict_vtm_ids_excluded():
 
 def test_from_dict_form_route():
     test_dict = {
-        "bnf_codes": {
-            "included": ["0203020C0AAAAAA"],
-        },
+        "bnf_codes": ["0203020C0AAAAAA"],
         "form_routes": ["solutioninjection.intravenous"],
     }
     query = BNFQuery.from_dict(test_dict)
@@ -884,9 +873,7 @@ def test_from_dict_form_route():
 
 def test_from_dict_form_route_excluded():
     test_dict = {
-        "bnf_codes": {
-            "included": ["0203020C0AAAAAA"],
-        },
+        "bnf_codes": ["0203020C0AAAAAA"],
         "form_routes": ["solutioninjection.intravenous"],
         "form_routes_excluded": ["suspension.oral"],
     }
@@ -897,9 +884,7 @@ def test_from_dict_form_route_excluded():
 def test_from_dict_separate_form_route():
     # forms and routes are preserved as-is, rather than being expanded into form_routes.
     test_dict = {
-        "bnf_codes": {
-            "included": ["0203020C0AAAAAA"],
-        },
+        "bnf_codes": ["0203020C0AAAAAA"],
         "forms": ["solutioninjection"],
         "routes": ["intravenous"],
     }

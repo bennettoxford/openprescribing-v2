@@ -12,9 +12,7 @@ queries:
       forms:
         - tablet
       bnf_codes:
-          included:
-              - "0501013"
+        - "0501013"
   - denominator:
       bnf_codes:
-          included:
-              - "0501013"
+        - "0501013"

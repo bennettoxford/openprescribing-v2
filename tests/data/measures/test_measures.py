@@ -24,19 +24,15 @@ def test_load_measure(settings):
         "queries": [
             {
                 "numerator": {
-                    "bnf_codes": {
-                        "included": [
-                            "0302000K0",
-                        ],
-                    },
+                    "bnf_codes": [
+                        "0302000K0",
+                    ],
                     "product_type": "branded",
                 },
                 "denominator": {
-                    "bnf_codes": {
-                        "included": [
-                            "0302000K0",
-                        ],
-                    },
+                    "bnf_codes": [
+                        "0302000K0",
+                    ],
                     "product_type": "all",
                 },
             },
