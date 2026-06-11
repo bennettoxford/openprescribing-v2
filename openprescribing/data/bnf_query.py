@@ -32,36 +32,23 @@ def _get_bnf_codes_for_form_routes(form_routes):
         return [x[0] for x in results.fetchall()]
 
 
-def _get_form_routes_for_forms_and_routes(form_routes, forms, routes):
-    if not form_routes and not forms and not routes:
+def _expand_forms_and_routes(forms, routes):
+    """Return the form/route descriptions matching all of the given forms and routes.
+
+    A `form` matches form/routes whose description starts with `{form}.` and a `route`
+    matches form/routes whose description ends with `.{route}`; when both forms and
+    routes are given a description must match all of them. Returns an empty list when no
+    forms or routes are given, or when nothing matches.
+    """
+
+    if not forms and not routes:
         return []
 
-    query = Q()
-    if form_routes:
-        assert not routes and not forms, (
-            "We do not currently support mixing form_routes with routes / forms individually"
-        )
-        query = Q(descr__in=form_routes)
-    else:
-        conditions = []
-        if routes:
-            for route in routes:
-                conditions.append(Q(descr__endswith=f".{route}"))
-        if forms:
-            for form in forms:
-                conditions.append(Q(descr__startswith=f"{form}."))
-        query = reduce(and_, conditions)
+    conditions = [Q(descr__endswith=f".{route}") for route in routes]
+    conditions += [Q(descr__startswith=f"{form}.") for form in forms]
+    query = reduce(and_, conditions)
 
-    matching_form_routes = [
-        form_route.descr for form_route in OntFormRoute.objects.filter(query)
-    ]
-
-    if not matching_form_routes and (form_routes or routes or forms):
-        raise ValueError(
-            f"No matching form_routes for form_routes={form_routes}, routes={routes}, forms={forms}"
-        )
-
-    return matching_form_routes
+    return [form_route.descr for form_route in OntFormRoute.objects.filter(query)]
 
 
 def _get_bnf_codes_for_ingredient_ids(ingredient_ids):
@@ -97,6 +84,10 @@ class BNFQuery:
     product_type: ProductType = ProductType.ALL
     form_routes: tuple[str] = ()
     form_routes_excluded: tuple[str] = ()
+    forms: tuple[str] = ()
+    forms_excluded: tuple[str] = ()
+    routes: tuple[str] = ()
+    routes_excluded: tuple[str] = ()
     ingredient_ids: tuple[str] = ()
     ingredient_ids_excluded: tuple[str] = ()
     vtm_ids: tuple[str] = ()
@@ -116,6 +107,10 @@ class BNFQuery:
         object.__setattr__(
             self, "form_routes_excluded", tuple(self.form_routes_excluded)
         )
+        object.__setattr__(self, "forms", tuple(self.forms))
+        object.__setattr__(self, "forms_excluded", tuple(self.forms_excluded))
+        object.__setattr__(self, "routes", tuple(self.routes))
+        object.__setattr__(self, "routes_excluded", tuple(self.routes_excluded))
         object.__setattr__(self, "ingredient_ids", tuple(self.ingredient_ids))
         object.__setattr__(
             self, "ingredient_ids_excluded", tuple(self.ingredient_ids_excluded)
@@ -138,6 +133,10 @@ class BNFQuery:
         product_type = params.get(f"{field}_product_type", cls.PRODUCT_TYPE_DEFAULT)
         form_routes = _get_tuple_param(params, f"{field}_form_routes")
         form_routes_excluded = _get_tuple_param(params, f"{field}_form_routes_excluded")
+        forms = _get_tuple_param(params, f"{field}_forms")
+        forms_excluded = _get_tuple_param(params, f"{field}_forms_excluded")
+        routes = _get_tuple_param(params, f"{field}_routes")
+        routes_excluded = _get_tuple_param(params, f"{field}_routes_excluded")
         ingredient_ids = _get_tuple_param(params, f"{field}_ingredient_ids")
         ingredient_ids_excluded = _get_tuple_param(
             params, f"{field}_ingredient_ids_excluded"
@@ -151,6 +150,10 @@ class BNFQuery:
             product_type=ProductType(product_type),
             form_routes=form_routes,
             form_routes_excluded=form_routes_excluded,
+            forms=forms,
+            forms_excluded=forms_excluded,
+            routes=routes,
+            routes_excluded=routes_excluded,
             ingredient_ids=ingredient_ids,
             ingredient_ids_excluded=ingredient_ids_excluded,
             vtm_ids=vtm_ids,
@@ -162,16 +165,12 @@ class BNFQuery:
         bnf_codes_dict = query_dict.get("bnf_codes", {"included": [], "excluded": []})
         product_type = query_dict.get("product_type", cls.PRODUCT_TYPE_DEFAULT)
 
-        form_routes = _get_form_routes_for_forms_and_routes(
-            query_dict.get("form_routes", []),
-            query_dict.get("forms", []),
-            query_dict.get("routes", []),
-        )
-        form_routes_excluded = _get_form_routes_for_forms_and_routes(
-            query_dict.get("form_routes_excluded", []),
-            query_dict.get("forms_excluded", []),
-            query_dict.get("routes_excluded", []),
-        )
+        form_routes = tuple(query_dict.get("form_routes", []))
+        form_routes_excluded = tuple(query_dict.get("form_routes_excluded", []))
+        forms = tuple(query_dict.get("forms", []))
+        forms_excluded = tuple(query_dict.get("forms_excluded", []))
+        routes = tuple(query_dict.get("routes", []))
+        routes_excluded = tuple(query_dict.get("routes_excluded", []))
 
         ingredient_ids = tuple(str(i) for i in query_dict.get("ingredient_ids", []))
         ingredient_ids_excluded = tuple(
@@ -187,6 +186,10 @@ class BNFQuery:
             ProductType(product_type),
             form_routes=form_routes,
             form_routes_excluded=form_routes_excluded,
+            forms=forms,
+            forms_excluded=forms_excluded,
+            routes=routes,
+            routes_excluded=routes_excluded,
             ingredient_ids=ingredient_ids,
             ingredient_ids_excluded=ingredient_ids_excluded,
             vtm_ids=vtm_ids,
@@ -205,6 +208,14 @@ class BNFQuery:
             bnf_query_dict["form_routes"] = list(self.form_routes)
         if self.form_routes_excluded:
             bnf_query_dict["form_routes_excluded"] = list(self.form_routes_excluded)
+        if self.forms:
+            bnf_query_dict["forms"] = list(self.forms)
+        if self.forms_excluded:
+            bnf_query_dict["forms_excluded"] = list(self.forms_excluded)
+        if self.routes:
+            bnf_query_dict["routes"] = list(self.routes)
+        if self.routes_excluded:
+            bnf_query_dict["routes_excluded"] = list(self.routes_excluded)
         if self.ingredient_ids:
             bnf_query_dict["ingredient_ids"] = list(self.ingredient_ids)
         if self.ingredient_ids_excluded:
@@ -254,13 +265,17 @@ class BNFQuery:
             .exclude(reduce(Q.__or__, excludes, Q()))
         )
 
-        if self.form_routes:
-            codes = codes.filter(
-                code__in=_get_bnf_codes_for_form_routes(self.form_routes)
-            )
-        if self.form_routes_excluded:
+        form_routes = list(self.form_routes) + _expand_forms_and_routes(
+            self.forms, self.routes
+        )
+        form_routes_excluded = list(
+            self.form_routes_excluded
+        ) + _expand_forms_and_routes(self.forms_excluded, self.routes_excluded)
+        if form_routes:
+            codes = codes.filter(code__in=_get_bnf_codes_for_form_routes(form_routes))
+        if form_routes_excluded:
             codes = codes.exclude(
-                code__in=_get_bnf_codes_for_form_routes(self.form_routes_excluded)
+                code__in=_get_bnf_codes_for_form_routes(form_routes_excluded)
             )
 
         if self.ingredient_ids:
@@ -302,6 +317,10 @@ class BNFQuery:
             ],
             "form_routes": list(self.form_routes),
             "form_routes_excluded": list(self.form_routes_excluded),
+            "forms": list(self.forms),
+            "forms_excluded": list(self.forms_excluded),
+            "routes": list(self.routes),
+            "routes_excluded": list(self.routes_excluded),
             "ingredients": [
                 Ing.objects.get(isid=ingredient_id).nm
                 for ingredient_id in self.ingredient_ids
@@ -330,6 +349,14 @@ class BNFQuery:
             params[f"{field}_form_routes_excluded"] = ",".join(
                 self.form_routes_excluded
             )
+        if self.forms:
+            params[f"{field}_forms"] = ",".join(self.forms)
+        if self.forms_excluded:
+            params[f"{field}_forms_excluded"] = ",".join(self.forms_excluded)
+        if self.routes:
+            params[f"{field}_routes"] = ",".join(self.routes)
+        if self.routes_excluded:
+            params[f"{field}_routes_excluded"] = ",".join(self.routes_excluded)
         if self.ingredient_ids:
             params[f"{field}_ingredient_ids"] = ",".join(self.ingredient_ids)
         if self.ingredient_ids_excluded:

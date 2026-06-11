@@ -18,20 +18,19 @@ token_tuples = st.lists(tokens, max_size=4).map(tuple)
 
 
 @st.composite
-def bnf_queries(draw, *, include_form_routes=True):
-    """Build an arbitrary BNFQuery.
-
-    form_route_ids are serialized to descriptions and back via the database by
-    to_dict/from_dict, so they can only be included for serializers that round-trip
-    them as raw, order-preserving ids (i.e. to_params/from_params).
-    """
+def bnf_queries(draw):
+    """Build an arbitrary BNFQuery."""
 
     return BNFQuery(
         bnf_codes=draw(token_tuples),
         bnf_codes_excluded=draw(token_tuples),
         product_type=draw(st.sampled_from(list(ProductType))),
-        form_routes=draw(token_tuples) if include_form_routes else (),
-        form_routes_excluded=draw(token_tuples) if include_form_routes else (),
+        form_routes=draw(token_tuples),
+        form_routes_excluded=draw(token_tuples),
+        forms=draw(token_tuples),
+        forms_excluded=draw(token_tuples),
+        routes=draw(token_tuples),
+        routes_excluded=draw(token_tuples),
         ingredient_ids=draw(token_tuples),
         ingredient_ids_excluded=draw(token_tuples),
         vtm_ids=draw(token_tuples),
@@ -44,6 +43,6 @@ def test_params_round_trip(query):
     assert BNFQuery.from_params("ntr", query.to_params("ntr")) == query
 
 
-@given(query=bnf_queries(include_form_routes=False))
+@given(query=bnf_queries())
 def test_dict_round_trip(query):
     assert BNFQuery.from_dict(query.to_dict()) == query

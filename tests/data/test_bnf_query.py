@@ -1,11 +1,8 @@
-import pytest
-
 from openprescribing.data.bnf_query import (
     BNFQuery,
     ProductType,
-    _get_form_routes_for_forms_and_routes,
+    _expand_forms_and_routes,
 )
-from openprescribing.data.models import BNFCode
 
 
 def test_init_normalizes_lists_to_tuples():
@@ -15,6 +12,10 @@ def test_init_normalizes_lists_to_tuples():
         product_type=ProductType.GENERIC,
         form_routes=["tablet.oral", "suspension.oral"],
         form_routes_excluded=["solutioninjection.intravenous"],
+        forms=["tablet"],
+        forms_excluded=["capsule"],
+        routes=["oral"],
+        routes_excluded=["intravenous"],
         ingredient_ids=["2"],
         ingredient_ids_excluded=["3"],
         vtm_ids=["4"],
@@ -26,6 +27,10 @@ def test_init_normalizes_lists_to_tuples():
         product_type=ProductType.GENERIC,
         form_routes=("tablet.oral", "suspension.oral"),
         form_routes_excluded=("solutioninjection.intravenous",),
+        forms=("tablet",),
+        forms_excluded=("capsule",),
+        routes=("oral",),
+        routes_excluded=("intravenous",),
         ingredient_ids=("2",),
         ingredient_ids_excluded=("3",),
         vtm_ids=("4",),
@@ -323,23 +328,55 @@ def test_get_matching_presentation_codes_for_form_routes_include_and_exclude(
     ]
 
 
-def test_get_matching_presentation_codes_for_form_routes_excluded_no_match(
-    medications,
-):
+def test_get_matching_presentation_codes_for_forms(medications):
     medications.add_rows(
         [
-            {"bnf_code": "1001030U0AAABAB"},
-            {"bnf_code": "1001030U0AAACAC"},
+            {
+                "bnf_code": "0203020C0AAAAAA",
+                "form_routes": ["solutioninjection.intravenous"],
+            },
+            {"bnf_code": "1001030U0AAACAC", "form_routes": ["tablet.oral"]},
         ]
     )
     query = BNFQuery(
-        bnf_codes=["1001030U0AA"],
-        form_routes_excluded=["unicorn.nasal"],
+        bnf_codes=["0203020C0AAAAAA", "1001030U0AAACAC"],
+        forms=["tablet"],
     )
-    assert query.get_matching_presentation_codes() == [
-        "1001030U0AAABAB",
-        "1001030U0AAACAC",
-    ]
+    assert query.get_matching_presentation_codes() == ["1001030U0AAACAC"]
+
+
+def test_get_matching_presentation_codes_for_routes(medications):
+    medications.add_rows(
+        [
+            {
+                "bnf_code": "0203020C0AAAAAA",
+                "form_routes": ["solutioninjection.intravenous"],
+            },
+            {"bnf_code": "1001030U0AAACAC", "form_routes": ["tablet.oral"]},
+        ]
+    )
+    query = BNFQuery(
+        bnf_codes=["0203020C0AAAAAA", "1001030U0AAACAC"],
+        routes=["oral"],
+    )
+    assert query.get_matching_presentation_codes() == ["1001030U0AAACAC"]
+
+
+def test_get_matching_presentation_codes_for_routes_excluded(medications):
+    medications.add_rows(
+        [
+            {
+                "bnf_code": "1001030U0AAABAB",
+                "form_routes": ["solutioninjection.intravenous"],
+            },
+            {"bnf_code": "1001030U0AAACAC", "form_routes": ["tablet.oral"]},
+        ]
+    )
+    query = BNFQuery(
+        bnf_codes=["1001030U0"],
+        routes_excluded=["oral"],
+    )
+    assert query.get_matching_presentation_codes() == ["1001030U0AAABAB"]
 
 
 def test_get_matching_presentation_codes_for_ingredient_ids_excluded(medications):
@@ -446,6 +483,10 @@ def test_describe_search_for_all_product_types(bnf_codes):
         "bnf_codes_excluded": ["Methotrexate 2.5mg tablets (branded and generic)"],
         "form_routes": [],
         "form_routes_excluded": [],
+        "forms": [],
+        "forms_excluded": [],
+        "routes": [],
+        "routes_excluded": [],
         "ingredients": [],
         "ingredients_excluded": [],
         "vtms": [],
@@ -465,6 +506,10 @@ def test_describe_search_for_generic_products(bnf_codes):
         "bnf_codes_excluded": ["Methotrexate 2.5mg tablets"],
         "form_routes": [],
         "form_routes_excluded": [],
+        "forms": [],
+        "forms_excluded": [],
+        "routes": [],
+        "routes_excluded": [],
         "ingredients": [],
         "ingredients_excluded": [],
         "vtms": [],
@@ -480,6 +525,10 @@ def test_describe_search_for_ingredients(dmd_data):
         "bnf_codes_excluded": [],
         "form_routes": [],
         "form_routes_excluded": [],
+        "forms": [],
+        "forms_excluded": [],
+        "routes": [],
+        "routes_excluded": [],
         "ingredients": ["Coal tar"],
         "ingredients_excluded": [],
         "vtms": [],
@@ -504,10 +553,38 @@ def test_describe_search_for_all_filter_types(dmd_data, bnf_codes):
         "bnf_codes_excluded": ["Methotrexate 2.5mg tablets (branded and generic)"],
         "form_routes": ["suspension.oral"],
         "form_routes_excluded": ["solution.oral"],
+        "forms": [],
+        "forms_excluded": [],
+        "routes": [],
+        "routes_excluded": [],
         "ingredients": ["Coal tar"],
         "ingredients_excluded": ["Adenosine"],
         "vtms": ["Coal tar + Salicylic acid"],
         "vtms_excluded": ["Adenosine"],
+    }
+
+
+def test_describe_search_for_forms_and_routes():
+    query = BNFQuery(
+        forms=["tablet"],
+        forms_excluded=["capsule"],
+        routes=["oral"],
+        routes_excluded=["intravenous"],
+    )
+    assert query.describe() == {
+        "product_type": ProductType.ALL,
+        "bnf_codes": [],
+        "bnf_codes_excluded": [],
+        "form_routes": [],
+        "form_routes_excluded": [],
+        "forms": ["tablet"],
+        "forms_excluded": ["capsule"],
+        "routes": ["oral"],
+        "routes_excluded": ["intravenous"],
+        "ingredients": [],
+        "ingredients_excluded": [],
+        "vtms": [],
+        "vtms_excluded": [],
     }
 
 
@@ -671,6 +748,22 @@ def test_to_dict_form_routes_excluded():
     }
 
 
+def test_to_dict_forms_and_routes():
+    query = BNFQuery(
+        forms=["tablet"],
+        forms_excluded=["capsule"],
+        routes=["oral"],
+        routes_excluded=["intravenous"],
+    )
+    assert query.to_dict() == {
+        "bnf_codes": {"included": []},
+        "forms": ["tablet"],
+        "forms_excluded": ["capsule"],
+        "routes": ["oral"],
+        "routes_excluded": ["intravenous"],
+    }
+
+
 def test_to_dict_ingredient_ids():
     query = BNFQuery(ingredient_ids=["53034005"])
     assert query.to_dict() == {
@@ -722,36 +815,36 @@ def test_from_dict_product_type():
     assert query == BNFQuery(product_type=ProductType.GENERIC)
 
 
-def test_from_dict_form_routes(dmd_data):
+def test_from_dict_form_routes():
     query = BNFQuery.from_dict({"form_routes": ["tablet.oral"]})
     assert query == BNFQuery(form_routes=["tablet.oral"])
 
 
-def test_from_dict_forms(dmd_data):
+def test_from_dict_forms():
     query = BNFQuery.from_dict({"forms": ["pressurizedinhalation"]})
-    assert query == BNFQuery(form_routes=["pressurizedinhalation.inhalation"])
+    assert query == BNFQuery(forms=["pressurizedinhalation"])
 
 
-def test_from_dict_routes(dmd_data):
+def test_from_dict_routes():
     query = BNFQuery.from_dict({"routes": ["subretinal"]})
-    assert query == BNFQuery(form_routes=["solutioninjection.subretinal"])
+    assert query == BNFQuery(routes=["subretinal"])
 
 
-def test_from_dict_form_routes_excluded(dmd_data):
+def test_from_dict_form_routes_excluded():
     query = BNFQuery.from_dict(
         {"form_routes_excluded": ["solutioninjection.intravenous"]}
     )
     assert query == BNFQuery(form_routes_excluded=["solutioninjection.intravenous"])
 
 
-def test_from_dict_forms_excluded(dmd_data):
+def test_from_dict_forms_excluded():
     query = BNFQuery.from_dict({"forms_excluded": ["pressurizedinhalation"]})
-    assert query == BNFQuery(form_routes_excluded=["pressurizedinhalation.inhalation"])
+    assert query == BNFQuery(forms_excluded=["pressurizedinhalation"])
 
 
-def test_from_dict_routes_excluded(dmd_data):
+def test_from_dict_routes_excluded():
     query = BNFQuery.from_dict({"routes_excluded": ["subretinal"]})
-    assert query == BNFQuery(form_routes_excluded=["solutioninjection.subretinal"])
+    assert query == BNFQuery(routes_excluded=["subretinal"])
 
 
 def test_from_dict_ingredient_ids():
@@ -774,10 +867,7 @@ def test_from_dict_vtm_ids_excluded():
     assert query == BNFQuery(vtm_ids_excluded=["108502004"])
 
 
-def test_from_dict_form_route(dmd_data):
-    # The following appears in the dm+d -> BNF data/mapping data
-    BNFCode(code="0203020C0AAAAAA", level=BNFCode.Level.PRESENTATION).save()
-
+def test_from_dict_form_route():
     test_dict = {
         "bnf_codes": {
             "included": ["0203020C0AAAAAA"],
@@ -788,10 +878,7 @@ def test_from_dict_form_route(dmd_data):
     assert query.to_dict() == test_dict
 
 
-def test_from_dict_form_route_excluded(dmd_data):
-    # The following appears in the dm+d -> BNF data/mapping data
-    BNFCode(code="0203020C0AAAAAA", level=BNFCode.Level.PRESENTATION).save()
-
+def test_from_dict_form_route_excluded():
     test_dict = {
         "bnf_codes": {
             "included": ["0203020C0AAAAAA"],
@@ -803,7 +890,8 @@ def test_from_dict_form_route_excluded(dmd_data):
     assert query.to_dict() == test_dict
 
 
-def test_from_dict_separate_form_route(dmd_data):
+def test_from_dict_separate_form_route():
+    # forms and routes are preserved as-is, rather than being expanded into form_routes.
     test_dict = {
         "bnf_codes": {
             "included": ["0203020C0AAAAAA"],
@@ -812,45 +900,22 @@ def test_from_dict_separate_form_route(dmd_data):
         "routes": ["intravenous"],
     }
     query = BNFQuery.from_dict(test_dict)
-    expected_dict = {
-        "bnf_codes": {
-            "included": ["0203020C0AAAAAA"],
-        },
-        "form_routes": ["solutioninjection.intravenous"],
-    }
-    assert query.to_dict() == expected_dict
+    assert query.to_dict() == test_dict
 
 
-def test_get_form_routes_for_forms_and_routes(dmd_data):
-    form_routes = _get_form_routes_for_forms_and_routes(
-        form_routes=[], forms=["tablet"], routes=["oral"]
-    )
-    expected_form_routes = ["tablet.oral"]
-
-    assert form_routes == expected_form_routes
-
-
-def test_get_form_routes_for_no_forms_or_routes():
-    form_routes = _get_form_routes_for_forms_and_routes(
-        form_routes=[], forms=[], routes=[]
-    )
-    expected_form_routes = []
-
-    assert form_routes == expected_form_routes
+def test_expand_forms_and_routes(dmd_data):
+    # A form matches descriptions starting `{form}.`, a route those ending `.{route}`,
+    # and when both are given a description must match all of them.
+    assert _expand_forms_and_routes(forms=["tablet"], routes=["oral"]) == [
+        "tablet.oral"
+    ]
 
 
-def test_get_form_routes_for_invalid_form_routes(dmd_data):
-    with pytest.raises(ValueError):
-        _get_form_routes_for_forms_and_routes(
-            form_routes=[], forms=["unicorn"], routes=[]
-        )
+def test_expand_no_forms_or_routes():
+    assert _expand_forms_and_routes(forms=[], routes=[]) == []
 
-    with pytest.raises(ValueError):
-        _get_form_routes_for_forms_and_routes(
-            form_routes=["unicorn.nasal"], forms=[], routes=[]
-        )
 
-    with pytest.raises(ValueError):
-        _get_form_routes_for_forms_and_routes(
-            form_routes=[], forms=[], routes=["interstellar"]
-        )
+def test_expand_unknown_forms_and_routes(dmd_data):
+    # Unknown forms or routes match nothing rather than raising.
+    assert _expand_forms_and_routes(forms=["unicorn"], routes=[]) == []
+    assert _expand_forms_and_routes(forms=[], routes=["interstellar"]) == []
