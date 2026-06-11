@@ -396,9 +396,7 @@ def build_q_for_bnf_code(code):
     """
 
     if "_" in code:
-        prefix, suffix = code.split("_")
-        assert len(prefix) == 9  # chemical substance code
-        assert len(suffix) == 2  # strength and formulation part
+        prefix, suffix = destructure_strength_and_formulation_code(code)
         return Q(code__startswith=prefix, code__endswith=suffix)
     else:
         return Q(code__startswith=code)
@@ -408,9 +406,7 @@ def description_for_bnf_code(code, product_type):
     """Return a human-readable description for a BNF code."""
 
     if "_" in code:
-        prefix, suffix = code.split("_")
-        assert len(prefix) == 9  # chemical substance code
-        assert len(suffix) == 2  # strength and formulation part
+        prefix, suffix = destructure_strength_and_formulation_code(code)
         generic_code_obj = BNFCode.objects.get(code=f"{prefix}AA{suffix}{suffix}")
         if product_type == ProductType.ALL:
             return f"{generic_code_obj.name} (branded and generic)"
@@ -418,6 +414,14 @@ def description_for_bnf_code(code, product_type):
             return generic_code_obj.name
     else:
         return BNFCode.objects.get(code=code).name
+
+
+def destructure_strength_and_formulation_code(code):
+    assert "_" in code
+    prefix, suffix = code.split("_", 1)
+    if len(prefix) == 9 and len(suffix) == 2:
+        return prefix, suffix
+    raise ValueError(f"Invalid strength and formulation code: {code}")
 
 
 def _get_tuple_param(params, key):
