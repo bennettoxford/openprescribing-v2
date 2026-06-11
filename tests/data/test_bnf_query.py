@@ -3,7 +3,7 @@ import pytest
 from openprescribing.data.bnf_query import (
     BNFQuery,
     ProductType,
-    _get_form_route_ids_for_forms_and_routes,
+    _get_form_routes_for_forms_and_routes,
 )
 from openprescribing.data.models import BNFCode
 
@@ -13,8 +13,8 @@ def test_init_normalizes_lists_to_tuples():
         bnf_codes=["01"],
         bnf_codes_excluded=["0101"],
         product_type=ProductType.GENERIC,
-        form_route_ids=["1", "6"],
-        form_route_ids_excluded=["7"],
+        form_routes=["tablet.oral", "suspension.oral"],
+        form_routes_excluded=["solutioninjection.intravenous"],
         ingredient_ids=["2"],
         ingredient_ids_excluded=["3"],
         vtm_ids=["4"],
@@ -24,8 +24,8 @@ def test_init_normalizes_lists_to_tuples():
         bnf_codes=("01",),
         bnf_codes_excluded=("0101",),
         product_type=ProductType.GENERIC,
-        form_route_ids=("1", "6"),
-        form_route_ids_excluded=("7",),
+        form_routes=("tablet.oral", "suspension.oral"),
+        form_routes_excluded=("solutioninjection.intravenous",),
         ingredient_ids=("2",),
         ingredient_ids_excluded=("3",),
         vtm_ids=("4",),
@@ -150,18 +150,21 @@ def test_get_matching_presentation_codes_for_branded_with_strength_and_formulati
     ]
 
 
-def test_get_matching_presentation_codes_for_form_route_ids(medications):
+def test_get_matching_presentation_codes_for_form_routes(medications):
     medications.add_rows(
         [
-            {"bnf_code": "0203020C0AAAAAA", "form_route_ids": [24]},
-            {"bnf_code": "1001030U0AAACAC", "form_route_ids": [1]},
+            {
+                "bnf_code": "0203020C0AAAAAA",
+                "form_routes": ["solutioninjection.intravenous"],
+            },
+            {"bnf_code": "1001030U0AAACAC", "form_routes": ["tablet.oral"]},
         ]
     )
     query = BNFQuery.from_params(
         "ntr",
         {
             "ntr_bnf_codes": "0203020C0AAAAAA",
-            "ntr_form_route_ids": "24",
+            "ntr_form_routes": "solutioninjection.intravenous",
         },
     )
     assert query.get_matching_presentation_codes() == ["0203020C0AAAAAA"]
@@ -267,18 +270,24 @@ def test_get_matching_presentation_codes_for_vtm_ids_excluded(medications):
     ]
 
 
-def test_get_matching_presentation_codes_for_form_route_ids_excluded(medications):
+def test_get_matching_presentation_codes_for_form_routes_excluded(medications):
     medications.add_rows(
         [
-            {"bnf_code": "1001030U0AAABAB", "form_route_ids": [24]},
-            {"bnf_code": "1001030U0AAACAC", "form_route_ids": [1]},
-            {"bnf_code": "1001030U0BDAAAB", "form_route_ids": [24]},
-            {"bnf_code": "1001030U0BDABAC", "form_route_ids": [1]},
+            {
+                "bnf_code": "1001030U0AAABAB",
+                "form_routes": ["solutioninjection.intravenous"],
+            },
+            {"bnf_code": "1001030U0AAACAC", "form_routes": ["tablet.oral"]},
+            {
+                "bnf_code": "1001030U0BDAAAB",
+                "form_routes": ["solutioninjection.intravenous"],
+            },
+            {"bnf_code": "1001030U0BDABAC", "form_routes": ["tablet.oral"]},
         ]
     )
     query = BNFQuery(
         bnf_codes=["1001030U0"],
-        form_route_ids_excluded=["24"],
+        form_routes_excluded=["solutioninjection.intravenous"],
     )
     assert query.get_matching_presentation_codes() == [
         "1001030U0AAACAC",
@@ -286,21 +295,27 @@ def test_get_matching_presentation_codes_for_form_route_ids_excluded(medications
     ]
 
 
-def test_get_matching_presentation_codes_for_form_route_ids_include_and_exclude(
+def test_get_matching_presentation_codes_for_form_routes_include_and_exclude(
     medications,
 ):
     medications.add_rows(
         [
-            {"bnf_code": "1001030U0AAABAB", "form_route_ids": [1, 24]},
-            {"bnf_code": "1001030U0AAACAC", "form_route_ids": [1]},
-            {"bnf_code": "1001030U0BDAAAB", "form_route_ids": [1, 24]},
-            {"bnf_code": "1001030U0BDABAC", "form_route_ids": [1]},
+            {
+                "bnf_code": "1001030U0AAABAB",
+                "form_routes": ["tablet.oral", "solutioninjection.intravenous"],
+            },
+            {"bnf_code": "1001030U0AAACAC", "form_routes": ["tablet.oral"]},
+            {
+                "bnf_code": "1001030U0BDAAAB",
+                "form_routes": ["tablet.oral", "solutioninjection.intravenous"],
+            },
+            {"bnf_code": "1001030U0BDABAC", "form_routes": ["tablet.oral"]},
         ]
     )
     query = BNFQuery(
         bnf_codes=["1001030U0"],
-        form_route_ids=["1"],
-        form_route_ids_excluded=["24"],
+        form_routes=["tablet.oral"],
+        form_routes_excluded=["solutioninjection.intravenous"],
     )
     assert query.get_matching_presentation_codes() == [
         "1001030U0AAACAC",
@@ -308,7 +323,7 @@ def test_get_matching_presentation_codes_for_form_route_ids_include_and_exclude(
     ]
 
 
-def test_get_matching_presentation_codes_for_form_route_ids_excluded_no_match(
+def test_get_matching_presentation_codes_for_form_routes_excluded_no_match(
     medications,
 ):
     medications.add_rows(
@@ -319,7 +334,7 @@ def test_get_matching_presentation_codes_for_form_route_ids_excluded_no_match(
     )
     query = BNFQuery(
         bnf_codes=["1001030U0AA"],
-        form_route_ids_excluded=["999"],
+        form_routes_excluded=["unicorn.nasal"],
     )
     assert query.get_matching_presentation_codes() == [
         "1001030U0AAABAB",
@@ -392,22 +407,22 @@ def test_get_matching_presentation_codes_with_combined_exclusions(medications):
         [
             {
                 "bnf_code": "1001030U0AAABAB",
-                "form_route_ids": [1, 24],
+                "form_routes": ["tablet.oral", "solutioninjection.intravenous"],
                 "ingredient_ids": [11111],
             },
             {
                 "bnf_code": "1001030U0AAACAC",
-                "form_route_ids": [1],
+                "form_routes": ["tablet.oral"],
                 "ingredient_ids": [11111],
             },
             {
                 "bnf_code": "1001030U0BDAAAB",
-                "form_route_ids": [1, 24],
+                "form_routes": ["tablet.oral", "solutioninjection.intravenous"],
                 "ingredient_ids": [11111],
             },
             {
                 "bnf_code": "1001030U0BDABAC",
-                "form_route_ids": [1],
+                "form_routes": ["tablet.oral"],
                 "ingredient_ids": [11111, 53034005],
             },
         ]
@@ -415,8 +430,8 @@ def test_get_matching_presentation_codes_with_combined_exclusions(medications):
     query = BNFQuery(
         bnf_codes=["1001030U0"],
         bnf_codes_excluded=["1001030U0AAABAB"],
-        form_route_ids=["1"],
-        form_route_ids_excluded=["24"],
+        form_routes=["tablet.oral"],
+        form_routes_excluded=["solutioninjection.intravenous"],
         ingredient_ids=["11111"],
         ingredient_ids_excluded=["53034005"],
     )
@@ -476,8 +491,8 @@ def test_describe_search_for_all_filter_types(dmd_data, bnf_codes):
     query = BNFQuery(
         bnf_codes=["1001030U0"],
         bnf_codes_excluded=["1001030U0_AB"],
-        form_route_ids=["6"],
-        form_route_ids_excluded=["5"],
+        form_routes=["suspension.oral"],
+        form_routes_excluded=["solution.oral"],
         ingredient_ids=["53034005"],
         ingredient_ids_excluded=["35431001"],
         vtm_ids=["15219611000001105"],
@@ -503,8 +518,8 @@ def test_from_params():
             "ntr_bnf_codes": "01",
             "ntr_bnf_codes_excluded": "0101",
             "ntr_product_type": "generic",
-            "ntr_form_route_ids": "1",
-            "ntr_form_route_ids_excluded": "2",
+            "ntr_form_routes": "tablet.oral",
+            "ntr_form_routes_excluded": "solution.oral",
             "ntr_ingredient_ids": "3",
             "ntr_ingredient_ids_excluded": "4",
             "ntr_vtm_ids": "5",
@@ -515,8 +530,8 @@ def test_from_params():
         bnf_codes=["01"],
         bnf_codes_excluded=["0101"],
         product_type=ProductType.GENERIC,
-        form_route_ids=["1"],
-        form_route_ids_excluded=["2"],
+        form_routes=["tablet.oral"],
+        form_routes_excluded=["solution.oral"],
         ingredient_ids=["3"],
         ingredient_ids_excluded=["4"],
         vtm_ids=["5"],
@@ -531,16 +546,16 @@ def test_has_params():
     assert not BNFQuery.has_params("ntr", {"org_id": "PRAC01"})
 
 
-def test_from_params_with_form_route_ids_key_not_val():
+def test_from_params_with_form_routes_key_not_val():
     query = BNFQuery.from_params(
         "ntr",
         {
             "ntr_bnf_codes": "01",
             "ntr_product_type": "generic",
-            "ntr_form_route_ids": "",
+            "ntr_form_routes": "",
         },
     )
-    assert query.form_route_ids == ()
+    assert query.form_routes == ()
 
 
 def test_from_params_ingredients():
@@ -574,20 +589,20 @@ def test_to_params_excluded_only():
     }
 
 
-def test_to_params_with_form_route_ids():
+def test_to_params_with_form_routes():
     query = BNFQuery(
         bnf_codes=["01"],
         bnf_codes_excluded=["0101"],
         product_type=ProductType.GENERIC,
-        form_route_ids=("1", "6"),
-        form_route_ids_excluded=("2", "7"),
+        form_routes=("tablet.oral", "suspension.oral"),
+        form_routes_excluded=("solution.oral", "ointment.cutaneous"),
     )
     assert query.to_params("ntr") == {
         "ntr_bnf_codes": "01",
         "ntr_bnf_codes_excluded": "0101",
         "ntr_product_type": "generic",
-        "ntr_form_route_ids": "1,6",
-        "ntr_form_route_ids_excluded": "2,7",
+        "ntr_form_routes": "tablet.oral,suspension.oral",
+        "ntr_form_routes_excluded": "solution.oral,ointment.cutaneous",
     }
 
 
@@ -640,16 +655,16 @@ def test_to_dict_product_type_all_omitted():
     assert query.to_dict() == {"bnf_codes": {"included": ["1001030U0"]}}
 
 
-def test_to_dict_form_routes(dmd_data):
-    query = BNFQuery(form_route_ids=["1"])
+def test_to_dict_form_routes():
+    query = BNFQuery(form_routes=["tablet.oral"])
     assert query.to_dict() == {
         "bnf_codes": {"included": []},
         "form_routes": ["tablet.oral"],
     }
 
 
-def test_to_dict_form_routes_excluded(dmd_data):
-    query = BNFQuery(form_route_ids_excluded=["24"])
+def test_to_dict_form_routes_excluded():
+    query = BNFQuery(form_routes_excluded=["solutioninjection.intravenous"])
     assert query.to_dict() == {
         "bnf_codes": {"included": []},
         "form_routes_excluded": ["solutioninjection.intravenous"],
@@ -709,34 +724,34 @@ def test_from_dict_product_type():
 
 def test_from_dict_form_routes(dmd_data):
     query = BNFQuery.from_dict({"form_routes": ["tablet.oral"]})
-    assert query == BNFQuery(form_route_ids=["1"])
+    assert query == BNFQuery(form_routes=["tablet.oral"])
 
 
 def test_from_dict_forms(dmd_data):
     query = BNFQuery.from_dict({"forms": ["pressurizedinhalation"]})
-    assert query == BNFQuery(form_route_ids=["4"])
+    assert query == BNFQuery(form_routes=["pressurizedinhalation.inhalation"])
 
 
 def test_from_dict_routes(dmd_data):
     query = BNFQuery.from_dict({"routes": ["subretinal"]})
-    assert query == BNFQuery(form_route_ids=["320"])
+    assert query == BNFQuery(form_routes=["solutioninjection.subretinal"])
 
 
 def test_from_dict_form_routes_excluded(dmd_data):
     query = BNFQuery.from_dict(
         {"form_routes_excluded": ["solutioninjection.intravenous"]}
     )
-    assert query == BNFQuery(form_route_ids_excluded=["24"])
+    assert query == BNFQuery(form_routes_excluded=["solutioninjection.intravenous"])
 
 
 def test_from_dict_forms_excluded(dmd_data):
     query = BNFQuery.from_dict({"forms_excluded": ["pressurizedinhalation"]})
-    assert query == BNFQuery(form_route_ids_excluded=["4"])
+    assert query == BNFQuery(form_routes_excluded=["pressurizedinhalation.inhalation"])
 
 
 def test_from_dict_routes_excluded(dmd_data):
     query = BNFQuery.from_dict({"routes_excluded": ["subretinal"]})
-    assert query == BNFQuery(form_route_ids_excluded=["320"])
+    assert query == BNFQuery(form_routes_excluded=["solutioninjection.subretinal"])
 
 
 def test_from_dict_ingredient_ids():
@@ -806,36 +821,36 @@ def test_from_dict_separate_form_route(dmd_data):
     assert query.to_dict() == expected_dict
 
 
-def test_get_form_route_ids_for_forms_and_routes(dmd_data):
-    route_ids = _get_form_route_ids_for_forms_and_routes(
+def test_get_form_routes_for_forms_and_routes(dmd_data):
+    form_routes = _get_form_routes_for_forms_and_routes(
         form_routes=[], forms=["tablet"], routes=["oral"]
     )
-    expected_route_ids = ["1"]
+    expected_form_routes = ["tablet.oral"]
 
-    assert route_ids == expected_route_ids
+    assert form_routes == expected_form_routes
 
 
-def test_get_form_route_ids_for_no_forms_or_routes():
-    route_ids = _get_form_route_ids_for_forms_and_routes(
+def test_get_form_routes_for_no_forms_or_routes():
+    form_routes = _get_form_routes_for_forms_and_routes(
         form_routes=[], forms=[], routes=[]
     )
-    expected_route_ids = []
+    expected_form_routes = []
 
-    assert route_ids == expected_route_ids
+    assert form_routes == expected_form_routes
 
 
-def test_get_form_route_ids_for_invalid_form_routes(dmd_data):
+def test_get_form_routes_for_invalid_form_routes(dmd_data):
     with pytest.raises(ValueError):
-        _get_form_route_ids_for_forms_and_routes(
+        _get_form_routes_for_forms_and_routes(
             form_routes=[], forms=["unicorn"], routes=[]
         )
 
     with pytest.raises(ValueError):
-        _get_form_route_ids_for_forms_and_routes(
+        _get_form_routes_for_forms_and_routes(
             form_routes=["unicorn.nasal"], forms=[], routes=[]
         )
 
     with pytest.raises(ValueError):
-        _get_form_route_ids_for_forms_and_routes(
+        _get_form_routes_for_forms_and_routes(
             form_routes=[], forms=[], routes=["interstellar"]
         )

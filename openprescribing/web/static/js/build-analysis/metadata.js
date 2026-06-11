@@ -34,7 +34,6 @@ export async function fetchMetadata(containerEl) {
     bnf: bnf.bnf,
     lookupRecordsByFilterKey,
     medicationIndexesByFilterValue,
-    formRouteById: new Map(dmd.ont_form_route.map((item) => [item.id, item])),
     vtmById: new Map(dmd.vtm.map((vtm) => [vtm.id, vtm])),
     vmpById: new Map(dmd.vmp.map((vmp) => [vmp.id, vmp])),
   };
@@ -153,10 +152,10 @@ function buildMedicationIndexesByFilterValue(medications, bnfLookupRecords) {
       );
     }
 
-    medication.form_route_ids.forEach((formRouteId) => {
+    medication.form_routes.forEach((formRoute) => {
       addMedicationIndex(
         indexesByFilterValue.formRouteId,
-        formRouteId,
+        formRoute,
         medication,
       );
     });

@@ -39,13 +39,13 @@ export const FILTER_DEFINITIONS = [
   {
     key: "formRouteId",
     label: "Form/route",
-    urlParamSuffix: "form_route_ids",
+    urlParamSuffix: "form_routes",
     isBaseline: false,
     lookupKey: "ont_form_route",
-    valueField: "id",
+    valueField: "descr",
     labelField: "descr",
-    parse: parseOptionalInteger,
-    matches: (medication, value) => medication.form_route_ids.includes(value),
+    parse: parseOptionalString,
+    matches: (medication, value) => medication.form_routes.includes(value),
   },
 ];
 

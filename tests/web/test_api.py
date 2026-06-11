@@ -255,7 +255,7 @@ def test_metadata_medications(client, rxdb, settings, tmp_path):
         "vmp_id": 36016311000001102,
         "vtm_id": 90356005,
         "invalid": False,
-        "form_route_ids": [173],
+        "form_routes": ["liquiddrops.ophthalmic"],
         "ingredient_ids": [387035001],
     } in payload["medications"]
     assert {
@@ -266,7 +266,7 @@ def test_metadata_medications(client, rxdb, settings, tmp_path):
         "vmp_id": 36016311000001102,
         "vtm_id": 90356005,
         "invalid": False,
-        "form_route_ids": [173],
+        "form_routes": ["liquiddrops.ophthalmic"],
         "ingredient_ids": [387035001],
     } in payload["medications"]
 

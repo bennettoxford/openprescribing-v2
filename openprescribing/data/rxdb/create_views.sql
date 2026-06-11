@@ -13,11 +13,12 @@ SELECT
     vtm_id,
     cast(invalid AS boolean) AS invalid,
     array(
-        SELECT ont.formcd
+        SELECT ont_form_route.descr
         FROM ont
+        JOIN ont_form_route ON ont.formcd = ont_form_route.cd
         WHERE ont.vpid = vmp_id
-        ORDER BY ont.formcd
-    ) AS form_route_ids,
+        ORDER BY ont_form_route.descr
+    ) AS form_routes,
     array(
         SELECT vpi.isid
         FROM vpi

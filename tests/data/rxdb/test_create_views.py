@@ -15,7 +15,7 @@ def test_medications(rxdb, dmd_data):
                 28946311000001106,  # vmp_id
                 15219611000001105,  # vtm_id
                 False,  # invalid
-                [],  # form_route_ids
+                [],  # form_routes
                 [387253001, 53034005],  # ingredient_ids
             )
         ]
@@ -33,7 +33,7 @@ def test_medications(rxdb, dmd_data):
                 35894711000001106,  # vmp_id
                 108502004,  # vtm_id
                 False,  # invalid
-                [24],  # form_route_ids
+                ["solutioninjection.intravenous"],  # form_routes
                 [35431001],  # ingredient_ids
             )
         ]
@@ -51,7 +51,7 @@ def test_medications(rxdb, dmd_data):
                 3549611000001100,  # vmp_id
                 None,  # vtm_id
                 False,  # invalid
-                [26],  # form_route_ids
+                ["liquidfood.gastroenteral"],  # form_routes
                 [],  # ingredient_ids
             )
         ]

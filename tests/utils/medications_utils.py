@@ -23,6 +23,8 @@ class MedicationsBuilder:
 
     def __init__(self):
         self._next_id = 1
+        self._next_form_route_cd = 1
+        self._form_route_cds = {}
 
     def add_rows(self, rows):
         """This method should be called in tests to populate the underlying tables."""
@@ -43,7 +45,7 @@ class MedicationsBuilder:
         invalid=False,
         vtm_id=None,
         ingredient_ids=(),
-        form_route_ids=(),
+        form_routes=(),
     ):
         dmd_id = self._next_id
         self._next_id += 1
@@ -77,6 +79,17 @@ class MedicationsBuilder:
             Ing.objects.get_or_create(isid=isid, defaults={"nm": "", "invalid": False})
             VPI.objects.create(vmp_id=dmd_id, ing_id=isid)
 
-        for formcd in form_route_ids:
-            OntFormRoute.objects.get_or_create(cd=formcd, defaults={"descr": ""})
+        for descr in form_routes:
+            formcd = self._get_or_create_form_route_cd(descr)
             Ont.objects.create(vmp_id=dmd_id, form_id=formcd)
+
+    def _get_or_create_form_route_cd(self, descr):
+        # Assign a stable cd to each form/route description so that the medications
+        # view stores numeric ids (as in production) while tests can supply and query
+        # by description.
+        if descr not in self._form_route_cds:
+            formcd = self._next_form_route_cd
+            self._next_form_route_cd += 1
+            self._form_route_cds[descr] = formcd
+            OntFormRoute.objects.get_or_create(cd=formcd, defaults={"descr": descr})
+        return self._form_route_cds[descr]
