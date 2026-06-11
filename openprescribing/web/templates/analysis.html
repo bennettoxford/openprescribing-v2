@@ -2,6 +2,13 @@
 {% load static %}
 
 {% block content %}
+{% if validation_error %}
+<div class="alert alert-danger" role="alert">
+    <h1 class="h4">This measure could not be loaded</h1>
+    <p>It refers to data that could not be found:</p>
+    <pre class="mb-0">{{ validation_error }}</pre>
+</div>
+{% else %}
 <div class="row">
     {% if analysis %}
     <div class="col-lg-4">
@@ -251,6 +258,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}

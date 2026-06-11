@@ -186,15 +186,12 @@ function groupResults(results, metadata) {
     if (medication.is_amp) {
       vmpGroup.amps.push({
         id: medication.id,
-        formRouteText: getFormRouteText(medication.form_route_ids, metadata),
+        formRouteText: getFormRouteText(medication.form_routes),
         name: medication.name,
         status: medication.status,
       });
     } else {
-      vmpGroup.formRouteText = getFormRouteText(
-        medication.form_route_ids,
-        metadata,
-      );
+      vmpGroup.formRouteText = getFormRouteText(medication.form_routes);
       vmpGroup.status = medication.status;
     }
   });
@@ -313,10 +310,10 @@ function applyStatusStyling(row, status) {
   }
 }
 
-function getFormRouteText(formRouteIds, metadata) {
+function getFormRouteText(formRoutes) {
   // Return comma-separated form/route descriptions.
-  return formRouteIds
-    .map((id) => metadata.formRouteById.get(id).descr)
+  return formRoutes
+    .slice()
     .sort((left, right) => left.localeCompare(right))
     .join(", ");
 }

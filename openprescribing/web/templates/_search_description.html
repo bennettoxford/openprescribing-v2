@@ -29,5 +29,17 @@
     {% if description.form_routes_excluded %}
     <li><strong>Form/route (excluded)</strong> {% for form_route in description.form_routes_excluded %}{% if not forloop.first %}, {% endif %}{{ form_route }}{% endfor %}</li>
     {% endif %}
+    {% if description.forms %}
+    <li><strong>Form</strong> {% for form in description.forms %}{% if not forloop.first %}, {% endif %}{{ form }}{% endfor %}</li>
+    {% endif %}
+    {% if description.forms_excluded %}
+    <li><strong>Form (excluded)</strong> {% for form in description.forms_excluded %}{% if not forloop.first %}, {% endif %}{{ form }}{% endfor %}</li>
+    {% endif %}
+    {% if description.routes %}
+    <li><strong>Route</strong> {% for route in description.routes %}{% if not forloop.first %}, {% endif %}{{ route }}{% endfor %}</li>
+    {% endif %}
+    {% if description.routes_excluded %}
+    <li><strong>Route (excluded)</strong> {% for route in description.routes_excluded %}{% if not forloop.first %}, {% endif %}{{ route }}{% endfor %}</li>
+    {% endif %}
 </ul>
 {% endif %}

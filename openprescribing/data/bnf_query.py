@@ -19,48 +19,36 @@ class ProductType(StrEnum):
     BRANDED = "branded"
 
 
-def _get_bnf_codes_for_form_route_ids(form_route_ids):
+def _get_bnf_codes_for_form_routes(form_routes):
     with rxdb.get_cursor() as cursor:
         results = cursor.execute(
-            f"""
+            """
             SELECT bnf_code
             FROM medications
-            WHERE list_has_any(form_route_ids, [{", ".join(form_route_ids)}])
-            """
+            WHERE list_has_any(form_routes, ?)
+            """,
+            [list(form_routes)],
         )
         return [x[0] for x in results.fetchall()]
 
 
-def _get_form_route_ids_for_forms_and_routes(form_routes, forms, routes):
-    if not form_routes and not forms and not routes:
+def _expand_forms_and_routes(forms, routes):
+    """Return the form/route descriptions matching all of the given forms and routes.
+
+    A `form` matches form/routes whose description starts with `{form}.` and a `route`
+    matches form/routes whose description ends with `.{route}`; when both forms and
+    routes are given a description must match all of them. Returns an empty list when no
+    forms or routes are given, or when nothing matches.
+    """
+
+    if not forms and not routes:
         return []
 
-    query = Q()
-    if form_routes:
-        assert not routes and not forms, (
-            "We do not currently support mixing form_routes with routes / forms individually"
-        )
-        query = Q(descr__in=form_routes)
-    else:
-        conditions = []
-        if routes:
-            for route in routes:
-                conditions.append(Q(descr__endswith=f".{route}"))
-        if forms:
-            for form in forms:
-                conditions.append(Q(descr__startswith=f"{form}."))
-        query = reduce(and_, conditions)
+    conditions = [Q(descr__endswith=f".{route}") for route in routes]
+    conditions += [Q(descr__startswith=f"{form}.") for form in forms]
+    query = reduce(and_, conditions)
 
-    form_route_ids = [
-        str(form_route.cd) for form_route in OntFormRoute.objects.filter(query)
-    ]
-
-    if not form_route_ids and (form_routes or routes or forms):
-        raise ValueError(
-            f"No matching form_routes for form_routes={form_routes}, routes={routes}, forms={forms}"
-        )
-
-    return form_route_ids
+    return [form_route.descr for form_route in OntFormRoute.objects.filter(query)]
 
 
 def _get_bnf_codes_for_ingredient_ids(ingredient_ids):
@@ -69,7 +57,7 @@ def _get_bnf_codes_for_ingredient_ids(ingredient_ids):
             f"""
             SELECT bnf_code
             FROM medications
-            WHERE list_has_any(ingredient_ids, [{", ".join(ingredient_ids)}])
+            WHERE list_has_any(ingredient_ids, [{", ".join(str(i) for i in ingredient_ids)}])
             """
         )
         return [x[0] for x in results.fetchall()]
@@ -81,7 +69,7 @@ def _get_bnf_codes_for_vtm_ids(vtm_ids):
             f"""
             SELECT bnf_code
             FROM medications
-            WHERE vtm_id IN ({", ".join(vtm_ids)})
+            WHERE vtm_id IN ({", ".join(str(i) for i in vtm_ids)})
             """
         )
         return [x[0] for x in results.fetchall()]
@@ -94,12 +82,16 @@ class BNFQuery:
     bnf_codes: tuple[str] = ()
     bnf_codes_excluded: tuple[str] = ()
     product_type: ProductType = ProductType.ALL
-    form_route_ids: tuple[str] = ()
-    form_route_ids_excluded: tuple[str] = ()
-    ingredient_ids: tuple[str] = ()
-    ingredient_ids_excluded: tuple[str] = ()
-    vtm_ids: tuple[str] = ()
-    vtm_ids_excluded: tuple[str] = ()
+    form_routes: tuple[str] = ()
+    form_routes_excluded: tuple[str] = ()
+    forms: tuple[str] = ()
+    forms_excluded: tuple[str] = ()
+    routes: tuple[str] = ()
+    routes_excluded: tuple[str] = ()
+    ingredient_ids: tuple[int] = ()
+    ingredient_ids_excluded: tuple[int] = ()
+    vtm_ids: tuple[int] = ()
+    vtm_ids_excluded: tuple[int] = ()
 
     PRODUCT_TYPE_DEFAULT = "all"
 
@@ -111,16 +103,26 @@ class BNFQuery:
 
         object.__setattr__(self, "bnf_codes", tuple(self.bnf_codes))
         object.__setattr__(self, "bnf_codes_excluded", tuple(self.bnf_codes_excluded))
-        object.__setattr__(self, "form_route_ids", tuple(self.form_route_ids))
+        object.__setattr__(self, "form_routes", tuple(self.form_routes))
         object.__setattr__(
-            self, "form_route_ids_excluded", tuple(self.form_route_ids_excluded)
+            self, "form_routes_excluded", tuple(self.form_routes_excluded)
         )
-        object.__setattr__(self, "ingredient_ids", tuple(self.ingredient_ids))
+        object.__setattr__(self, "forms", tuple(self.forms))
+        object.__setattr__(self, "forms_excluded", tuple(self.forms_excluded))
+        object.__setattr__(self, "routes", tuple(self.routes))
+        object.__setattr__(self, "routes_excluded", tuple(self.routes_excluded))
         object.__setattr__(
-            self, "ingredient_ids_excluded", tuple(self.ingredient_ids_excluded)
+            self, "ingredient_ids", tuple(int(i) for i in self.ingredient_ids)
         )
-        object.__setattr__(self, "vtm_ids", tuple(self.vtm_ids))
-        object.__setattr__(self, "vtm_ids_excluded", tuple(self.vtm_ids_excluded))
+        object.__setattr__(
+            self,
+            "ingredient_ids_excluded",
+            tuple(int(i) for i in self.ingredient_ids_excluded),
+        )
+        object.__setattr__(self, "vtm_ids", tuple(int(i) for i in self.vtm_ids))
+        object.__setattr__(
+            self, "vtm_ids_excluded", tuple(int(i) for i in self.vtm_ids_excluded)
+        )
 
     @staticmethod
     def has_params(field, params):
@@ -135,10 +137,12 @@ class BNFQuery:
         bnf_codes = _get_tuple_param(params, f"{field}_bnf_codes")
         bnf_codes_excluded = _get_tuple_param(params, f"{field}_bnf_codes_excluded")
         product_type = params.get(f"{field}_product_type", cls.PRODUCT_TYPE_DEFAULT)
-        form_route_ids = _get_tuple_param(params, f"{field}_form_route_ids")
-        form_route_ids_excluded = _get_tuple_param(
-            params, f"{field}_form_route_ids_excluded"
-        )
+        form_routes = _get_tuple_param(params, f"{field}_form_routes")
+        form_routes_excluded = _get_tuple_param(params, f"{field}_form_routes_excluded")
+        forms = _get_tuple_param(params, f"{field}_forms")
+        forms_excluded = _get_tuple_param(params, f"{field}_forms_excluded")
+        routes = _get_tuple_param(params, f"{field}_routes")
+        routes_excluded = _get_tuple_param(params, f"{field}_routes_excluded")
         ingredient_ids = _get_tuple_param(params, f"{field}_ingredient_ids")
         ingredient_ids_excluded = _get_tuple_param(
             params, f"{field}_ingredient_ids_excluded"
@@ -150,8 +154,12 @@ class BNFQuery:
             bnf_codes=bnf_codes,
             bnf_codes_excluded=bnf_codes_excluded,
             product_type=ProductType(product_type),
-            form_route_ids=form_route_ids,
-            form_route_ids_excluded=form_route_ids_excluded,
+            form_routes=form_routes,
+            form_routes_excluded=form_routes_excluded,
+            forms=forms,
+            forms_excluded=forms_excluded,
+            routes=routes,
+            routes_excluded=routes_excluded,
             ingredient_ids=ingredient_ids,
             ingredient_ids_excluded=ingredient_ids_excluded,
             vtm_ids=vtm_ids,
@@ -163,31 +171,29 @@ class BNFQuery:
         bnf_codes_dict = query_dict.get("bnf_codes", {"included": [], "excluded": []})
         product_type = query_dict.get("product_type", cls.PRODUCT_TYPE_DEFAULT)
 
-        form_route_ids = _get_form_route_ids_for_forms_and_routes(
-            query_dict.get("form_routes", []),
-            query_dict.get("forms", []),
-            query_dict.get("routes", []),
-        )
-        form_route_ids_excluded = _get_form_route_ids_for_forms_and_routes(
-            query_dict.get("form_routes_excluded", []),
-            query_dict.get("forms_excluded", []),
-            query_dict.get("routes_excluded", []),
-        )
+        form_routes = tuple(query_dict.get("form_routes", []))
+        form_routes_excluded = tuple(query_dict.get("form_routes_excluded", []))
+        forms = tuple(query_dict.get("forms", []))
+        forms_excluded = tuple(query_dict.get("forms_excluded", []))
+        routes = tuple(query_dict.get("routes", []))
+        routes_excluded = tuple(query_dict.get("routes_excluded", []))
 
-        ingredient_ids = tuple(str(i) for i in query_dict.get("ingredient_ids", []))
-        ingredient_ids_excluded = tuple(
-            str(i) for i in query_dict.get("ingredient_ids_excluded", [])
-        )
+        ingredient_ids = tuple(query_dict.get("ingredient_ids", []))
+        ingredient_ids_excluded = tuple(query_dict.get("ingredient_ids_excluded", []))
 
-        vtm_ids = tuple(str(i) for i in query_dict.get("vtm_ids", []))
-        vtm_ids_excluded = tuple(str(i) for i in query_dict.get("vtm_ids_excluded", []))
+        vtm_ids = tuple(query_dict.get("vtm_ids", []))
+        vtm_ids_excluded = tuple(query_dict.get("vtm_ids_excluded", []))
 
         return cls(
             tuple(bnf_codes_dict["included"]),
             tuple(bnf_codes_dict.get("excluded", [])),
             ProductType(product_type),
-            form_route_ids=form_route_ids,
-            form_route_ids_excluded=form_route_ids_excluded,
+            form_routes=form_routes,
+            form_routes_excluded=form_routes_excluded,
+            forms=forms,
+            forms_excluded=forms_excluded,
+            routes=routes,
+            routes_excluded=routes_excluded,
             ingredient_ids=ingredient_ids,
             ingredient_ids_excluded=ingredient_ids_excluded,
             vtm_ids=vtm_ids,
@@ -202,20 +208,18 @@ class BNFQuery:
             bnf_query_dict["bnf_codes"]["excluded"] = list(self.bnf_codes_excluded)
         if not self.product_type == ProductType.ALL:
             bnf_query_dict["product_type"] = self.product_type.value
-        if self.form_route_ids:
-            bnf_query_dict["form_routes"] = [
-                str(form_route.descr)
-                for form_route in OntFormRoute.objects.filter(
-                    cd__in=self.form_route_ids
-                )
-            ]
-        if self.form_route_ids_excluded:
-            bnf_query_dict["form_routes_excluded"] = [
-                str(form_route.descr)
-                for form_route in OntFormRoute.objects.filter(
-                    cd__in=self.form_route_ids_excluded
-                )
-            ]
+        if self.form_routes:
+            bnf_query_dict["form_routes"] = list(self.form_routes)
+        if self.form_routes_excluded:
+            bnf_query_dict["form_routes_excluded"] = list(self.form_routes_excluded)
+        if self.forms:
+            bnf_query_dict["forms"] = list(self.forms)
+        if self.forms_excluded:
+            bnf_query_dict["forms_excluded"] = list(self.forms_excluded)
+        if self.routes:
+            bnf_query_dict["routes"] = list(self.routes)
+        if self.routes_excluded:
+            bnf_query_dict["routes_excluded"] = list(self.routes_excluded)
         if self.ingredient_ids:
             bnf_query_dict["ingredient_ids"] = list(self.ingredient_ids)
         if self.ingredient_ids_excluded:
@@ -228,6 +232,59 @@ class BNFQuery:
             bnf_query_dict["vtm_ids_excluded"] = list(self.vtm_ids_excluded)
 
         return bnf_query_dict
+
+    def validate(self):
+        """Check that every field holds valid values, raising ValueError if not."""
+
+        errors = []
+
+        for field in ["bnf_codes", "bnf_codes_excluded"]:
+            for code in getattr(self, field):
+                try:
+                    q = build_q_for_bnf_code(code)
+                except ValueError:
+                    errors.append(f"{field}: {code!r}")
+                    continue
+                if not (
+                    BNFCode.objects.filter(level=BNFCode.Level.PRESENTATION)
+                    .filter(q)
+                    .exists()
+                ):
+                    errors.append(f"{field}: {code!r}")
+
+        valid_form_routes = set(OntFormRoute.objects.values_list("descr", flat=True))
+        valid_forms = {descr.split(".", 1)[0] for descr in valid_form_routes}
+        valid_routes = {descr.split(".", 1)[1] for descr in valid_form_routes}
+        valid_ingredient_ids = set(Ing.objects.values_list("isid", flat=True))
+        valid_vtm_ids = set(VTM.objects.values_list("vtmid", flat=True))
+
+        for field, values, valid_values in [
+            ("form_routes", self.form_routes, valid_form_routes),
+            ("form_routes_excluded", self.form_routes_excluded, valid_form_routes),
+            ("forms", self.forms, valid_forms),
+            ("forms_excluded", self.forms_excluded, valid_forms),
+            ("routes", self.routes, valid_routes),
+            ("routes_excluded", self.routes_excluded, valid_routes),
+            ("ingredient_ids", self.ingredient_ids, valid_ingredient_ids),
+            (
+                "ingredient_ids_excluded",
+                self.ingredient_ids_excluded,
+                valid_ingredient_ids,
+            ),
+            ("vtm_ids", self.vtm_ids, valid_vtm_ids),
+            ("vtm_ids_excluded", self.vtm_ids_excluded, valid_vtm_ids),
+        ]:
+            for value in values:
+                if value not in valid_values:
+                    errors.append(f"{field}: {value!r}")
+
+        try:
+            ProductType(self.product_type)
+        except ValueError:
+            errors.append(f"product_type: {self.product_type!r}")
+
+        if errors:
+            raise ValueError("Invalid BNFQuery values:\n" + "\n".join(errors))
 
     def to_sql(self):
         """Return SQL that returns items prescribed for codes matching query.
@@ -265,13 +322,17 @@ class BNFQuery:
             .exclude(reduce(Q.__or__, excludes, Q()))
         )
 
-        if self.form_route_ids:
-            codes = codes.filter(
-                code__in=_get_bnf_codes_for_form_route_ids(self.form_route_ids)
-            )
-        if self.form_route_ids_excluded:
+        form_routes = list(self.form_routes) + _expand_forms_and_routes(
+            self.forms, self.routes
+        )
+        form_routes_excluded = list(
+            self.form_routes_excluded
+        ) + _expand_forms_and_routes(self.forms_excluded, self.routes_excluded)
+        if form_routes:
+            codes = codes.filter(code__in=_get_bnf_codes_for_form_routes(form_routes))
+        if form_routes_excluded:
             codes = codes.exclude(
-                code__in=_get_bnf_codes_for_form_route_ids(self.form_route_ids_excluded)
+                code__in=_get_bnf_codes_for_form_routes(form_routes_excluded)
             )
 
         if self.ingredient_ids:
@@ -311,13 +372,12 @@ class BNFQuery:
                 description_for_bnf_code(code, self.product_type)
                 for code in self.bnf_codes_excluded
             ],
-            "form_routes": [
-                OntFormRoute.objects.get(cd=fr).descr for fr in self.form_route_ids
-            ],
-            "form_routes_excluded": [
-                OntFormRoute.objects.get(cd=fr).descr
-                for fr in self.form_route_ids_excluded
-            ],
+            "form_routes": list(self.form_routes),
+            "form_routes_excluded": list(self.form_routes_excluded),
+            "forms": list(self.forms),
+            "forms_excluded": list(self.forms_excluded),
+            "routes": list(self.routes),
+            "routes_excluded": list(self.routes_excluded),
             "ingredients": [
                 Ing.objects.get(isid=ingredient_id).nm
                 for ingredient_id in self.ingredient_ids
@@ -340,22 +400,34 @@ class BNFQuery:
             params[f"{field}_bnf_codes"] = ",".join(self.bnf_codes)
         if self.bnf_codes_excluded:
             params[f"{field}_bnf_codes_excluded"] = ",".join(self.bnf_codes_excluded)
-        if self.form_route_ids:
-            params[f"{field}_form_route_ids"] = ",".join(self.form_route_ids)
-        if self.form_route_ids_excluded:
-            params[f"{field}_form_route_ids_excluded"] = ",".join(
-                self.form_route_ids_excluded
+        if self.form_routes:
+            params[f"{field}_form_routes"] = ",".join(self.form_routes)
+        if self.form_routes_excluded:
+            params[f"{field}_form_routes_excluded"] = ",".join(
+                self.form_routes_excluded
             )
+        if self.forms:
+            params[f"{field}_forms"] = ",".join(self.forms)
+        if self.forms_excluded:
+            params[f"{field}_forms_excluded"] = ",".join(self.forms_excluded)
+        if self.routes:
+            params[f"{field}_routes"] = ",".join(self.routes)
+        if self.routes_excluded:
+            params[f"{field}_routes_excluded"] = ",".join(self.routes_excluded)
         if self.ingredient_ids:
-            params[f"{field}_ingredient_ids"] = ",".join(self.ingredient_ids)
+            params[f"{field}_ingredient_ids"] = ",".join(
+                str(i) for i in self.ingredient_ids
+            )
         if self.ingredient_ids_excluded:
             params[f"{field}_ingredient_ids_excluded"] = ",".join(
-                self.ingredient_ids_excluded
+                str(i) for i in self.ingredient_ids_excluded
             )
         if self.vtm_ids:
-            params[f"{field}_vtm_ids"] = ",".join(self.vtm_ids)
+            params[f"{field}_vtm_ids"] = ",".join(str(i) for i in self.vtm_ids)
         if self.vtm_ids_excluded:
-            params[f"{field}_vtm_ids_excluded"] = ",".join(self.vtm_ids_excluded)
+            params[f"{field}_vtm_ids_excluded"] = ",".join(
+                str(i) for i in self.vtm_ids_excluded
+            )
 
         return params
 
@@ -377,9 +449,7 @@ def build_q_for_bnf_code(code):
     """
 
     if "_" in code:
-        prefix, suffix = code.split("_")
-        assert len(prefix) == 9  # chemical substance code
-        assert len(suffix) == 2  # strength and formulation part
+        prefix, suffix = destructure_strength_and_formulation_code(code)
         return Q(code__startswith=prefix, code__endswith=suffix)
     else:
         return Q(code__startswith=code)
@@ -389,9 +459,7 @@ def description_for_bnf_code(code, product_type):
     """Return a human-readable description for a BNF code."""
 
     if "_" in code:
-        prefix, suffix = code.split("_")
-        assert len(prefix) == 9  # chemical substance code
-        assert len(suffix) == 2  # strength and formulation part
+        prefix, suffix = destructure_strength_and_formulation_code(code)
         generic_code_obj = BNFCode.objects.get(code=f"{prefix}AA{suffix}{suffix}")
         if product_type == ProductType.ALL:
             return f"{generic_code_obj.name} (branded and generic)"
@@ -399,6 +467,14 @@ def description_for_bnf_code(code, product_type):
             return generic_code_obj.name
     else:
         return BNFCode.objects.get(code=code).name
+
+
+def destructure_strength_and_formulation_code(code):
+    assert "_" in code
+    prefix, suffix = code.split("_", 1)
+    if len(prefix) == 9 and len(suffix) == 2:
+        return prefix, suffix
+    raise ValueError(f"Invalid strength and formulation code: {code}")
 
 
 def _get_tuple_param(params, key):

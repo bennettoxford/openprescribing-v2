@@ -144,7 +144,7 @@ queries:
   - numerator:
       bnf_codes:
         included:
-          - "0501013"
+          - "1001030U0"
 
 """
     (tmp_path / "test-measure.yaml").write_text(test_yaml)
@@ -155,6 +155,35 @@ queries:
 
     rsp = client.get("/measures/test-measure/")
     assert rsp.status_code == 200
+
+
+def test_measure_with_invalid_data(client, sample_data, tmp_path, settings):
+    test_yaml = """
+metadata:
+  title: test title
+  why_it_matters: This is a demo measure
+  tags:
+    - demo
+options:
+  type: prescribing_vs_prescribing
+  output_value: items
+queries:
+  - numerator:
+      bnf_codes:
+        included:
+          - "1001030U0"
+    denominator:
+      bnf_codes:
+        included:
+          - "9999999"
+"""
+    (tmp_path / "test-measure.yaml").write_text(test_yaml)
+    settings.MEASURE_DEFINITIONS_PATH = tmp_path
+
+    rsp = client.get("/measures/test-measure/")
+    assert rsp.status_code == 200
+    assert b"could not be loaded" in rsp.content
+    assert b"9999999" in rsp.content
 
 
 def test_analysis_download(client, sample_data, tmp_path, settings):

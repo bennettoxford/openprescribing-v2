@@ -49,6 +49,13 @@ class Analysis:
             org_id=org_id,
         )
 
+    def validate(self):
+        """Validate the analysis's BNF queries, raising ValueError if invalid."""
+
+        self.ntr_query.validate()
+        if isinstance(self.dtr_query, BNFQuery):
+            self.dtr_query.validate()
+
     def to_params(self):
         """Serialize back to URL query parameters."""
 

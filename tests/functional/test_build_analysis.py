@@ -242,7 +242,8 @@ def test_build_analyse_loads_dynamic_filters_from_url(
 
     page.goto(
         live_server.url
-        + "/analysis/build/?ntr_vtm_ids=108502004,90356005&ntr_form_route_ids=24"
+        + "/analysis/build/?ntr_vtm_ids=108502004,90356005"
+        + "&ntr_form_routes=solutioninjection.intravenous"
         + "&dtr_ingredient_ids=35431001&dtr_ingredient_ids_excluded=35431001"
     )
 
