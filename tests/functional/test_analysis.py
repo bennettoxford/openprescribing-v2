@@ -30,3 +30,21 @@ def test_analysis(live_server, page, sample_data, settings, tmp_path):
 
     expect(page).to_have_url(live_server.url + "/?ntr_vtm_ids=108502004")
     expect(page.locator("#chart-container")).to_be_attached()
+
+    # Clicking each chart type in turn fetches fresh data from the API and renders a
+    # chart.  The container is hidden until its data loads and an SVG is drawn, so a
+    # visible SVG confirms the chart rendered successfully.
+    for chart_type, endpoint in [
+        ("all-orgs-line", "/api/prescribing-all-orgs/"),
+        ("all-orgs-dots", "/api/prescribing-all-orgs/"),
+        ("medications", "/api/prescribing-medications/"),
+        # Visit deciles last, because that is the first chart type to be shown.
+        ("deciles", "/api/prescribing-deciles/"),
+    ]:
+        with page.expect_response(f"**{endpoint}**") as info:
+            page.locator(f"#{chart_type}").check()
+        assert info.value.ok
+
+        expect(page.locator(f"#{chart_type}")).to_be_checked()
+        expect(page.locator("#chart-container")).to_be_visible()
+        expect(page.locator("#chart-container svg.marks")).to_be_visible()

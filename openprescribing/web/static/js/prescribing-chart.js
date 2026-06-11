@@ -2,13 +2,11 @@ const orgs = JSON.parse(document.getElementById("orgs").textContent);
 const orgTypes = Object.fromEntries(
   JSON.parse(document.getElementById("org-types").textContent),
 );
-const chartSpec = JSON.parse(document.getElementById("chart").textContent);
-
-const prescribingDecilesUrl = JSON.parse(
-  document.getElementById("prescribing-deciles-url").textContent,
+const chartSpecs = JSON.parse(
+  document.getElementById("chart-specs").textContent,
 );
-const prescribingAllOrgsUrl = JSON.parse(
-  document.getElementById("prescribing-all-orgs-url").textContent,
+const prescribingUrls = JSON.parse(
+  document.getElementById("prescribing-urls").textContent,
 );
 
 const chartConfigs = {
@@ -16,35 +14,44 @@ const chartConfigs = {
   //  - apiUrl: the URL that returns the chart data
   //  - responseKey: the key in the URL response that contains the chart data
   //  - vegaDatasetName: the name of the dataset in the Vega chart spec
+  //  - specName: the key in chartSpecs of the Vega spec to embed
   deciles: {
-    apiUrl: prescribingDecilesUrl,
+    apiUrl: prescribingUrls.deciles,
     responseKey: "deciles",
     vegaDatasetName: "deciles",
+    specName: "org",
   },
   "all-orgs-line": {
-    apiUrl: prescribingAllOrgsUrl,
+    apiUrl: prescribingUrls.all_orgs,
     responseKey: "all_orgs",
     vegaDatasetName: "all_orgs_line",
+    specName: "org",
   },
   "all-orgs-dots": {
-    apiUrl: prescribingAllOrgsUrl,
+    apiUrl: prescribingUrls.all_orgs,
     responseKey: "all_orgs",
     vegaDatasetName: "all_orgs_dots",
+    specName: "org",
+  },
+  medications: {
+    apiUrl: prescribingUrls.medications,
+    responseKey: "medications",
+    vegaDatasetName: "medications",
+    specName: "medications",
   },
 };
 
 const chartLoading = document.querySelector("#chart-loading");
 const chartContainer = document.querySelector("#chart-container");
 
-// We'll store the Vega chart result here.
+// We'll store the Vega chart result, and the name of the spec it was built from, here.
 let chartResult;
+let currentSpecName;
 
 const initialisePage = async () => {
   // Set the chart type and set up event handlers.
 
   setChartType(chartTypeFromUrl());
-
-  chartResult = await vegaEmbed(chartContainer, chartSpec, { renderer: "svg" });
 
   window.addEventListener("popstate", () => {
     setChartType(chartTypeFromUrl());
@@ -107,6 +114,7 @@ const setupOrgSearch = () => {
 
 const setChartType = (chartType, pushHistory = false) => {
   document.getElementById(chartType).checked = true;
+  updateDenominatorVisibility(chartType);
   updateChart(chartConfigs[chartType]);
 
   if (pushHistory) {
@@ -114,48 +122,90 @@ const setChartType = (chartType, pushHistory = false) => {
   }
 };
 
-const updateChart = (chartConfig) => {
-  const { apiUrl, responseKey, vegaDatasetName } = chartConfig;
+const updateDenominatorVisibility = (chartType) => {
+  // The medications chart is derived from the numerator query alone, but it is
+  // generated from an Analysis object that may have a denominator query.  The
+  // denominator description and the numerator/denominator intersection table aren't
+  // relevant and should be hidden.
+  ["denominator-section", "presentations-section"].forEach((id) => {
+    const el = document.getElementById(id);
+    el.classList.toggle("d-none", chartType === "medications");
+  });
+};
+
+// Embed the named spec, reusing the existing view if it's already embedded. Chart types
+// that share a spec (deciles/all-orgs) avoid re-embedding; switching to/from the
+// medications chart embeds its separate spec in place of the combined one.
+const embedSpec = async (specName) => {
+  if (specName === currentSpecName) {
+    return;
+  }
+  currentSpecName = specName;
+  if (chartResult) {
+    // Tear down the previous view before replacing it, so we don't leak its listeners.
+    chartResult.finalize();
+  }
+  chartResult = await vegaEmbed(chartContainer, chartSpecs[specName], {
+    renderer: "svg",
+  });
+};
+
+const updateChart = async (chartConfig) => {
+  const { apiUrl, responseKey, vegaDatasetName, specName } = chartConfig;
 
   chartLoading.textContent = "Loading chart...";
-  fetch(apiUrl)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`Failed to fetch chart data: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then((response) => {
-      response[responseKey].forEach((record) => {
+  showLoading();
+  try {
+    await embedSpec(specName);
+
+    const response = await fetch(apiUrl);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch chart data: ${response.status}`);
+    }
+    const data = await response.json();
+
+    data[responseKey].forEach((record) => {
+      record.month = new Date(record.month);
+    });
+    if (data.org) {
+      data.org.forEach((record) => {
         record.month = new Date(record.month);
       });
-      if (response.org) {
-        response.org.forEach((record) => {
-          record.month = new Date(record.month);
-        });
-      }
-      const datasetNames = chartResult.spec.layer.map(
-        (layer) => layer.data.name,
-      );
-      datasetNames.forEach((datasetName) => {
-        chartResult.view.remove(datasetName, () => true);
-      });
-      chartResult.view.insert(vegaDatasetName, response[responseKey]);
-      if (response.org) {
-        chartResult.view.insert("org", response.org);
-      }
-      chartResult.view.run();
-
-      chartLoading.classList.add("invisible");
-      chartContainer.classList.add("visible");
-      chartLoading.classList.remove("visible");
-      chartContainer.classList.remove("invisible");
-    })
-    .catch((error) => {
-      console.error("Unable to render deciles chart", error);
-      chartLoading.textContent =
-        "Unable to load chart data. Please try again later.";
+    }
+    // The combined ("org") spec carries its named datasets on each layer; the
+    // single-mark medications spec carries its one dataset at the top level.
+    const datasetNames = chartResult.spec.layer
+      ? chartResult.spec.layer.map((layer) => layer.data.name)
+      : [chartResult.spec.data.name];
+    datasetNames.forEach((datasetName) => {
+      chartResult.view.remove(datasetName, () => true);
     });
+    chartResult.view.insert(vegaDatasetName, data[responseKey]);
+    if (data.org) {
+      chartResult.view.insert("org", data.org);
+    }
+    chartResult.view.run();
+
+    showChart();
+  } catch (error) {
+    console.error("Unable to render chart", error);
+    chartLoading.textContent =
+      "Unable to load chart data. Please try again later.";
+  }
+};
+
+const showLoading = () => {
+  chartLoading.classList.add("visible");
+  chartContainer.classList.add("invisible");
+  chartLoading.classList.remove("invisible");
+  chartContainer.classList.remove("visible");
+};
+
+const showChart = () => {
+  chartLoading.classList.add("invisible");
+  chartContainer.classList.add("visible");
+  chartLoading.classList.remove("visible");
+  chartContainer.classList.remove("invisible");
 };
 
 const updateUrl = (chartType) => {

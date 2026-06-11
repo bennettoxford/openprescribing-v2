@@ -4,7 +4,7 @@
 {% block content %}
 <div class="row">
     {% if analysis %}
-    <div class="col-lg-5">
+    <div class="col-lg-4">
         {% if measure %}
         <div class="card mb-4">
             <div class="card-body">
@@ -91,6 +91,14 @@
                              {% if analysis_presentation.chart_type == "all-orgs-dots" %}checked{% endif %}
                          >
                          <label for="all-orgs-dots">All {{ org_type_label }}s (dots chart)</label><br>
+                         <input
+                             type="radio"
+                             id="medications"
+                             name="chart_type"
+                             value="medications"
+                             {% if analysis_presentation.chart_type == "medications" %}checked{% endif %}
+                         >
+                         <label for="medications">Prescribing by medication</label><br>
                      </fieldset>
                 </section>
 
@@ -104,7 +112,7 @@
         </div>
     </div>
 
-    <div class="col-lg-7">
+    <div class="col-lg-8">
         <div class="card h-100">
             <div class="card-body">
                 <h1 class="h3">Prescribing data</h1>
@@ -120,13 +128,13 @@
                         <div class="col-12">
                         </div>
                     </div>
-                    <div class="row mt-3">
+                    <div class="row mt-3" id="numerator-section">
                         <div class="col-12">
                             <h2 class="h5">Numerator</h2>
                             {% include "./_search_description.html" with description=analysis.ntr_query.describe %}
                         </div>
                     </div>
-                    <div class="row">
+                    <div class="row" id="denominator-section">
                         <div class="col-12">
                             <h2 class="h5">Denominator</h2>
                             {% include "./_search_description.html" with description=analysis.dtr_query.describe %}
@@ -140,8 +148,7 @@
                         </div>
                     </div>
                     {% endif %}
-                    {% if ntr_dtr_intersection_table %}
-                    <div class="row mt-3">
+                    <div class="row mt-3" id="presentations-section">
                         <div class="col-12">
                             <p>
                                 <button
@@ -160,7 +167,6 @@
                             </div>
                         </div>
                     </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
@@ -248,12 +254,11 @@
 {% endblock %}
 
 {% block extra_js %}
-{% if chart_spec %}
+{% if analysis %}
 {{ orgs|json_script:"orgs" }}
 {{ org_types|json_script:"org-types" }}
-{{ prescribing_deciles_url|json_script:"prescribing-deciles-url" }}
-{{ prescribing_all_orgs_url|json_script:"prescribing-all-orgs-url" }}
-{{ chart_spec|json_script:"chart" }}
+{{ prescribing_urls|json_script:"prescribing-urls" }}
+{{ chart_specs|json_script:"chart-specs" }}
 <script src="https://cdn.jsdelivr.net/npm/vega@6.2.0"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-lite@6.4.1"></script>
 <script src="https://cdn.jsdelivr.net/npm/vega-embed@7.0.2"></script>

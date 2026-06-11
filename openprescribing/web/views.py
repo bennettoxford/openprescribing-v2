@@ -15,7 +15,7 @@ from openprescribing.data.measures import all_measure_details, load_measure
 from openprescribing.data.models import BNFCode, Org
 
 from .analysis_presentation import AnalysisPresentation
-from .charts import build_chart_spec
+from .charts import build_medications_chart_spec, build_org_chart_spec
 from .models import Feedback
 from .presenters import (
     make_bnf_table,
@@ -25,11 +25,12 @@ from .presenters import (
 )
 
 
-def _build_analysis_context(analysis):
+def _build_analysis_context(analysis, medications_order):
     build_analysis_url = reverse("build-analysis")
     download_analysis_url = reverse("download-analysis")
     deciles_api_url = None
     all_orgs_api_url = None
+    medications_api_url = None
     org = None
     ntr_dtr_intersection_table = None
 
@@ -55,6 +56,9 @@ def _build_analysis_context(analysis):
         all_orgs_api_url = (
             f"{reverse('api_prescribing_all_orgs')}?{url_parameters_json}"
         )
+        medications_api_url = (
+            f"{reverse('api_prescribing_medications')}?{url_parameters_json}"
+        )
 
     orgs = make_orgs()
 
@@ -69,9 +73,15 @@ def _build_analysis_context(analysis):
         "org_type_label": org_type.label,
         "build_analysis_url": build_analysis_url,
         "download_analysis_url": download_analysis_url,
-        "prescribing_deciles_url": deciles_api_url,
-        "prescribing_all_orgs_url": all_orgs_api_url,
-        "chart_spec": build_chart_spec(analysis),
+        "prescribing_urls": {
+            "deciles": deciles_api_url,
+            "all_orgs": all_orgs_api_url,
+            "medications": medications_api_url,
+        },
+        "chart_specs": {
+            "org": build_org_chart_spec(analysis),
+            "medications": build_medications_chart_spec(analysis, **medications_order),
+        },
     }
 
     return ctx
@@ -85,11 +95,24 @@ def analysis(request):
     else:
         analysis = None
 
-    ctx = _build_analysis_context(analysis)
+    ctx = _build_analysis_context(analysis, _medications_order(request))
     ctx["measure"] = False
     ctx["analysis_presentation"] = analysis_presentation
 
     return render(request, "analysis.html", ctx)
+
+
+def _medications_order(request):
+    """Pull the "by medication" chart ordering from the query string, e.g.
+    ?largest=bottom&other=top.  Unknown values fall back to the chart's defaults.
+
+    Intended to be a temporary solution to get feedback.
+    """
+    order = {}
+    for key in ("largest", "other"):
+        if key in request.GET:  # pragma: no cover
+            order[key] = request.GET[key]
+    return order
 
 
 def build_analysis(request):
@@ -122,7 +145,7 @@ def measure(request, measure_name):
     analysis_dict["org_id"] = request.GET.get("org_id")
     analysis = Analysis.from_dict(analysis_dict)
 
-    ctx = _build_analysis_context(analysis)
+    ctx = _build_analysis_context(analysis, _medications_order(request))
     ctx["measure"] = True
     ctx["measure_title"] = analysis_dict["metadata"]["title"]
     ctx["why_it_matters"] = markdown.markdown(
