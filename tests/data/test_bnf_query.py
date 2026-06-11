@@ -1,3 +1,7 @@
+import re
+
+import pytest
+
 from openprescribing.data.bnf_query import (
     BNFQuery,
     ProductType,
@@ -913,6 +917,52 @@ def test_expand_forms_and_routes(dmd_data):
 
 def test_expand_no_forms_or_routes():
     assert _expand_forms_and_routes(forms=[], routes=[]) == []
+
+
+def test_validate_valid_query(dmd_data, bnf_codes):
+    query = BNFQuery(
+        bnf_codes=["1001030U0"],
+        bnf_codes_excluded=["1001030U0_AB"],
+        product_type=ProductType.GENERIC,
+        form_routes=["suspension.oral"],
+        form_routes_excluded=["solution.oral"],
+        forms=["tablet"],
+        routes=["oral"],
+        ingredient_ids=[53034005],
+        ingredient_ids_excluded=[35431001],
+        vtm_ids=[15219611000001105],
+        vtm_ids_excluded=[108502004],
+    )
+    query.validate()  # does not raise
+
+
+def test_validate_invalid_value(dmd_data, bnf_codes, subtests):
+    cases = [
+        ("form_routes", ["nonsense.oral"]),
+        ("form_routes_excluded", ["nonsense.oral"]),
+        ("forms", ["unicorn"]),
+        ("forms_excluded", ["unicorn"]),
+        ("routes", ["interstellar"]),
+        ("ingredient_ids", [99999999]),
+        ("vtm_ids_excluded", [99999999]),
+        ("product_type", "bogus"),
+        ("bnf_codes", ["9999999"]),
+        ("bnf_codes", ["0101_AA"]),
+    ]
+    for field, value in cases:
+        invalid_value = value[0] if isinstance(value, list) else value
+        expected = f"{field}: {invalid_value!r}"
+        with subtests.test(expected=expected):
+            with pytest.raises(ValueError, match=re.escape(expected)):
+                BNFQuery(**{field: value}).validate()
+
+
+def test_validate_reports_all_invalid_values(dmd_data):
+    with pytest.raises(ValueError) as excinfo:
+        BNFQuery(forms=["unicorn"], routes=["interstellar"]).validate()
+    message = str(excinfo.value)
+    assert "forms: 'unicorn'" in message
+    assert "routes: 'interstellar'" in message
 
 
 def test_expand_unknown_forms_and_routes(dmd_data):

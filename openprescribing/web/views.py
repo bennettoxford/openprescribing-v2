@@ -145,6 +145,13 @@ def measure(request, measure_name):
     analysis_dict["org_id"] = request.GET.get("org_id")
     analysis = Analysis.from_dict(analysis_dict)
 
+    try:
+        analysis.validate()
+    except ValueError as e:
+        return render(
+            request, "analysis.html", {"measure": True, "validation_error": str(e)}
+        )
+
     ctx = _build_analysis_context(analysis, _medications_order(request))
     ctx["measure"] = True
     ctx["measure_title"] = analysis_dict["metadata"]["title"]

@@ -114,6 +114,7 @@ dev = [
     "pytest-django>=4.11.1",
     "pytest-freezer>=0.4.9",
     "pytest-playwright>=0.7.1",
+    "pytest-subtests>=0.15.0",
     "responses>=0.25.8",
     "ruff>=0.12.11",
 ]

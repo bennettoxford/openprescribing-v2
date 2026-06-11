@@ -233,6 +233,59 @@ class BNFQuery:
 
         return bnf_query_dict
 
+    def validate(self):
+        """Check that every field holds valid values, raising ValueError if not."""
+
+        errors = []
+
+        for field in ["bnf_codes", "bnf_codes_excluded"]:
+            for code in getattr(self, field):
+                try:
+                    q = build_q_for_bnf_code(code)
+                except ValueError:
+                    errors.append(f"{field}: {code!r}")
+                    continue
+                if not (
+                    BNFCode.objects.filter(level=BNFCode.Level.PRESENTATION)
+                    .filter(q)
+                    .exists()
+                ):
+                    errors.append(f"{field}: {code!r}")
+
+        valid_form_routes = set(OntFormRoute.objects.values_list("descr", flat=True))
+        valid_forms = {descr.split(".", 1)[0] for descr in valid_form_routes}
+        valid_routes = {descr.split(".", 1)[1] for descr in valid_form_routes}
+        valid_ingredient_ids = set(Ing.objects.values_list("isid", flat=True))
+        valid_vtm_ids = set(VTM.objects.values_list("vtmid", flat=True))
+
+        for field, values, valid_values in [
+            ("form_routes", self.form_routes, valid_form_routes),
+            ("form_routes_excluded", self.form_routes_excluded, valid_form_routes),
+            ("forms", self.forms, valid_forms),
+            ("forms_excluded", self.forms_excluded, valid_forms),
+            ("routes", self.routes, valid_routes),
+            ("routes_excluded", self.routes_excluded, valid_routes),
+            ("ingredient_ids", self.ingredient_ids, valid_ingredient_ids),
+            (
+                "ingredient_ids_excluded",
+                self.ingredient_ids_excluded,
+                valid_ingredient_ids,
+            ),
+            ("vtm_ids", self.vtm_ids, valid_vtm_ids),
+            ("vtm_ids_excluded", self.vtm_ids_excluded, valid_vtm_ids),
+        ]:
+            for value in values:
+                if value not in valid_values:
+                    errors.append(f"{field}: {value!r}")
+
+        try:
+            ProductType(self.product_type)
+        except ValueError:
+            errors.append(f"product_type: {self.product_type!r}")
+
+        if errors:
+            raise ValueError("Invalid BNFQuery values:\n" + "\n".join(errors))
+
     def to_sql(self):
         """Return SQL that returns items prescribed for codes matching query.
 
