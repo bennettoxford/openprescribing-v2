@@ -17,10 +17,8 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        included:
-          - "040201010" # Zuclopenthixol Acetate
+        - "040201010" # Zuclopenthixol Acetate
     denominator:
       bnf_codes:
-        included:
-          - "040201010" # acetate
-          - "0402020Z0" # decanoate
+        - "040201010" # acetate
+        - "0402020Z0" # decanoate

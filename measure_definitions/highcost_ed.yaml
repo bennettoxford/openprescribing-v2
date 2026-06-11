@@ -21,15 +21,14 @@ options:
 queries:
   - numerator:
       bnf_codes:
-          included:
-              - '070405'
-          excluded:
-              - 0704050Z0AAABAB
-              - 0704050Z0AAAAAA
-              - 0704050Z0AAACAC
-              - 0704050R0AAAAAA
-              - 0704050R0AAABAB
-              - 0704050R0AAADAD
-              - 0704050AAAAABAB
-              - 0704050AAAAACAC
-              - 0704050AAAAAAAA
+        - '070405'
+      bnf_codes_excluded:
+        - 0704050Z0AAABAB
+        - 0704050Z0AAAAAA
+        - 0704050Z0AAACAC
+        - 0704050R0AAAAAA
+        - 0704050R0AAABAB
+        - 0704050R0AAADAD
+        - 0704050AAAAABAB
+        - 0704050AAAAACAC
+        - 0704050AAAAAAAA

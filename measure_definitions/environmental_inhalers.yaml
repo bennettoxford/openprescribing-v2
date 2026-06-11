@@ -22,17 +22,15 @@ queries:
       form_routes:
         - "pressurizedinhalation.inhalation"
       bnf_codes:
-        included:
-          - "03" # BNF Chapter 3
-        excluded:
-          - "0301011R0" # Exclude salbutamol
+        - "03" # BNF Chapter 3
+      bnf_codes_excluded:
+        - "0301011R0" # Exclude salbutamol
     denominator:
       form_routes:
         - "pressurizedinhalation.inhalation"
         - "powderinhalation.inhalation"
         - "inhalationsolution.inhalation"
       bnf_codes:
-        included:
-          - "03" # BNF Chapter 3
-        excluded:
-          - "0301011R0" # Exclude salbutamol
+        - "03" # BNF Chapter 3
+      bnf_codes_excluded:
+        - "0301011R0" # Exclude salbutamol

@@ -10,10 +10,8 @@ queries:
   - numerator:
       product_type: branded
       bnf_codes:
-          included:
-              - 0302000K0
+        - 0302000K0
     denominator:
       product_type: all
       bnf_codes:
-          included:
-              - 0302000K0
+        - 0302000K0

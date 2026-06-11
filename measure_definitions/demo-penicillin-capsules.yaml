@@ -11,5 +11,4 @@ queries:
       forms:
         - capsule
       bnf_codes:
-          included:
-              - "0501013"
+        - "0501013"
