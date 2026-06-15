@@ -125,3 +125,16 @@ def test_group_rows_by_label():
 def test_get_row():
     matrix = LabelledMatrix(np.array([[1.0, 2.0], [3.0, 4.0]]), ("A", "B"), (1, 2))
     assert np.array_equal(matrix.get_row("A"), np.array([1.0, 2.0]))
+
+
+def test_drop_zero_rows():
+    matrix = LabelledMatrix(
+        np.array([[1.0, 2.0], [0.0, 0.0], [0.0, 3.0], [np.nan, 0.0]]),
+        ("A", "B", "C", "D"),
+        (1, 2),
+    )
+    assert matrix.drop_zero_rows() == LabelledMatrix(
+        np.array([[1.0, 2.0], [0.0, 3.0], [np.nan, 0.0]]),
+        ("A", "C", "D"),
+        (1, 2),
+    )

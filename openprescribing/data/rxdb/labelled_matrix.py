@@ -114,6 +114,16 @@ class LabelledMatrix:
         values = np.nanpercentile(self.values, centiles, axis=0)
         return LabelledMatrix(values, centiles, self.col_labels)
 
+    def drop_zero_rows(self):
+        """Return a new LabelledMatrix with all-zero rows removed."""
+
+        keep = np.any(self.values != 0, axis=1)
+        return self.__class__(
+            self.values[keep],
+            tuple(label for label, keep_row in zip(self.row_labels, keep) if keep_row),
+            self.col_labels,
+        )
+
 
 # These "row groupers" are pure functions of their inputs, are not entirely trivial to
 # construct, and are expected to be used repeatedly, so it makes sense to cache them
