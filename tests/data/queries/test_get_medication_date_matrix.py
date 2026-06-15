@@ -11,11 +11,11 @@ from .alternative_implementations import get_medication_date_matrix_alternative
 def test_get_medication_date_matrix_spot_check(rxdb):
     BNFCode.objects.create(code="1001030U0AAABAB", level=7)
     BNFCode.objects.create(code="1001030U0AAACAC", level=7)
-    # Matches the query prefix but is only prescribed outside the date window, so it
-    # appears as an all-zero row.
+    # Matches the query prefix but is only prescribed outside the date window, so is
+    # not included in result.
     BNFCode.objects.create(code="1001030U0AAADAD", level=7)
-    # Matches the query prefix but is never prescribed at all, so it also appears as an
-    # all-zero row.
+    # Matches the query prefix but is never prescribed at all, so is not included in
+    # result.
     BNFCode.objects.create(code="1001030U0AAAEAE", level=7)
     rxdb.ingest(
         [
@@ -93,16 +93,12 @@ def test_get_medication_date_matrix_spot_check(rxdb):
     assert mdm.row_labels == (
         "1001030U0AAABAB",
         "1001030U0AAACAC",
-        "1001030U0AAADAD",
-        "1001030U0AAAEAE",
     )
     assert mdm.col_labels == (date(2025, 3, 1), date(2025, 2, 1))
 
     assert mdm.values.tolist() == [
         [25, 80],
         [7, 5],
-        [0, 0],
-        [0, 0],
     ]
 
 

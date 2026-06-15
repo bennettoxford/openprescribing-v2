@@ -24,8 +24,8 @@ def get_medication_date_matrix(cursor, query, date_count=None):
     The `date_count` argument allows restricting to just the N most recent months of
     prescribing data.
 
-    There is one row for each BNF code matching the query; codes with no prescribing in
-    the date range appear as all-zero rows.
+    There is one row for each BNF code matching the query that has prescribing in the
+    date range; codes with no prescribing in the date range are omitted.
 
     We first build a matrix with one row per presentation (using `presentation_id`
     directly as the row index, just as `get_practice_date_matrix` uses `practice_id`)
@@ -56,15 +56,16 @@ def get_medication_date_matrix(cursor, query, date_count=None):
         col_labels=dates,
     )
 
-    # Collapse presentations into one row per matching BNF code.  Codes with no
-    # presentations get an empty group (and so an all-zero row).
+    # Collapse presentations into one row per matching BNF code.
     code_to_ids = get_bnf_code_to_presentation_ids(cursor)
     row_label_map = tuple(
         (code, code_to_ids.get(code, ()))
         for code in query.get_matching_presentation_codes()
     )
+    grouped = presentation_date_matrix.group_rows(row_label_map)
 
-    return presentation_date_matrix.group_rows(row_label_map)
+    # Drop codes with no prescribing in the date range.
+    return grouped.drop_zero_rows()
 
 
 @functools.cache
