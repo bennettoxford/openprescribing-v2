@@ -61,6 +61,12 @@ class BNFCode(models.Model):
         )
 
     @property
+    def generic_equivalent_code(self):
+        assert self.level == BNFCode.Level.PRESENTATION
+        prefix, suffix = self.code[:9], self.code[-2:]
+        return f"{prefix}AA{suffix}{suffix}"
+
+    @property
     def strength_and_formulation_code(self):
         assert self.level == BNFCode.Level.PRESENTATION
         assert self.is_generic()

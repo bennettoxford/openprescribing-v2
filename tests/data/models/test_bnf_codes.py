@@ -47,6 +47,11 @@ def test_is_generic_equivalent_of():
     )
 
 
+def test_generic_equivalent_code():
+    assert bnf_code("1001030U0BDAAAB").generic_equivalent_code == "1001030U0AAABAB"
+    assert bnf_code("1001030U0AAABAB").generic_equivalent_code == "1001030U0AAABAB"
+
+
 def test_strength_and_formulation_code():
     assert bnf_code("1001030U0AAABAB").strength_and_formulation_code == "1001030U0_AB"
 
