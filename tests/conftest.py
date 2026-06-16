@@ -1,4 +1,5 @@
 import datetime
+import itertools
 
 import pytest
 
@@ -52,13 +53,21 @@ def prevent_rxdb_access():
             "use the `rxdb` fixture to enable it"
         )
 
-    def get_cache_key():
-        return (0.0, 0.0)
-
     with pytest.MonkeyPatch.context() as monkeypatch:
         monkeypatch.setattr(openprescribing.data.rxdb, "get_cursor", get_cursor)
-        monkeypatch.setattr(openprescribing.data.rxdb, "get_cache_key", get_cache_key)
         yield
+
+
+_cache_key_counter = itertools.count()
+
+
+@pytest.fixture(autouse=True)
+def cache_key(monkeypatch):
+    # Give each test a distinct, stable cache key so the caches keyed on it (see
+    # openprescribing.web.decorators.cache) don't serve one test's data to the
+    # next.
+    cache_key = (next(_cache_key_counter), 0.0)
+    monkeypatch.setattr(openprescribing.data.rxdb, "get_cache_key", lambda: cache_key)
 
 
 @pytest.fixture
