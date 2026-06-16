@@ -22,6 +22,20 @@ DATE_COUNT = 96
 # stacked area chart.  Any further medications are summed into a single "Other" band.
 MEDICATIONS_TOP_N = 10
 
+# Selects medications that have been prescribed: VMPs/AMPs whose BNF code appears in the
+# prescribing data, plus the parent VMPs of any prescribed AMPs.
+PRESCRIBED_MEDICATIONS_SQL = """
+    SELECT * FROM medications
+    WHERE bnf_code IN (SELECT bnf_code FROM presentation)
+    OR (
+        NOT is_amp
+        AND id IN (
+            SELECT DISTINCT vmp_id FROM medications
+            WHERE is_amp AND bnf_code IN (SELECT bnf_code FROM presentation)
+        )
+    )
+"""
+
 
 def _get_org(analysis):
     org_id = analysis.org_id
@@ -145,27 +159,7 @@ def _metadata_medications_payload():
     """
     with rxdb.get_cursor() as cursor:
         medications = (
-            cursor.sql(
-                """
-                SELECT * FROM medications
-                WHERE bnf_code IN (
-                    SELECT bnf_code FROM presentation
-                )
-                OR (
-                    NOT is_amp
-                    AND id IN (
-                        SELECT DISTINCT vmp_id
-                        FROM medications
-                        WHERE is_amp
-                        AND bnf_code IN (
-                            SELECT bnf_code FROM presentation
-                        )
-                    )
-                )
-                """
-            )
-            .to_arrow_table()
-            .to_pylist()
+            cursor.sql(PRESCRIBED_MEDICATIONS_SQL).to_arrow_table().to_pylist()
         )
     return {"medications": medications}
 
