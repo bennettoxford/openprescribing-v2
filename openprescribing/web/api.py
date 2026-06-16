@@ -11,7 +11,7 @@ from openprescribing.data.queries import (
     get_medication_date_matrix,
     get_org_date_ratio_matrix,
 )
-from openprescribing.web.decorators import add_cache_headers
+from openprescribing.web.decorators import add_cache_headers, cache
 
 
 # We currently have about 8 years (96 months) of list size data.  In future we could
@@ -133,6 +133,11 @@ def _get_top_n_row_label_map(mdm, n):
 
 @add_cache_headers
 def metadata_medications(request):
+    return JsonResponse(_metadata_medications_payload())
+
+
+@cache
+def _metadata_medications_payload():
     """Return details of all medications that have been prescribed.
 
     Include VMPs for any prescribed AMPs, even if the VMP itself has not been
@@ -162,26 +167,35 @@ def metadata_medications(request):
             .to_arrow_table()
             .to_pylist()
         )
-    return JsonResponse({"medications": medications})
+    return {"medications": medications}
 
 
 @add_cache_headers
 def metadata_dmd(request):
+    return JsonResponse(_metadata_dmd_payload())
+
+
+@cache
+def _metadata_dmd_payload():
     """Return details of dm+d objects that will be used to query and display
     medications."""
 
-    payload = {
+    return {
         "vtm": VTM.objects.api_values(),
         "vmp": VMP.objects.api_values(),
         "amp": AMP.objects.api_values(),
         "ingredient": Ing.objects.api_values(),
         "ont_form_route": OntFormRoute.objects.api_values(),
     }
-    return JsonResponse(payload)
 
 
 @add_cache_headers
 def metadata_bnf(request):
+    return JsonResponse(_metadata_bnf_payload())
+
+
+@cache
+def _metadata_bnf_payload():
     """Return details of BNF objects that will be used to query and display
     medications.
 
@@ -210,7 +224,7 @@ def metadata_bnf(request):
         + strength_and_formulation_records
         + list(base_queryset.filter(level=BNFCode.Level.PRESENTATION).values())
     )
-    return JsonResponse({"bnf": records})
+    return {"bnf": records}
 
 
 class JsonResponse(DjangoJsonResponse):
