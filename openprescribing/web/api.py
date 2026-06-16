@@ -214,34 +214,55 @@ def metadata_bnf(request):
 
 @cache
 def _metadata_bnf_payload():
-    """Return details of BNF objects that will be used to query and display
-    medications.
+    """Return details of the BNF objects relating to prescribed medications.
 
     In order to handle strength and formulation equivalents, we replace the records for
     level 6 objects (ie BNF products) with records for strength and formulation
     equivalents.
 
     Chapters 20 to 23 (devices rather than medicines) have a slightly different code
-    structure, and so will need to be handled slightly differently. k
+    structure, and so will need to be handled slightly differently.
     """
 
-    base_queryset = BNFCode.objects.exclude(code__startswith="2").order_by(
-        "level", "code"
-    )
+    presentation_sql = f"""
+        WITH prescribed AS ({PRESCRIBED_MEDICATIONS_SQL})
+        SELECT code, level, name
+        FROM bnf_code
+        WHERE level = {BNFCode.Level.PRESENTATION}
+        AND code NOT LIKE '2%'
+        AND code IN (SELECT DISTINCT bnf_code FROM prescribed WHERE bnf_code IS NOT NULL)
+        ORDER BY code
+    """
+    with rxdb.get_cursor() as cursor:
+        presentation_records = cursor.sql(presentation_sql).to_arrow_table().to_pylist()
+
+    # Wrapping each presentation in an unsaved BNFCode allows us to reuse its strength
+    # and formulation logic.
+    presentations = [BNFCode(**record) for record in presentation_records]
+
+    generic_equivalent_codes = {p.generic_equivalent_code for p in presentations}
+    generic_presentations = BNFCode.objects.filter(code__in=generic_equivalent_codes)
     strength_and_formulation_records = [
         {
-            "code": code.strength_and_formulation_code,
+            "code": presentation.strength_and_formulation_code,
             "level": 6,
-            "name": code.strength_and_formulation_name,
+            "name": presentation.strength_and_formulation_name,
         }
-        for code in base_queryset.filter(level=BNFCode.Level.PRESENTATION)
-        if code.is_generic()
+        for presentation in generic_presentations
     ]
-    records = (
-        list(base_queryset.filter(level__lte=BNFCode.Level.CHEMICAL_SUBSTANCE).values())
-        + strength_and_formulation_records
-        + list(base_queryset.filter(level=BNFCode.Level.PRESENTATION).values())
+
+    ancestor_codes = {
+        presentation.code[:length]
+        for presentation in presentations
+        for length in (2, 4, 6, 7, 9)
+    }
+    ancestor_records = list(
+        BNFCode.objects.filter(code__in=ancestor_codes)
+        .order_by("level", "code")
+        .values()
     )
+
+    records = ancestor_records + strength_and_formulation_records + presentation_records
     return {"bnf": records}
 
 

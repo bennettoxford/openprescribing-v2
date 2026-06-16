@@ -286,7 +286,13 @@ def test_metadata_dmd(client, rxdb, medications):
     assert [record["descr"] for record in payload["ont_form_route"]] == ["tablet.oral"]
 
 
-def test_metadata_bnf(client, bnf_codes):
+def test_metadata_bnf(client, rxdb, bnf_codes, medications):
+    # The bnf_codes fixture provides the BNF hierarchy; we also need to link a VMP to a
+    # generic methotrexate presentation and prescribe it so that appears in the
+    # medications view.
+    medications.add_rows([{"bnf_code": "1001030U0BDAAAB"}])
+    rxdb.ingest([{"bnf_code": "1001030U0BDAAAB"}])
+
     rsp = client.get("/api/metadata/bnf/")
     payload = rsp.json()
     assert {
@@ -309,6 +315,12 @@ def test_metadata_bnf(client, bnf_codes):
         "level": 7,
         "name": "Maxtrex 2.5mg tablets",
     } in payload["bnf"]
+
+    # Codes unrelated to prescribed medications are excluded: another (unprescribed)
+    # methotrexate presentation and the entire diabetic-testing branch.
+    codes = {record["code"] for record in payload["bnf"]}
+    assert "1001030U0AAACAC" not in codes
+    assert "0601060D0" not in codes
 
 
 def test_nans_to_nones():
