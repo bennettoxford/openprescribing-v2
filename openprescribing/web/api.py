@@ -171,20 +171,39 @@ def metadata_dmd(request):
 
 @cache
 def _metadata_dmd_payload():
-    """Return details of dm+d objects that will be used to query and display
-    medications."""
+    """Return details of the dm+d objects relating to prescribed medications.
+
+    This will be used to query and display medications.
+    """
 
     queries = {
-        "vtm": "SELECT vtmid AS id, nm AS name FROM vtm",
-        "vmp": "SELECT vpid AS id, vtmid AS vtm_id, nm AS name FROM vmp",
-        "amp": "SELECT apid AS id, vpid AS vmp_id, descr AS name FROM amp",
-        "ingredient": "SELECT isid AS id, nm AS name FROM ing",
-        "ont_form_route": "SELECT cd AS id, descr FROM ont_form_route",
+        "vtm": """
+            SELECT vtm.vtmid AS id, vtm.nm AS name
+            FROM vtm
+            WHERE vtm.vtmid IN (
+                SELECT vtm_id FROM prescribed WHERE vtm_id IS NOT NULL
+            )
+        """,
+        "vmp": "SELECT id, vtm_id, name FROM prescribed WHERE NOT is_amp",
+        "amp": "SELECT id, vmp_id, name FROM prescribed WHERE is_amp",
+        "ingredient": """
+            SELECT DISTINCT ing.isid AS id, ing.nm AS name
+            FROM ing
+            JOIN vpi ON vpi.isid = ing.isid
+            WHERE vpi.vpid IN (SELECT vmp_id FROM prescribed)
+        """,
+        "ont_form_route": """
+            SELECT DISTINCT ont_form_route.cd AS id, ont_form_route.descr AS descr
+            FROM ont_form_route
+            JOIN ont ON ont.formcd = ont_form_route.cd
+            WHERE ont.vpid IN (SELECT vmp_id FROM prescribed)
+        """,
     }
     payload = {}
     with rxdb.get_cursor() as cursor:
         for key, sql in queries.items():
-            payload[key] = cursor.sql(sql).to_arrow_table().to_pylist()
+            full_sql = f"WITH prescribed AS ({PRESCRIBED_MEDICATIONS_SQL}) {sql}"
+            payload[key] = cursor.sql(full_sql).to_arrow_table().to_pylist()
     return payload
 
 
