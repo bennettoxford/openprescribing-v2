@@ -6,7 +6,7 @@ from django.http import JsonResponse as DjangoJsonResponse
 
 from openprescribing.data import rxdb
 from openprescribing.data.analysis import Analysis
-from openprescribing.data.models import AMP, VMP, VTM, BNFCode, Ing, OntFormRoute, Org
+from openprescribing.data.models import BNFCode, Org
 from openprescribing.data.queries import (
     get_medication_date_matrix,
     get_org_date_ratio_matrix,
@@ -174,13 +174,18 @@ def _metadata_dmd_payload():
     """Return details of dm+d objects that will be used to query and display
     medications."""
 
-    return {
-        "vtm": VTM.objects.api_values(),
-        "vmp": VMP.objects.api_values(),
-        "amp": AMP.objects.api_values(),
-        "ingredient": Ing.objects.api_values(),
-        "ont_form_route": OntFormRoute.objects.api_values(),
+    queries = {
+        "vtm": "SELECT vtmid AS id, nm AS name FROM vtm",
+        "vmp": "SELECT vpid AS id, vtmid AS vtm_id, nm AS name FROM vmp",
+        "amp": "SELECT apid AS id, vpid AS vmp_id, descr AS name FROM amp",
+        "ingredient": "SELECT isid AS id, nm AS name FROM ing",
+        "ont_form_route": "SELECT cd AS id, descr FROM ont_form_route",
     }
+    payload = {}
+    with rxdb.get_cursor() as cursor:
+        for key, sql in queries.items():
+            payload[key] = cursor.sql(sql).to_arrow_table().to_pylist()
+    return payload
 
 
 @add_cache_headers

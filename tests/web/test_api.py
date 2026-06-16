@@ -247,8 +247,7 @@ def test_metadata_medications(client, rxdb, settings, tmp_path):
     } in payload["medications"]
 
 
-@pytest.mark.django_db(databases=["data"])
-def test_metadata_dmd(client, settings, tmp_path):
+def test_metadata_dmd(client, rxdb, settings, tmp_path):
     ingest_dmd_data(settings, tmp_path)
     rsp = client.get("/api/metadata/dmd/")
     payload = rsp.json()
