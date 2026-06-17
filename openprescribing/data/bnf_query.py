@@ -124,48 +124,6 @@ class BNFQuery:
             self, "vtm_ids_excluded", tuple(int(i) for i in self.vtm_ids_excluded)
         )
 
-    @staticmethod
-    def has_params(field, params):
-        """Indicate whether any of given params belong to given field."""
-
-        return any(key.startswith(f"{field}_") for key in params)
-
-    @classmethod
-    def from_params(cls, field, params):
-        """Build a BNFQuery from URL query parameters for a field."""
-
-        bnf_codes = _get_tuple_param(params, f"{field}_bnf_codes")
-        bnf_codes_excluded = _get_tuple_param(params, f"{field}_bnf_codes_excluded")
-        product_type = params.get(f"{field}_product_type", cls.PRODUCT_TYPE_DEFAULT)
-        form_routes = _get_tuple_param(params, f"{field}_form_routes")
-        form_routes_excluded = _get_tuple_param(params, f"{field}_form_routes_excluded")
-        forms = _get_tuple_param(params, f"{field}_forms")
-        forms_excluded = _get_tuple_param(params, f"{field}_forms_excluded")
-        routes = _get_tuple_param(params, f"{field}_routes")
-        routes_excluded = _get_tuple_param(params, f"{field}_routes_excluded")
-        ingredient_ids = _get_tuple_param(params, f"{field}_ingredient_ids")
-        ingredient_ids_excluded = _get_tuple_param(
-            params, f"{field}_ingredient_ids_excluded"
-        )
-        vtm_ids = _get_tuple_param(params, f"{field}_vtm_ids")
-        vtm_ids_excluded = _get_tuple_param(params, f"{field}_vtm_ids_excluded")
-
-        return cls(
-            bnf_codes=bnf_codes,
-            bnf_codes_excluded=bnf_codes_excluded,
-            product_type=ProductType(product_type),
-            form_routes=form_routes,
-            form_routes_excluded=form_routes_excluded,
-            forms=forms,
-            forms_excluded=forms_excluded,
-            routes=routes,
-            routes_excluded=routes_excluded,
-            ingredient_ids=ingredient_ids,
-            ingredient_ids_excluded=ingredient_ids_excluded,
-            vtm_ids=vtm_ids,
-            vtm_ids_excluded=vtm_ids_excluded,
-        )
-
     @classmethod
     def from_dict(cls, query_dict):
         bnf_codes = tuple(query_dict.get("bnf_codes", []))
@@ -393,45 +351,6 @@ class BNFQuery:
             ],
         }
 
-    def to_params(self, field):
-        """Serialize to URL query parameters for a field."""
-
-        params = {f"{field}_product_type": self.product_type.value}
-        if self.bnf_codes:
-            params[f"{field}_bnf_codes"] = ",".join(self.bnf_codes)
-        if self.bnf_codes_excluded:
-            params[f"{field}_bnf_codes_excluded"] = ",".join(self.bnf_codes_excluded)
-        if self.form_routes:
-            params[f"{field}_form_routes"] = ",".join(self.form_routes)
-        if self.form_routes_excluded:
-            params[f"{field}_form_routes_excluded"] = ",".join(
-                self.form_routes_excluded
-            )
-        if self.forms:
-            params[f"{field}_forms"] = ",".join(self.forms)
-        if self.forms_excluded:
-            params[f"{field}_forms_excluded"] = ",".join(self.forms_excluded)
-        if self.routes:
-            params[f"{field}_routes"] = ",".join(self.routes)
-        if self.routes_excluded:
-            params[f"{field}_routes_excluded"] = ",".join(self.routes_excluded)
-        if self.ingredient_ids:
-            params[f"{field}_ingredient_ids"] = ",".join(
-                str(i) for i in self.ingredient_ids
-            )
-        if self.ingredient_ids_excluded:
-            params[f"{field}_ingredient_ids_excluded"] = ",".join(
-                str(i) for i in self.ingredient_ids_excluded
-            )
-        if self.vtm_ids:
-            params[f"{field}_vtm_ids"] = ",".join(str(i) for i in self.vtm_ids)
-        if self.vtm_ids_excluded:
-            params[f"{field}_vtm_ids_excluded"] = ",".join(
-                str(i) for i in self.vtm_ids_excluded
-            )
-
-        return params
-
 
 def build_q_for_bnf_code(code):
     """Return Q object for finding all presentations that match the given code.
@@ -476,9 +395,3 @@ def destructure_strength_and_formulation_code(code):
     if len(prefix) == 9 and len(suffix) == 2:
         return prefix, suffix
     raise ValueError(f"Invalid strength and formulation code: {code}")
-
-
-def _get_tuple_param(params, key):
-    if value := params.get(key):
-        return tuple(value.split(","))
-    return ()

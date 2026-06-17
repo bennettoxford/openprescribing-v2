@@ -11,8 +11,7 @@ from openprescribing.data.bnf_query import (
 
 # Tokens used to build arbitrary id/code values. They must be non-empty (an empty
 # tuple is omitted by the serializers and reconstructed as an empty tuple, but a tuple
-# containing an empty string is not) and must not contain commas (the separator used by
-# to_params/from_params).
+# containing an empty string is not).
 tokens = st.text(alphabet=string.ascii_letters + string.digits, min_size=1, max_size=8)
 token_tuples = st.lists(tokens, max_size=4).map(tuple)
 
@@ -39,11 +38,6 @@ def bnf_queries(draw):
         vtm_ids=draw(id_tuples),
         vtm_ids_excluded=draw(id_tuples),
     )
-
-
-@given(query=bnf_queries())
-def test_params_round_trip(query):
-    assert BNFQuery.from_params("ntr", query.to_params("ntr")) == query
 
 
 @given(query=bnf_queries())
