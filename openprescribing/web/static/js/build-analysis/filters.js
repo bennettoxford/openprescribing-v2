@@ -93,14 +93,13 @@ export function getEmptyFilters() {
   );
 }
 
-export function parseFilterValues(definition, rawValue) {
-  // Parse a comma-separated URL parameter into filter values.
-  if (rawValue === null) {
+export function parseFilterValues(definition, rawValues) {
+  // Parse a list of raw values (from a query dict) into filter values.
+  if (!rawValues) {
     return [];
   }
 
-  return rawValue
-    .split(",")
+  return rawValues
     .map((value) => definition.parse(value))
     .filter((value) => value !== null);
 }
@@ -122,40 +121,46 @@ export function hasAnyInclusionFilters(filters) {
   );
 }
 
-export function parseFiltersFromUrlParams(params, getParamName) {
-  // Return a filters object built from the given URL parameters, using
-  // getParamName(filterKey) to locate each control's parameter.
+export function filtersFromQueryDict(queryDict) {
+  // Return a filters object built from a BNFQuery dict (as produced by the
+  // backend's BNFQuery.to_dict).  Keys are the filter URL param suffixes, e.g.
+  // `bnf_codes` and `bnf_codes_excluded`.  Unknown keys (such as `product_type`,
+  // which the builder has no control for) are ignored.
   const filters = getEmptyFilters();
+
+  if (!queryDict) {
+    return filters;
+  }
 
   FILTER_DEFINITIONS.forEach((definition) => {
     [false, true].forEach((isExcluded) => {
       const filterKey = getFilterControlKey(definition, isExcluded);
-      filters[filterKey] = parseFilterValues(
-        definition,
-        params.get(getParamName(filterKey)),
-      );
+      const dictKey = getFilterControlUrlParamSuffix(definition, isExcluded);
+      filters[filterKey] = parseFilterValues(definition, queryDict[dictKey]);
     });
   });
 
   return filters;
 }
 
-export function applyFiltersToUrlParams(params, filters, getParamName) {
-  // Write the given filters into the given URL parameters, using
-  // getParamName(filterKey) to locate each control's parameter.
+export function queryDictFromFilters(filters) {
+  // Return a BNFQuery dict (matching the backend's BNFQuery.to_dict shape) for
+  // the given filters, omitting empty values.
+  const queryDict = {};
+
   FILTER_DEFINITIONS.forEach((definition) => {
     [false, true].forEach((isExcluded) => {
       const filterKey = getFilterControlKey(definition, isExcluded);
-      const paramName = getParamName(filterKey);
       const values = filters[filterKey];
 
-      if (values.length === 0) {
-        params.delete(paramName);
-      } else {
-        params.set(paramName, values.join(","));
+      if (values.length > 0) {
+        const dictKey = getFilterControlUrlParamSuffix(definition, isExcluded);
+        queryDict[dictKey] = values;
       }
     });
   });
+
+  return queryDict;
 }
 
 function parseOptionalInteger(value) {

@@ -1,15 +1,14 @@
 import {
-  applyFiltersToUrlParams,
   FILTER_DEFINITIONS,
+  filtersFromQueryDict,
   getEmptyFilters,
   getFilterControlKey,
   getFilterControlLabel,
-  getFilterControlUrlParamSuffix,
   getFilterDefinitionForControlKey,
   hasAnyFilters,
   hasAnyInclusionFilters,
   isExcludedFilterControlKey,
-  parseFiltersFromUrlParams,
+  queryDictFromFilters,
 } from "./build-analysis/filters.js";
 import { fetchMetadata } from "./build-analysis/metadata.js";
 import {
@@ -24,6 +23,9 @@ import {
   renderSummary,
 } from "./build-analysis/render.js";
 import { DropdownCollection } from "./dropdown.js";
+
+// Maps a panel prefix to its role in the analysis dict's query.
+const QUERY_ROLE_BY_PREFIX = { ntr: "numerator", dtr: "denominator" };
 
 // Parts of the document that we'll interact with.
 const containerEl = document.querySelector("[data-container]");
@@ -317,28 +319,73 @@ function setFilters(panel, filters) {
 function getFiltersFromUrl(panel) {
   // Return filters parsed from the current URL for the panel.
   const params = new URL(window.location.href).searchParams;
-  return parseFiltersFromUrlParams(params, (filterKey) =>
-    getUrlParamName(panel, filterKey),
-  );
+  const analysisDict = readAnalysisDict(params);
+  const queryDict = analysisDict
+    ? getQueryDict(analysisDict, panel.prefix)
+    : null;
+  return filtersFromQueryDict(queryDict);
 }
 
 function updateUrlFromFilters(panel, filters) {
-  // Replace the current URL with the panel's filter state.
+  // Replace the current URL with the combined filter state of both panels, updating the
+  // `analysis` parameter and preserving the `org_id` parameter.
   const url = new URL(window.location.href);
-  applyFiltersToUrlParams(url.searchParams, filters, (filterKey) =>
-    getUrlParamName(panel, filterKey),
-  );
+  const currentAnalysisDict = readAnalysisDict(url.searchParams);
+
+  const queryDicts = { numerator: null, denominator: null };
+  if (currentAnalysisDict) {
+    queryDicts.numerator = getQueryDict(currentAnalysisDict, "ntr");
+    queryDicts.denominator = getQueryDict(currentAnalysisDict, "dtr");
+  }
+
+  const queryDict = queryDictFromFilters(filters);
+  queryDicts[QUERY_ROLE_BY_PREFIX[panel.prefix]] =
+    Object.keys(queryDict).length > 0 ? queryDict : null;
+
+  if (queryDicts.numerator || queryDicts.denominator) {
+    const analysisDict = buildAnalysisDict(
+      queryDicts.numerator,
+      queryDicts.denominator,
+      currentAnalysisDict?.org_id,
+    );
+    url.searchParams.set("analysis", JSON.stringify(analysisDict));
+  } else {
+    url.searchParams.delete("analysis");
+  }
+
   window.history.replaceState({}, "", url);
 }
 
-function getUrlParamName(panel, filterKey) {
-  // Return the URL parameter name for a panel/filter pair.
-  const definition = getFilterDefinitionForControlKey(filterKey);
-  const suffix = getFilterControlUrlParamSuffix(
-    definition,
-    isExcludedFilterControlKey(filterKey),
-  );
-  return `${panel.prefix}_${suffix}`;
+function readAnalysisDict(params) {
+  // Parse the `analysis` query parameter, returning null when it is absent.
+  return JSON.parse(params.get("analysis"));
+}
+
+function buildAnalysisDict(numerator, denominator, orgId) {
+  // Build an analysis dict matching the backend's Analysis.to_dict shape.
+  const analysisDict = {
+    options: { output_value: "items" },
+    queries: [{ numerator: numerator ?? {} }],
+  };
+
+  if (denominator) {
+    analysisDict.queries[0].denominator = denominator;
+    analysisDict.options.type = "prescribing_vs_prescribing";
+  } else {
+    analysisDict.options.type = "prescribing_vs_list_size";
+  }
+
+  if (orgId) {
+    analysisDict.org_id = orgId;
+  }
+
+  return analysisDict;
+}
+
+function getQueryDict(analysisDict, prefix) {
+  // Return the BNFQuery dict for the given panel's role, or null if that role is
+  // absent (eg a numerator-only analysis that has no denominator).
+  return analysisDict.queries[0][QUERY_ROLE_BY_PREFIX[prefix]] ?? null;
 }
 
 initialisePage();
