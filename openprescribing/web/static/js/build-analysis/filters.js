@@ -160,12 +160,10 @@ export function applyFiltersToUrlParams(params, filters, getParamName) {
 
 function parseOptionalInteger(value) {
   // Parse an integer filter value.
-  const trimmedValue = value.trim();
-  return trimmedValue === "" ? null : Number.parseInt(trimmedValue, 10);
+  return value === "" ? null : Number.parseInt(value, 10);
 }
 
 function parseOptionalString(value) {
   // Parse a string filter value.
-  const trimmedValue = value.trim();
-  return trimmedValue === "" ? null : trimmedValue;
+  return value === "" ? null : value;
 }
