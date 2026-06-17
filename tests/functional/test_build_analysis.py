@@ -55,10 +55,8 @@ def test_build_analyse_has_dynamic_filters_and_independent_queries(
     expect(
         dropdown_option_elements(numerator_panel, "BNF hierarchy").first
     ).to_be_visible()
-    assert dropdown_option_texts(numerator_panel, "BNF hierarchy")[:4] == [
-        "Anaesthesia (Chapter)",
+    assert dropdown_option_texts(numerator_panel, "BNF hierarchy")[:2] == [
         "Cardiovascular System (Chapter)",
-        "Endocrine System (Chapter)",
         "Eye (Chapter)",
     ]
     dropdown_input(numerator_panel, "BNF hierarchy").fill("1106000X0")
@@ -305,8 +303,10 @@ def ingest_build_analysis_bnf_data():
         [1, "15", "Anaesthesia"],
         [2, "0203", "Paroxysmal supraventricular tachycardias"],
         [5, "0203020C0", "Adenosine"],
+        [7, "0203020C0BBAAAA", "Adenocor 6mg/2ml solution for injection vials"],
         [2, "1106", "Glaucoma and ocular hypertension"],
         [5, "1106000X0", "Pilocarpine"],
+        [7, "1106000X0AAA4A4", "Pilocarpine 6% eye drops"],
     ]:
         BNFCode.objects.create(code=code, name=name, level=level)
 

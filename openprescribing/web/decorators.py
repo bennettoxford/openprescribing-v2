@@ -1,8 +1,30 @@
+import functools
+
 from django.conf import settings
 from django.views.decorators.cache import cache_control
 from django.views.decorators.http import etag
 
 from openprescribing.data import rxdb
+
+
+def cache(fn):
+    """Cache a no-argument function's return value in memory until the underlying data
+    changes.
+
+    Unlike add_cache_headers, we don't include settings.VERSION in the cache key,
+    because if this changes, the server will be restarted and the in-memory cache will
+    be cleared.
+    """
+
+    @functools.lru_cache(maxsize=1)
+    def cached(cache_key):
+        return fn()
+
+    @functools.wraps(fn)
+    def wrapper():
+        return cached(rxdb.get_cache_key())
+
+    return wrapper
 
 
 def add_cache_headers(view_fn):

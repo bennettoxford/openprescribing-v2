@@ -2,7 +2,7 @@ import pytest
 from django.http import HttpResponse
 from django.test import RequestFactory
 
-from openprescribing.web.decorators import add_cache_headers
+from openprescribing.web.decorators import add_cache_headers, cache
 
 
 @add_cache_headers
@@ -20,6 +20,27 @@ def patch_cache_key(monkeypatch):
         )
 
     return patch
+
+
+def test_cache(patch_cache_key):
+    calls = 0
+
+    @cache
+    def fn():
+        nonlocal calls
+        calls += 1
+
+    patch_cache_key("aaaaaaa", 100.0, 200.0)
+    fn()
+    assert calls == 1
+    fn()
+    assert calls == 1
+
+    patch_cache_key("aaaaaaa", 300.0, 400.0)
+    fn()
+    assert calls == 2
+    fn()
+    assert calls == 2
 
 
 def test_etag_and_cache_control_headers_on_200(patch_cache_key):

@@ -6,12 +6,12 @@ from django.http import JsonResponse as DjangoJsonResponse
 
 from openprescribing.data import rxdb
 from openprescribing.data.analysis import Analysis
-from openprescribing.data.models import AMP, VMP, VTM, BNFCode, Ing, OntFormRoute, Org
+from openprescribing.data.models import BNFCode, Org
 from openprescribing.data.queries import (
     get_medication_date_matrix,
     get_org_date_ratio_matrix,
 )
-from openprescribing.web.decorators import add_cache_headers
+from openprescribing.web.decorators import add_cache_headers, cache
 
 
 # We currently have about 8 years (96 months) of list size data.  In future we could
@@ -21,6 +21,20 @@ DATE_COUNT = 96
 # The number of individual medications shown as their own band in the "by medication"
 # stacked area chart.  Any further medications are summed into a single "Other" band.
 MEDICATIONS_TOP_N = 10
+
+# Selects medications that have been prescribed: VMPs/AMPs whose BNF code appears in the
+# prescribing data, plus the parent VMPs of any prescribed AMPs.
+PRESCRIBED_MEDICATIONS_SQL = """
+    SELECT * FROM medications
+    WHERE bnf_code IN (SELECT bnf_code FROM presentation)
+    OR (
+        NOT is_amp
+        AND id IN (
+            SELECT DISTINCT vmp_id FROM medications
+            WHERE is_amp AND bnf_code IN (SELECT bnf_code FROM presentation)
+        )
+    )
+"""
 
 
 def _get_org(analysis):
@@ -133,6 +147,11 @@ def _get_top_n_row_label_map(mdm, n):
 
 @add_cache_headers
 def metadata_medications(request):
+    return JsonResponse(_metadata_medications_payload())
+
+
+@cache
+def _metadata_medications_payload():
     """Return details of all medications that have been prescribed.
 
     Include VMPs for any prescribed AMPs, even if the VMP itself has not been
@@ -140,77 +159,111 @@ def metadata_medications(request):
     """
     with rxdb.get_cursor() as cursor:
         medications = (
-            cursor.sql(
-                """
-                SELECT * FROM medications
-                WHERE bnf_code IN (
-                    SELECT bnf_code FROM presentation
-                )
-                OR (
-                    NOT is_amp
-                    AND id IN (
-                        SELECT DISTINCT vmp_id
-                        FROM medications
-                        WHERE is_amp
-                        AND bnf_code IN (
-                            SELECT bnf_code FROM presentation
-                        )
-                    )
-                )
-                """
-            )
-            .to_arrow_table()
-            .to_pylist()
+            cursor.sql(PRESCRIBED_MEDICATIONS_SQL).to_arrow_table().to_pylist()
         )
-    return JsonResponse({"medications": medications})
+    return {"medications": medications}
 
 
 @add_cache_headers
 def metadata_dmd(request):
-    """Return details of dm+d objects that will be used to query and display
-    medications."""
+    return JsonResponse(_metadata_dmd_payload())
 
-    payload = {
-        "vtm": VTM.objects.api_values(),
-        "vmp": VMP.objects.api_values(),
-        "amp": AMP.objects.api_values(),
-        "ingredient": Ing.objects.api_values(),
-        "ont_form_route": OntFormRoute.objects.api_values(),
+
+@cache
+def _metadata_dmd_payload():
+    """Return details of the dm+d objects relating to prescribed medications.
+
+    This will be used to query and display medications.
+    """
+
+    queries = {
+        "vtm": """
+            SELECT vtm.vtmid AS id, vtm.nm AS name
+            FROM vtm
+            WHERE vtm.vtmid IN (
+                SELECT vtm_id FROM prescribed WHERE vtm_id IS NOT NULL
+            )
+        """,
+        "vmp": "SELECT id, vtm_id, name FROM prescribed WHERE NOT is_amp",
+        "amp": "SELECT id, vmp_id, name FROM prescribed WHERE is_amp",
+        "ingredient": """
+            SELECT DISTINCT ing.isid AS id, ing.nm AS name
+            FROM ing
+            JOIN vpi ON vpi.isid = ing.isid
+            WHERE vpi.vpid IN (SELECT vmp_id FROM prescribed)
+        """,
+        "ont_form_route": """
+            SELECT DISTINCT ont_form_route.cd AS id, ont_form_route.descr AS descr
+            FROM ont_form_route
+            JOIN ont ON ont.formcd = ont_form_route.cd
+            WHERE ont.vpid IN (SELECT vmp_id FROM prescribed)
+        """,
     }
-    return JsonResponse(payload)
+    payload = {}
+    with rxdb.get_cursor() as cursor:
+        for key, sql in queries.items():
+            full_sql = f"WITH prescribed AS ({PRESCRIBED_MEDICATIONS_SQL}) {sql}"
+            payload[key] = cursor.sql(full_sql).to_arrow_table().to_pylist()
+    return payload
 
 
 @add_cache_headers
 def metadata_bnf(request):
-    """Return details of BNF objects that will be used to query and display
-    medications.
+    return JsonResponse(_metadata_bnf_payload())
+
+
+@cache
+def _metadata_bnf_payload():
+    """Return details of the BNF objects relating to prescribed medications.
 
     In order to handle strength and formulation equivalents, we replace the records for
     level 6 objects (ie BNF products) with records for strength and formulation
     equivalents.
 
     Chapters 20 to 23 (devices rather than medicines) have a slightly different code
-    structure, and so will need to be handled slightly differently. k
+    structure, and so will need to be handled slightly differently.
     """
 
-    base_queryset = BNFCode.objects.exclude(code__startswith="2").order_by(
-        "level", "code"
-    )
+    presentation_sql = f"""
+        WITH prescribed AS ({PRESCRIBED_MEDICATIONS_SQL})
+        SELECT code, level, name
+        FROM bnf_code
+        WHERE level = {BNFCode.Level.PRESENTATION}
+        AND code NOT LIKE '2%'
+        AND code IN (SELECT DISTINCT bnf_code FROM prescribed WHERE bnf_code IS NOT NULL)
+        ORDER BY code
+    """
+    with rxdb.get_cursor() as cursor:
+        presentation_records = cursor.sql(presentation_sql).to_arrow_table().to_pylist()
+
+    # Wrapping each presentation in an unsaved BNFCode allows us to reuse its strength
+    # and formulation logic.
+    presentations = [BNFCode(**record) for record in presentation_records]
+
+    generic_equivalent_codes = {p.generic_equivalent_code for p in presentations}
+    generic_presentations = BNFCode.objects.filter(code__in=generic_equivalent_codes)
     strength_and_formulation_records = [
         {
-            "code": code.strength_and_formulation_code,
+            "code": presentation.strength_and_formulation_code,
             "level": 6,
-            "name": code.strength_and_formulation_name,
+            "name": presentation.strength_and_formulation_name,
         }
-        for code in base_queryset.filter(level=BNFCode.Level.PRESENTATION)
-        if code.is_generic()
+        for presentation in generic_presentations
     ]
-    records = (
-        list(base_queryset.filter(level__lte=BNFCode.Level.CHEMICAL_SUBSTANCE).values())
-        + strength_and_formulation_records
-        + list(base_queryset.filter(level=BNFCode.Level.PRESENTATION).values())
+
+    ancestor_codes = {
+        presentation.code[:length]
+        for presentation in presentations
+        for length in (2, 4, 6, 7, 9)
+    }
+    ancestor_records = list(
+        BNFCode.objects.filter(code__in=ancestor_codes)
+        .order_by("level", "code")
+        .values()
     )
-    return JsonResponse({"bnf": records})
+
+    records = ancestor_records + strength_and_formulation_records + presentation_records
+    return {"bnf": records}
 
 
 class JsonResponse(DjangoJsonResponse):

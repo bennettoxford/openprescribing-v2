@@ -1,6 +1,7 @@
 import pytest
 from playwright.sync_api import expect
 
+from tests.utils.data_utils import generate_test_data
 from tests.utils.ingest_utils import ingest_dmd_bnf_map_data, ingest_dmd_data
 
 
@@ -8,10 +9,12 @@ pytestmark = pytest.mark.functional
 
 
 @pytest.mark.filterwarnings("ignore:All-NaN slice encountered:RuntimeWarning")
-def test_analysis(live_server, page, sample_data, settings, tmp_path):
+def test_analysis(live_server, page, rxdb, settings, tmp_path):
     # This is a limited smoke test that walks through building a simple analysis from
     # the landing page and verifies that the resulting analysis page renders a chart.
 
+    adenosine_bnf_codes = ["0203020C0AAAAAA", "0203020C0BBAAAA"]
+    generate_test_data(rxdb, adenosine_bnf_codes)
     ingest_dmd_data(settings, tmp_path)
     ingest_dmd_bnf_map_data(settings, tmp_path)
 

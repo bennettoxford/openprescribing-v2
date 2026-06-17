@@ -21,37 +21,9 @@
 from django.db import models
 
 
-class DmdManager(models.Manager):
-    """Manager for dm+d models."""
-
-    def api_values(self):
-        """Return records shaped for the API."""
-
-        assert hasattr(self.model, "api_attr_mapping"), (
-            f"Cannot serialize {self.model} without an api_attr_mapping class attribute"
-        )
-        mapping = self.model.api_attr_mapping
-        records = self.values(*mapping.keys())
-        return [
-            {api_name: record[attr_name] for attr_name, api_name in mapping.items()}
-            for record in records
-        ]
-
-
-class DmdModel(models.Model):
-    """Abstract base class for dm+d models."""
-
-    objects = DmdManager()
-
-    class Meta:
-        abstract = True
-
-
-class VTM(DmdModel):
+class VTM(models.Model):
     class Meta:
         db_table = "vtm"
-
-    api_attr_mapping = {"vtmid": "id", "nm": "name"}
 
     vtmid = models.BigIntegerField(primary_key=True)
     invalid = models.BooleanField()
@@ -61,11 +33,9 @@ class VTM(DmdModel):
     vtmiddt = models.DateField(null=True)
 
 
-class VMP(DmdModel):
+class VMP(models.Model):
     class Meta:
         db_table = "vmp"
-
-    api_attr_mapping = {"vpid": "id", "vtm_id": "vtm_id", "nm": "name"}
 
     vpid = models.BigIntegerField(primary_key=True)
     vpiddt = models.DateField(null=True)
@@ -144,7 +114,7 @@ class VMP(DmdModel):
     )
 
 
-class VPI(DmdModel):
+class VPI(models.Model):
     class Meta:
         db_table = "vpi"
 
@@ -179,7 +149,7 @@ class VPI(DmdModel):
     )
 
 
-class Ont(DmdModel):
+class Ont(models.Model):
     class Meta:
         db_table = "ont"
 
@@ -191,7 +161,7 @@ class Ont(DmdModel):
     )
 
 
-class Dform(DmdModel):
+class Dform(models.Model):
     class Meta:
         db_table = "dform"
 
@@ -199,7 +169,7 @@ class Dform(DmdModel):
     form = models.ForeignKey(db_column="formcd", to="Form", on_delete=models.CASCADE)
 
 
-class Droute(DmdModel):
+class Droute(models.Model):
     class Meta:
         db_table = "droute"
 
@@ -207,7 +177,7 @@ class Droute(DmdModel):
     route = models.ForeignKey(db_column="routecd", to="Route", on_delete=models.CASCADE)
 
 
-class ControlInfo(DmdModel):
+class ControlInfo(models.Model):
     class Meta:
         db_table = "control_info"
 
@@ -227,11 +197,9 @@ class ControlInfo(DmdModel):
     )
 
 
-class AMP(DmdModel):
+class AMP(models.Model):
     class Meta:
         db_table = "amp"
-
-    api_attr_mapping = {"apid": "id", "vmp_id": "vmp_id", "descr": "name"}
 
     apid = models.BigIntegerField(primary_key=True)
     invalid = models.BooleanField()
@@ -286,7 +254,7 @@ class AMP(DmdModel):
     )
 
 
-class LicRoute(DmdModel):
+class LicRoute(models.Model):
     class Meta:
         db_table = "lic_route"
 
@@ -298,7 +266,7 @@ class LicRoute(DmdModel):
     )
 
 
-class ApInfo(DmdModel):
+class ApInfo(models.Model):
     class Meta:
         db_table = "ap_info"
 
@@ -313,7 +281,7 @@ class ApInfo(DmdModel):
     prod_order_no = models.CharField(max_length=20, null=True)
 
 
-class VMPP(DmdModel):
+class VMPP(models.Model):
     class Meta:
         db_table = "vmpp"
 
@@ -338,7 +306,7 @@ class VMPP(DmdModel):
     )
 
 
-class Dtinfo(DmdModel):
+class Dtinfo(models.Model):
     class Meta:
         db_table = "dtinfo"
 
@@ -353,7 +321,7 @@ class Dtinfo(DmdModel):
     prevprice = models.IntegerField(null=True)
 
 
-class AMPP(DmdModel):
+class AMPP(models.Model):
     class Meta:
         db_table = "ampp"
 
@@ -384,7 +352,7 @@ class AMPP(DmdModel):
     discdt = models.DateField(null=True)
 
 
-class PackInfo(DmdModel):
+class PackInfo(models.Model):
     class Meta:
         db_table = "pack_info"
 
@@ -405,7 +373,7 @@ class PackInfo(DmdModel):
     pack_order_no = models.CharField(max_length=20, null=True)
 
 
-class PrescribInfo(DmdModel):
+class PrescribInfo(models.Model):
     class Meta:
         db_table = "prescrib_info"
 
@@ -421,7 +389,7 @@ class PrescribInfo(DmdModel):
     dent_f = models.BooleanField()
 
 
-class PriceInfo(DmdModel):
+class PriceInfo(models.Model):
     class Meta:
         db_table = "price_info"
 
@@ -436,7 +404,7 @@ class PriceInfo(DmdModel):
     )
 
 
-class ReimbInfo(DmdModel):
+class ReimbInfo(models.Model):
     class Meta:
         db_table = "reimb_info"
 
@@ -462,11 +430,9 @@ class ReimbInfo(DmdModel):
     fp34d = models.BooleanField()
 
 
-class Ing(DmdModel):
+class Ing(models.Model):
     class Meta:
         db_table = "ing"
-
-    api_attr_mapping = {"isid": "id", "nm": "name"}
 
     isid = models.BigIntegerField(primary_key=True)
     isiddt = models.DateField(null=True)
@@ -475,7 +441,7 @@ class Ing(DmdModel):
     nm = models.CharField(max_length=255)
 
 
-class CombinationPackInd(DmdModel):
+class CombinationPackInd(models.Model):
     class Meta:
         db_table = "combination_pack_ind"
 
@@ -483,7 +449,7 @@ class CombinationPackInd(DmdModel):
     descr = models.CharField(max_length=60)
 
 
-class CombinationProdInd(DmdModel):
+class CombinationProdInd(models.Model):
     class Meta:
         db_table = "combination_prod_ind"
 
@@ -491,7 +457,7 @@ class CombinationProdInd(DmdModel):
     descr = models.CharField(max_length=60)
 
 
-class BasisOfName(DmdModel):
+class BasisOfName(models.Model):
     class Meta:
         db_table = "basis_of_name"
 
@@ -499,7 +465,7 @@ class BasisOfName(DmdModel):
     descr = models.CharField(max_length=150)
 
 
-class NamechangeReason(DmdModel):
+class NamechangeReason(models.Model):
     class Meta:
         db_table = "namechange_reason"
 
@@ -508,7 +474,7 @@ class NamechangeReason(DmdModel):
     descr = models.CharField(max_length=150, null=True)
 
 
-class VirtualProductPresStatus(DmdModel):
+class VirtualProductPresStatus(models.Model):
     class Meta:
         db_table = "virtual_product_pres_status"
 
@@ -516,7 +482,7 @@ class VirtualProductPresStatus(DmdModel):
     descr = models.CharField(max_length=60)
 
 
-class ControlDrugCategory(DmdModel):
+class ControlDrugCategory(models.Model):
     class Meta:
         db_table = "control_drug_category"
 
@@ -524,7 +490,7 @@ class ControlDrugCategory(DmdModel):
     descr = models.CharField(max_length=60)
 
 
-class LicensingAuthority(DmdModel):
+class LicensingAuthority(models.Model):
     class Meta:
         db_table = "licensing_authority"
 
@@ -532,7 +498,7 @@ class LicensingAuthority(DmdModel):
     descr = models.CharField(max_length=60)
 
 
-class UnitOfMeasure(DmdModel):
+class UnitOfMeasure(models.Model):
     class Meta:
         db_table = "unit_of_measure"
 
@@ -542,7 +508,7 @@ class UnitOfMeasure(DmdModel):
     descr = models.CharField(max_length=150)
 
 
-class Form(DmdModel):
+class Form(models.Model):
     class Meta:
         db_table = "form"
 
@@ -552,17 +518,15 @@ class Form(DmdModel):
     descr = models.CharField(max_length=60)
 
 
-class OntFormRoute(DmdModel):
+class OntFormRoute(models.Model):
     class Meta:
         db_table = "ont_form_route"
-
-    api_attr_mapping = {"cd": "id", "descr": "descr"}
 
     cd = models.IntegerField(primary_key=True)
     descr = models.CharField(max_length=60)
 
 
-class Route(DmdModel):
+class Route(models.Model):
     class Meta:
         db_table = "route"
 
@@ -572,7 +536,7 @@ class Route(DmdModel):
     descr = models.CharField(max_length=60)
 
 
-class DtPaymentCategory(DmdModel):
+class DtPaymentCategory(models.Model):
     class Meta:
         db_table = "dt_payment_category"
 
@@ -580,7 +544,7 @@ class DtPaymentCategory(DmdModel):
     descr = models.CharField(max_length=60)
 
 
-class Supplier(DmdModel):
+class Supplier(models.Model):
     class Meta:
         db_table = "supplier"
 
@@ -591,7 +555,7 @@ class Supplier(DmdModel):
     descr = models.CharField(max_length=80)
 
 
-class Flavour(DmdModel):
+class Flavour(models.Model):
     class Meta:
         db_table = "flavour"
 
@@ -599,7 +563,7 @@ class Flavour(DmdModel):
     descr = models.CharField(max_length=60)
 
 
-class Colour(DmdModel):
+class Colour(models.Model):
     class Meta:
         db_table = "colour"
 
@@ -607,7 +571,7 @@ class Colour(DmdModel):
     descr = models.CharField(max_length=60)
 
 
-class BasisOfStrnth(DmdModel):
+class BasisOfStrnth(models.Model):
     class Meta:
         db_table = "basis_of_strnth"
 
@@ -615,7 +579,7 @@ class BasisOfStrnth(DmdModel):
     descr = models.CharField(max_length=150)
 
 
-class ReimbursementStatus(DmdModel):
+class ReimbursementStatus(models.Model):
     class Meta:
         db_table = "reimbursement_status"
 
@@ -623,7 +587,7 @@ class ReimbursementStatus(DmdModel):
     descr = models.CharField(max_length=60)
 
 
-class SpecCont(DmdModel):
+class SpecCont(models.Model):
     class Meta:
         db_table = "spec_cont"
 
@@ -631,7 +595,7 @@ class SpecCont(DmdModel):
     descr = models.CharField(max_length=60)
 
 
-class Dnd(DmdModel):
+class Dnd(models.Model):
     class Meta:
         db_table = "dnd"
 
@@ -639,7 +603,7 @@ class Dnd(DmdModel):
     descr = models.CharField(max_length=60)
 
 
-class VirtualProductNonAvail(DmdModel):
+class VirtualProductNonAvail(models.Model):
     class Meta:
         db_table = "virtual_product_non_avail"
 
@@ -647,7 +611,7 @@ class VirtualProductNonAvail(DmdModel):
     descr = models.CharField(max_length=60)
 
 
-class DiscontinuedInd(DmdModel):
+class DiscontinuedInd(models.Model):
     class Meta:
         db_table = "discontinued_ind"
 
@@ -655,7 +619,7 @@ class DiscontinuedInd(DmdModel):
     descr = models.CharField(max_length=60)
 
 
-class DfIndicator(DmdModel):
+class DfIndicator(models.Model):
     class Meta:
         db_table = "df_indicator"
 
@@ -663,7 +627,7 @@ class DfIndicator(DmdModel):
     descr = models.CharField(max_length=20)
 
 
-class PriceBasis(DmdModel):
+class PriceBasis(models.Model):
     class Meta:
         db_table = "price_basis"
 
@@ -671,7 +635,7 @@ class PriceBasis(DmdModel):
     descr = models.CharField(max_length=60)
 
 
-class LegalCategory(DmdModel):
+class LegalCategory(models.Model):
     class Meta:
         db_table = "legal_category"
 
@@ -679,7 +643,7 @@ class LegalCategory(DmdModel):
     descr = models.CharField(max_length=60)
 
 
-class AvailabilityRestriction(DmdModel):
+class AvailabilityRestriction(models.Model):
     class Meta:
         db_table = "availability_restriction"
 
@@ -687,7 +651,7 @@ class AvailabilityRestriction(DmdModel):
     descr = models.CharField(max_length=60)
 
 
-class LicensingAuthorityChangeReason(DmdModel):
+class LicensingAuthorityChangeReason(models.Model):
     class Meta:
         db_table = "licensing_authority_change_reason"
 
