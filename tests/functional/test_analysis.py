@@ -1,3 +1,6 @@
+import json
+from urllib.parse import parse_qs, urlparse
+
 import pytest
 from playwright.sync_api import expect
 
@@ -31,7 +34,11 @@ def test_analysis(live_server, page, rxdb, settings, tmp_path):
     page.get_by_role("link", name="Submit").click()
     page.wait_for_load_state("domcontentloaded")
 
-    expect(page).to_have_url(live_server.url + "/?ntr_vtm_ids=108502004")
+    analysis_dict = json.loads(parse_qs(urlparse(page.url).query)["analysis"][0])
+    assert analysis_dict == {
+        "options": {"output_value": "items", "type": "prescribing_vs_list_size"},
+        "queries": [{"numerator": {"vtm_ids": [108502004]}}],
+    }
     expect(page.locator("#chart-container")).to_be_attached()
 
     # Clicking each chart type in turn fetches fresh data from the API and renders a
