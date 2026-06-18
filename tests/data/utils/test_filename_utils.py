@@ -18,6 +18,20 @@ def test_get_latest_files_by_date():
     }
 
 
+def test_get_latest_files_by_date_with_limit(settings):
+    settings.PRESCRIBING_DATABASE_INGEST_START_DATE = "2021-01-01"
+    files = [
+        Path("dir/.hidden"),
+        Path("dir/test_2025-01-01_0002.txt"),
+        Path("dir/test_2025-01-01_0003.txt"),
+        Path("dir/test_2025-01-01_0001.txt"),
+        Path("dir/test_2020-01-01_whatever.txt"),
+    ]
+    assert filename_utils.get_latest_files_by_date(files) == {
+        date(2025, 1, 1): Path("dir/test_2025-01-01_0003.txt"),
+    }
+
+
 def test_get_temp_filename_for():
     filename = Path("a/b/some_file_name.txt")
     temp_filename = filename_utils.get_temp_filename_for(filename)

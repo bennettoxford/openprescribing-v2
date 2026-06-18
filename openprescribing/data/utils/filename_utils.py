@@ -3,6 +3,8 @@ import re
 import secrets
 from collections import defaultdict
 
+from django.conf import settings
+
 
 def get_latest_files_by_date(filenames):
     """
@@ -12,6 +14,9 @@ def get_latest_files_by_date(filenames):
 
     Group them by their date and, for each date, find the lexically greatest file.
     """
+    ingest_start_date = datetime.date.fromisoformat(
+        settings.PRESCRIBING_DATABASE_INGEST_START_DATE
+    )
     grouped = defaultdict(list)
     for filename in filenames:
         # Ignore hidden files
@@ -20,7 +25,8 @@ def get_latest_files_by_date(filenames):
         match = re.match(r"\w+_(\d{4}-\d{2}-\d{2})_", filename.name)
         assert match, f"Expecting a filename containing an ISO date: {filename}"
         date = datetime.date.fromisoformat(match.group(1))
-        grouped[date].append(filename)
+        if date > ingest_start_date:
+            grouped[date].append(filename)
     return {date: max(files) for date, files in grouped.items()}
 
 
