@@ -18,18 +18,22 @@ export const STATUS = {
   EXCLUDED: "excluded",
   // Medication does not match all inclusion filters.
   NOT_INCLUDED: "not_included",
+  // VMP is NOT_INCLUDED, but has an included AMP child.
+  VMP_NOT_INCLUDED_BUT_CHILD_AMP_IS: "vmp_not_included_but_child_amp_is",
 };
 
 export function queryMedications(metadata, filters) {
   // Return visible medications with status, as well as counts of included medications.
-  const baselineMedications = metadata.medications
-    .filter((medication) => matchesBaselineFilters(medication, filters))
-    .map((medication) => ({
-      ...medication,
-      status: getMedicationStatus(medication, filters),
-    }));
-  const medications = baselineMedications.concat(
-    getExcludedParentVmps(baselineMedications, metadata),
+  const baselineMedications = metadata.medications.filter((medication) =>
+    matchesBaselineFilters(medication, filters),
+  );
+  const medications = withVmpChildStatuses(
+    baselineMedications
+      .concat(getExcludedParentVmps(baselineMedications, metadata))
+      .map((medication) => ({
+        ...medication,
+        status: getMedicationStatus(medication, filters),
+      })),
   );
   const includedMedications = medications.filter(
     (medication) => medication.status === STATUS.INCLUDED,
@@ -65,10 +69,37 @@ function getExcludedParentVmps(visibleMedications, metadata) {
     }
   });
 
-  return Array.from(excludedVmpIds, (vmpId) => ({
-    ...metadata.medicationById.get(vmpId),
-    status: STATUS.NOT_INCLUDED,
-  }));
+  return Array.from(excludedVmpIds, (vmpId) =>
+    metadata.medicationById.get(vmpId),
+  );
+}
+
+function withVmpChildStatuses(medications) {
+  // Update the status of each not-included VMP with an included AMP child to
+  // VMP_NOT_INCLUDED_BUT_CHILD_AMP_IS.
+  const vmpIdsWithIncludedAmp = new Set(
+    medications
+      .filter(
+        (medication) =>
+          medication.is_amp && medication.status === STATUS.INCLUDED,
+      )
+      .map((medication) => medication.vmp_id),
+  );
+
+  return medications.map((medication) => {
+    if (
+      !medication.is_amp &&
+      medication.status === STATUS.NOT_INCLUDED &&
+      vmpIdsWithIncludedAmp.has(medication.id)
+    ) {
+      return {
+        ...medication,
+        status: STATUS.VMP_NOT_INCLUDED_BUT_CHILD_AMP_IS,
+      };
+    }
+
+    return medication;
+  });
 }
 
 export function getCachedValidOptionIds(panel, filterKey) {

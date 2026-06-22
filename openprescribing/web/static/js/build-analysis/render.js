@@ -145,7 +145,9 @@ function getMedicationsToRender(panel, medications) {
   }
 
   return medications.filter(
-    (medication) => medication.status === STATUS.INCLUDED,
+    (medication) =>
+      medication.status === STATUS.INCLUDED ||
+      medication.status === STATUS.VMP_NOT_INCLUDED_BUT_CHILD_AMP_IS,
   );
 }
 
@@ -203,6 +205,8 @@ function groupResults(results, metadata) {
 
     vtmGroup.vmps.forEach((vmpGroup) => {
       sortByName(vmpGroup.amps);
+      vmpGroup.expanded =
+        vmpGroup.status === STATUS.VMP_NOT_INCLUDED_BUT_CHILD_AMP_IS;
     });
 
     vtmGroup.status = getGroupStatus(vtmGroup.vmps.map((vmp) => vmp.status));
@@ -242,7 +246,7 @@ function renderResultsTable(panel, groups, templates) {
       rows.appendChild(makeVmpRow(vmp, templates.vmpRowTemplate));
 
       vmp.amps.forEach((amp) => {
-        rows.appendChild(makeAmpRow(amp, vmp.id, templates.ampRowTemplate));
+        rows.appendChild(makeAmpRow(amp, vmp, templates.ampRowTemplate));
       });
     });
   });
@@ -270,15 +274,21 @@ function makeVmpRow(vmp, template) {
   if (vmp.amps.length > 0) {
     toggleButton.style.visibility = "visible";
     toggleButton.dataset.vmpId = String(vmp.id);
+
+    if (vmp.expanded) {
+      toggleButton.dataset.expanded = "true";
+      toggleButton.querySelector("i").className = "bi bi-caret-down-fill";
+    }
   }
 
   return row;
 }
 
-function makeAmpRow(amp, vmpId, template) {
+function makeAmpRow(amp, vmp, template) {
   // Build an AMP table row.
   const row = cloneRow(template);
-  row.dataset.ampRow = String(vmpId);
+  row.dataset.ampRow = String(vmp.id);
+  row.hidden = !vmp.expanded;
   applyStatusStyling(row, amp.status);
   row.querySelector("[data-name]").textContent = amp.name;
   row.querySelector("[data-form-route]").textContent = amp.formRouteText;
