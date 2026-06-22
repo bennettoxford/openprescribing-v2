@@ -22,12 +22,15 @@ export const STATUS = {
 
 export function queryMedications(metadata, filters) {
   // Return visible medications with status, as well as counts of included medications.
-  const medications = metadata.medications
+  const baselineMedications = metadata.medications
     .filter((medication) => matchesBaselineFilters(medication, filters))
     .map((medication) => ({
       ...medication,
       status: getMedicationStatus(medication, filters),
     }));
+  const medications = baselineMedications.concat(
+    getExcludedParentVmps(baselineMedications, metadata),
+  );
   const includedMedications = medications.filter(
     (medication) => medication.status === STATUS.INCLUDED,
   );
@@ -44,6 +47,28 @@ export function queryMedications(metadata, filters) {
     includedVmpCount,
     includedAmpCount,
   };
+}
+
+function getExcludedParentVmps(visibleMedications, metadata) {
+  // Return the parent VMPs of any visible AMP whose own VMP record was excluded by the
+  // baseline filters.
+  const visibleVmpIds = new Set(
+    visibleMedications
+      .filter((medication) => !medication.is_amp)
+      .map((medication) => medication.id),
+  );
+
+  const excludedVmpIds = new Set();
+  visibleMedications.forEach((medication) => {
+    if (medication.is_amp && !visibleVmpIds.has(medication.vmp_id)) {
+      excludedVmpIds.add(medication.vmp_id);
+    }
+  });
+
+  return Array.from(excludedVmpIds, (vmpId) => ({
+    ...metadata.medicationById.get(vmpId),
+    status: STATUS.NOT_INCLUDED,
+  }));
 }
 
 export function getCachedValidOptionIds(panel, filterKey) {
