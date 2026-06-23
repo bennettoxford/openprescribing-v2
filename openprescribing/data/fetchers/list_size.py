@@ -38,7 +38,7 @@ def fetch(directory):
         file_url = find_url(
             item_response.content,
             # NHS-D have an exciting variety of names for this file
-            r"gp-reg-pat-prac-quin-age\.zip$",
+            r"gp-reg-pat-prac-quin-age[\w\-]*\.zip$",
             r"gp-reg-pat(ients)?-prac-quin-age\.csv$",
             r"gp-reg-pat-prac-quin-age[\w\-]*\.csv$",
             r"gp-reg-patients[\d\-]*\.csv$",
