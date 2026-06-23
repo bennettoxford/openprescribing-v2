@@ -12,7 +12,7 @@ import {
 } from "./filters.js";
 
 export const STATUS = {
-  // Medication matches all inclusion filters.
+  // Medication matches all inclusion filters and no exclusion filter.
   INCLUDED: "included",
   // Medication matches at least one exclusion filter.
   EXCLUDED: "excluded",
@@ -139,7 +139,8 @@ function matchesVisibleFilters(medication, filters) {
 }
 
 function matchesBaselineFilters(medication, filters) {
-  // Return whether a medication is in the visible baseline set.
+  // Return whether a medication is in the visible baseline set.  If no baseline filters
+  // returns whether it matches any of the other filters.
   const activeBaselineDefinitions = FILTER_DEFINITIONS.filter(
     (definition) =>
       definition.isBaseline &&
@@ -169,29 +170,34 @@ function matchesBaselineFilters(medication, filters) {
 
 function getMedicationStatus(medication, filters) {
   // Return the display status for a medication.
-  for (const definition of FILTER_DEFINITIONS) {
-    const excludedValues = filters[getFilterControlKey(definition, true)];
 
-    if (
-      excludedValues.length > 0 &&
-      matchesAnyFilterValue(definition, medication, excludedValues)
-    ) {
-      return STATUS.EXCLUDED;
-    }
-  }
-
-  for (const definition of FILTER_DEFINITIONS) {
+  const matchesAllInclusionFilters = FILTER_DEFINITIONS.every((definition) => {
     const includedValues = filters[getFilterControlKey(definition, false)];
 
-    if (
-      includedValues.length > 0 &&
-      !matchesAnyFilterValue(definition, medication, includedValues)
-    ) {
-      return STATUS.NOT_INCLUDED;
-    }
+    return (
+      includedValues.length === 0 ||
+      matchesAnyFilterValue(definition, medication, includedValues)
+    );
+  });
+
+  const matchesAnyExclusionFilter = FILTER_DEFINITIONS.some((definition) => {
+    const excludedValues = filters[getFilterControlKey(definition, true)];
+
+    return (
+      excludedValues.length > 0 &&
+      matchesAnyFilterValue(definition, medication, excludedValues)
+    );
+  });
+
+  if (matchesAllInclusionFilters && !matchesAnyExclusionFilter) {
+    return STATUS.INCLUDED;
   }
 
-  return STATUS.INCLUDED;
+  if (matchesAnyExclusionFilter) {
+    return STATUS.EXCLUDED;
+  }
+
+  return STATUS.NOT_INCLUDED;
 }
 
 function getValidOptionIds(filterKey, metadata, filters) {

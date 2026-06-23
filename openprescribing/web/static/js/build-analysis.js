@@ -31,7 +31,7 @@
 //
 // Evaluating the filters gives each medication one of three statuses:
 //
-//  - INCLUDED: matches all inclusion filters
+//  - INCLUDED: matches all inclusion filters and no exclusion filter
 //  - EXCLUDED: matches at least one exclusion filter
 //  - NOT_INCLUDED: does not match all inclusion filters
 //
