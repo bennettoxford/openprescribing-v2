@@ -48,9 +48,8 @@ def _build_analysis_context(analysis, medications_order):
                 analysis.ntr_query, None
             )
 
-        url_parameters_params = urlencode(analysis.to_params(), safe=",")
         url_parameters_json = urlencode({"analysis": json.dumps(analysis.to_dict())})
-        build_analysis_url = f"{reverse('build-analysis')}?{url_parameters_params}"
+        build_analysis_url = f"{reverse('build-analysis')}?{url_parameters_json}"
         download_analysis_url = f"{reverse('download-analysis')}?{url_parameters_json}"
         deciles_api_url = f"{reverse('api_prescribing_deciles')}?{url_parameters_json}"
         all_orgs_api_url = (
@@ -90,8 +89,11 @@ def _build_analysis_context(analysis, medications_order):
 def analysis(request):
     analysis_presentation = AnalysisPresentation.from_params(request.GET)
 
-    if BNFQuery.has_params("ntr", request.GET):
-        analysis = Analysis.from_params(request.GET)
+    analysis_json = request.GET.get("analysis")
+    if analysis_json:
+        analysis_dict = json.loads(analysis_json)
+        analysis_dict["org_id"] = request.GET.get("org_id")
+        analysis = Analysis.from_dict(analysis_dict)
     else:
         analysis = None
 

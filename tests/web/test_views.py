@@ -8,13 +8,14 @@ from django.urls import reverse
 from openprescribing.data.measures.measures import load_measure
 from openprescribing.web.analysis_presentation import ChartType
 from openprescribing.web.models import Feedback
+from tests.utils.url_utils import analysis_querystring
 
 
 def test_analysis(client, sample_data):
     rsp = client.get("")
     assert rsp.status_code == 200
 
-    rsp = client.get("?ntr_bnf_codes=1001030U0")
+    rsp = client.get("?" + analysis_querystring({"bnf_codes": ["1001030U0"]}))
     assert rsp.status_code == 200
     assert (
         "numerator%22%3A+%7B%22bnf_codes%22%3A+%5B%221001030U0"
@@ -23,14 +24,22 @@ def test_analysis(client, sample_data):
     assert rsp.context["analysis_presentation"].chart_type == ChartType.DECILES
     assert rsp.context["org_type_label"] == "ICB"
 
-    rsp = client.get("?ntr_bnf_codes=1001030U0&dtr_bnf_codes=1001")
+    rsp = client.get(
+        "?"
+        + analysis_querystring(
+            {"bnf_codes": ["1001030U0"]}, denominator={"bnf_codes": ["1001"]}
+        )
+    )
     assert rsp.status_code == 200
     assert (
         "denominator%22%3A+%7B%22bnf_codes%22%3A+%5B%221001"
         in rsp.context["prescribing_urls"]["deciles"]
     )
 
-    rsp = client.get("?ntr_bnf_codes=1001030U0AAABAB,1001030U0AAABAB")
+    rsp = client.get(
+        "?"
+        + analysis_querystring({"bnf_codes": ["1001030U0AAABAB", "1001030U0AAABAB"]})
+    )
     assert rsp.status_code == 200
     assert (
         "numerator%22%3A+%7B%22bnf_codes%22%3A+%5B%221001030U0AAABAB%22%2C+%221001030U0AAABAB"
@@ -38,7 +47,13 @@ def test_analysis(client, sample_data):
     )
 
     rsp = client.get(
-        "?ntr_bnf_codes=1001030U0AA&ntr_bnf_codes_excluded=1001030U0AAABAB"
+        "?"
+        + analysis_querystring(
+            {
+                "bnf_codes": ["1001030U0AA"],
+                "bnf_codes_excluded": ["1001030U0AAABAB"],
+            }
+        )
     )
     assert rsp.status_code == 200
     assert (
@@ -47,22 +62,37 @@ def test_analysis(client, sample_data):
     )
 
     rsp = client.get(
-        "?ntr_bnf_codes=1001030U0AA&ntr_bnf_codes_excluded=1001030U0AAABAB&org_id=PRA00"
+        "?"
+        + analysis_querystring(
+            {
+                "bnf_codes": ["1001030U0AA"],
+                "bnf_codes_excluded": ["1001030U0AAABAB"],
+            },
+            org_id="PRA00",
+        )
     )
     assert rsp.status_code == 200
     assert "org_id%22%3A+%22PRA00" in rsp.context["prescribing_urls"]["deciles"]
     assert rsp.context["org_type_label"] == "Practice"
 
-    rsp = client.get("?ntr_bnf_codes=1001030U0&chart_type=all-orgs-line")
+    rsp = client.get(
+        "?"
+        + analysis_querystring({"bnf_codes": ["1001030U0"]}, chart_type="all-orgs-line")
+    )
     assert rsp.status_code == 200
     assert rsp.context["analysis_presentation"].chart_type == ChartType.ALL_ORGS_LINE
     assert re.search(r'id="all-orgs-line"[^>]*checked', rsp.content.decode())
 
-    rsp = client.get("?ntr_bnf_codes=1001030U0&chart_type=invalid")
+    rsp = client.get(
+        "?" + analysis_querystring({"bnf_codes": ["1001030U0"]}, chart_type="invalid")
+    )
     assert rsp.status_code == 200
     assert rsp.context["analysis_presentation"].chart_type == ChartType.DECILES
 
-    rsp = client.get("?ntr_bnf_codes=1001030U0&chart_type=medications")
+    rsp = client.get(
+        "?"
+        + analysis_querystring({"bnf_codes": ["1001030U0"]}, chart_type="medications")
+    )
     assert rsp.status_code == 200
     assert rsp.context["analysis_presentation"].chart_type == ChartType.MEDICATIONS
 
@@ -71,7 +101,9 @@ def test_analysis_build(client, sample_data):
     rsp = client.get("/analysis/build/")
     assert rsp.status_code == 200
 
-    rsp = client.get("/analysis/build/?ntr_bnf_codes=1001030U0")
+    rsp = client.get(
+        "/analysis/build/?" + analysis_querystring({"bnf_codes": ["1001030U0"]})
+    )
     assert rsp.status_code == 200
 
 

@@ -30,41 +30,12 @@ class Analysis:
     dtr_query: BNFQuery | ListSizeQuery
     org_id: str | None
 
-    @classmethod
-    def from_params(cls, params):
-        """Build an Analysis from URL query parameters."""
-
-        ntr_query = BNFQuery.from_params("ntr", params)
-
-        if BNFQuery.has_params("dtr", params):
-            dtr_query = BNFQuery.from_params("dtr", params)
-        else:
-            dtr_query = ListSizeQuery()
-
-        org_id = params.get("org_id")
-
-        return cls(
-            ntr_query=ntr_query,
-            dtr_query=dtr_query,
-            org_id=org_id,
-        )
-
     def validate(self):
         """Validate the analysis's BNF queries, raising ValueError if invalid."""
 
         self.ntr_query.validate()
         if isinstance(self.dtr_query, BNFQuery):
             self.dtr_query.validate()
-
-    def to_params(self):
-        """Serialize back to URL query parameters."""
-
-        params = {}
-        params.update(self.ntr_query.to_params("ntr"))
-        params.update(self.dtr_query.to_params("dtr"))
-        if self.org_id:
-            params["org_id"] = self.org_id
-        return params
 
     @classmethod
     def from_dict(cls, analysis_dict):

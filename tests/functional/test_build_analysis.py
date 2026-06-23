@@ -1,8 +1,12 @@
+import json
+from urllib.parse import parse_qs, urlparse
+
 import pytest
 from playwright.sync_api import expect
 
 from openprescribing.data.models import BNFCode
 from tests.utils.ingest_utils import ingest_dmd_bnf_map_data, ingest_dmd_data
+from tests.utils.url_utils import analysis_querystring
 
 
 pytestmark = pytest.mark.functional
@@ -76,9 +80,10 @@ def test_build_analyse_has_dynamic_filters_and_independent_queries(
     assert "Ingredient (excluded)" in add_filter_option_labels(numerator_panel)
     assert "VTM (excluded)" in add_filter_option_labels(numerator_panel)
 
-    expect(page).to_have_url(
-        live_server.url + "/analysis/build/?ntr_vtm_ids=108502004%2C90356005"
-    )
+    assert current_analysis(page) == {
+        "options": {"output_value": "items", "type": "prescribing_vs_list_size"},
+        "queries": [{"numerator": {"vtm_ids": [108502004, 90356005]}}],
+    }
     expect(results_counts(numerator_panel)).to_have_text(
         "4 dm+d products (2 VMPs, 2 AMPs)"
     )
@@ -101,10 +106,17 @@ def test_build_analyse_has_dynamic_filters_and_independent_queries(
     )
     expect(results_empty(numerator_panel)).to_be_hidden()
     expect(results_table(numerator_panel)).to_be_visible()
-    expect(page).to_have_url(
-        live_server.url
-        + "/analysis/build/?ntr_vtm_ids=108502004%2C90356005&ntr_ingredient_ids=35431001"
-    )
+    assert current_analysis(page) == {
+        "options": {"output_value": "items", "type": "prescribing_vs_list_size"},
+        "queries": [
+            {
+                "numerator": {
+                    "ingredient_ids": [35431001],
+                    "vtm_ids": [108502004, 90356005],
+                }
+            }
+        ],
+    }
     expect(dropdown_summary(numerator_panel, "VTM")).to_contain_text("Adenosine")
     expect(dropdown_summary(numerator_panel, "VTM")).to_contain_text("Pilocarpine")
 
@@ -175,9 +187,10 @@ def test_build_analyse_has_dynamic_filters_and_independent_queries(
     add_filter(numerator_panel, "BNF hierarchy")
     remove_dropdown_button(numerator_panel, "BNF hierarchy").click()
 
-    expect(page).to_have_url(
-        live_server.url + "/analysis/build/?ntr_vtm_ids=108502004%2C90356005"
-    )
+    assert current_analysis(page) == {
+        "options": {"output_value": "items", "type": "prescribing_vs_list_size"},
+        "queries": [{"numerator": {"vtm_ids": [108502004, 90356005]}}],
+    }
     assert "BNF hierarchy" in add_filter_option_labels(numerator_panel)
 
     # Removing the final numerator filter returns the panel to its prompt state.
@@ -203,10 +216,18 @@ def test_build_analyse_has_dynamic_filters_and_independent_queries(
         "Adenosine",
     )
 
-    expect(page).to_have_url(
-        live_server.url
-        + "/analysis/build/?dtr_ingredient_ids=35431001&dtr_ingredient_ids_excluded=35431001"
-    )
+    assert current_analysis(page) == {
+        "options": {"output_value": "items", "type": "prescribing_vs_prescribing"},
+        "queries": [
+            {
+                "numerator": {},
+                "denominator": {
+                    "ingredient_ids": [35431001],
+                    "ingredient_ids_excluded": [35431001],
+                },
+            }
+        ],
+    }
     expect(results_counts(denominator_panel)).to_have_text(
         "0 dm+d products (0 VMPs, 0 AMPs)"
     )
@@ -240,9 +261,17 @@ def test_build_analyse_loads_dynamic_filters_from_url(
 
     page.goto(
         live_server.url
-        + "/analysis/build/?ntr_vtm_ids=108502004,90356005"
-        + "&ntr_form_routes=solutioninjection.intravenous"
-        + "&dtr_ingredient_ids=35431001&dtr_ingredient_ids_excluded=35431001"
+        + "/analysis/build/?"
+        + analysis_querystring(
+            numerator={
+                "vtm_ids": [108502004, 90356005],
+                "form_routes": ["solutioninjection.intravenous"],
+            },
+            denominator={
+                "ingredient_ids": [35431001],
+                "ingredient_ids_excluded": [35431001],
+            },
+        )
     )
 
     numerator_panel = panel_for_prefix(page, "ntr")
@@ -458,3 +487,9 @@ def select_suggestion(panel, label, search_text, suggestion_text):
     dropdown_input(panel, label).fill(search_text)
     existing = selected_dropdown_option_labels(panel, label)
     dropdown_options(panel, label).select_option(label=[*existing, suggestion_text])
+
+
+def current_analysis(page):
+    """Return the analysis dict from the page's current URL, or None if absent."""
+    values = parse_qs(urlparse(page.url).query).get("analysis")
+    return json.loads(values[0]) if values else None

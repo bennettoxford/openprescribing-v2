@@ -169,12 +169,9 @@ def test_get_matching_presentation_codes_for_form_routes(medications):
             {"bnf_code": "1001030U0AAACAC", "form_routes": ["tablet.oral"]},
         ]
     )
-    query = BNFQuery.from_params(
-        "ntr",
-        {
-            "ntr_bnf_codes": "0203020C0AAAAAA",
-            "ntr_form_routes": "solutioninjection.intravenous",
-        },
+    query = BNFQuery(
+        bnf_codes=("0203020C0AAAAAA",),
+        form_routes=("solutioninjection.intravenous",),
     )
     assert query.get_matching_presentation_codes() == ["0203020C0AAAAAA"]
 
@@ -200,12 +197,9 @@ def test_get_matching_presentation_codes_for_ingredient_ids(medications):
             },
         ]
     )
-    query = BNFQuery.from_params(
-        "ntr",
-        {
-            "ntr_bnf_codes": "1305020C0AAFVFV",
-            "ntr_ingredient_ids": "53034005",
-        },
+    query = BNFQuery(
+        bnf_codes=("1305020C0AAFVFV",),
+        ingredient_ids=(53034005,),
     )
     assert query.get_matching_presentation_codes() == ["1305020C0AAFVFV"]
 
@@ -219,12 +213,9 @@ def test_get_matching_presentation_codes_for_ingredient_ids_no_match(medications
             },
         ]
     )
-    query = BNFQuery.from_params(
-        "ntr",
-        {
-            "ntr_bnf_codes": "1305020C0AAFVFV",
-            "ntr_ingredient_ids": "999",
-        },
+    query = BNFQuery(
+        bnf_codes=("1305020C0AAFVFV",),
+        ingredient_ids=(999,),
     )
     assert query.get_matching_presentation_codes() == []
 
@@ -250,12 +241,9 @@ def test_get_matching_presentation_codes_for_vtm_ids(medications):
             },
         ]
     )
-    query = BNFQuery.from_params(
-        "ntr",
-        {
-            "ntr_bnf_codes": "1305020C0AAFVFV",
-            "ntr_vtm_ids": "15219611000001105",
-        },
+    query = BNFQuery(
+        bnf_codes=("1305020C0AAFVFV",),
+        vtm_ids=(15219611000001105,),
     )
     assert query.get_matching_presentation_codes() == ["1305020C0AAFVFV"]
 
@@ -589,122 +577,6 @@ def test_describe_search_for_forms_and_routes():
         "ingredients_excluded": [],
         "vtms": [],
         "vtms_excluded": [],
-    }
-
-
-def test_from_params():
-    query = BNFQuery.from_params(
-        "ntr",
-        {
-            "ntr_bnf_codes": "01",
-            "ntr_bnf_codes_excluded": "0101",
-            "ntr_product_type": "generic",
-            "ntr_form_routes": "tablet.oral",
-            "ntr_form_routes_excluded": "solution.oral",
-            "ntr_ingredient_ids": "3",
-            "ntr_ingredient_ids_excluded": "4",
-            "ntr_vtm_ids": "5",
-            "ntr_vtm_ids_excluded": "6",
-        },
-    )
-    assert query == BNFQuery(
-        bnf_codes=["01"],
-        bnf_codes_excluded=["0101"],
-        product_type=ProductType.GENERIC,
-        form_routes=["tablet.oral"],
-        form_routes_excluded=["solution.oral"],
-        ingredient_ids=["3"],
-        ingredient_ids_excluded=["4"],
-        vtm_ids=["5"],
-        vtm_ids_excluded=["6"],
-    )
-
-
-def test_has_params():
-    assert BNFQuery.has_params("ntr", {"ntr_bnf_codes": "01"})
-    assert BNFQuery.has_params("ntr", {"ntr_product_type": "generic"})
-    assert BNFQuery.has_params("ntr", {"ntr_ingredient_ids": "01"})
-    assert not BNFQuery.has_params("ntr", {"org_id": "PRAC01"})
-
-
-def test_from_params_with_form_routes_key_not_val():
-    query = BNFQuery.from_params(
-        "ntr",
-        {
-            "ntr_bnf_codes": "01",
-            "ntr_product_type": "generic",
-            "ntr_form_routes": "",
-        },
-    )
-    assert query.form_routes == ()
-
-
-def test_from_params_ingredients():
-    query = BNFQuery.from_params("ntr", {"ntr_ingredient_ids": "01"})
-    assert query == BNFQuery(
-        bnf_codes=[], product_type=BNFQuery.PRODUCT_TYPE_DEFAULT, ingredient_ids=["01"]
-    )
-
-
-def test_to_params():
-    query = BNFQuery(bnf_codes=["01"])
-    assert query.to_params("ntr") == {"ntr_bnf_codes": "01", "ntr_product_type": "all"}
-
-
-def test_to_params_excluded():
-    query = BNFQuery(
-        bnf_codes=["01"], bnf_codes_excluded=["0101"], product_type=ProductType.GENERIC
-    )
-    assert query.to_params("ntr") == {
-        "ntr_bnf_codes": "01",
-        "ntr_bnf_codes_excluded": "0101",
-        "ntr_product_type": "generic",
-    }
-
-
-def test_to_params_excluded_only():
-    query = BNFQuery(bnf_codes_excluded=["0101"])
-    assert query.to_params("ntr") == {
-        "ntr_bnf_codes_excluded": "0101",
-        "ntr_product_type": "all",
-    }
-
-
-def test_to_params_with_form_routes():
-    query = BNFQuery(
-        bnf_codes=["01"],
-        bnf_codes_excluded=["0101"],
-        product_type=ProductType.GENERIC,
-        form_routes=("tablet.oral", "suspension.oral"),
-        form_routes_excluded=("solution.oral", "ointment.cutaneous"),
-    )
-    assert query.to_params("ntr") == {
-        "ntr_bnf_codes": "01",
-        "ntr_bnf_codes_excluded": "0101",
-        "ntr_product_type": "generic",
-        "ntr_form_routes": "tablet.oral,suspension.oral",
-        "ntr_form_routes_excluded": "solution.oral,ointment.cutaneous",
-    }
-
-
-def test_to_params_with_ingredient_ids():
-    query = BNFQuery(
-        bnf_codes=["01"],
-        bnf_codes_excluded=["0101"],
-        product_type=ProductType.GENERIC,
-        ingredient_ids=(1,),
-        ingredient_ids_excluded=(2,),
-        vtm_ids=(3,),
-        vtm_ids_excluded=(4,),
-    )
-    assert query.to_params("ntr") == {
-        "ntr_bnf_codes": "01",
-        "ntr_bnf_codes_excluded": "0101",
-        "ntr_product_type": "generic",
-        "ntr_ingredient_ids": "1",
-        "ntr_ingredient_ids_excluded": "2",
-        "ntr_vtm_ids": "3",
-        "ntr_vtm_ids_excluded": "4",
     }
 
 
