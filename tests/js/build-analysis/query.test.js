@@ -196,8 +196,14 @@ describe("queryMedications with excluded parent VMPs", () => {
   });
 });
 
-function makeMetadata(medications) {
+function makeMetadata(rawMedications) {
   // Build the subset of the metadata object that queryMedications relies on.
+  // Derive is_vmp the same way metadata.js does for medications from the API.
+  const medications = rawMedications.map((medication) => ({
+    ...medication,
+    is_vmp: !medication.is_amp,
+  }));
+
   return {
     medications,
     medicationById: new Map(

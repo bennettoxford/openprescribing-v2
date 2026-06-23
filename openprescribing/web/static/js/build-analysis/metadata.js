@@ -20,6 +20,7 @@ export async function fetchMetadata(containerEl) {
   const indexedMedications = medications.medications.map(
     (medication, index) => ({
       ...medication,
+      is_vmp: !medication.is_amp,
       medicationIndex: index,
     }),
   );

@@ -39,7 +39,7 @@ export function queryMedications(metadata, filters) {
     (medication) => medication.status === STATUS.INCLUDED,
   );
   const includedVmpCount = includedMedications.filter(
-    (medication) => !medication.is_amp,
+    (medication) => medication.is_vmp,
   ).length;
   const includedAmpCount = includedMedications.filter(
     (medication) => medication.is_amp,
@@ -58,7 +58,7 @@ function getExcludedParentVmps(visibleMedications, metadata) {
   // baseline filters.
   const visibleVmpIds = new Set(
     visibleMedications
-      .filter((medication) => !medication.is_amp)
+      .filter((medication) => medication.is_vmp)
       .map((medication) => medication.id),
   );
 
@@ -88,7 +88,7 @@ function withVmpChildStatuses(medications) {
 
   return medications.map((medication) => {
     if (
-      !medication.is_amp &&
+      medication.is_vmp &&
       medication.status === STATUS.NOT_INCLUDED &&
       vmpIdsWithIncludedAmp.has(medication.id)
     ) {
