@@ -1,11 +1,12 @@
 import json
-from urllib.parse import parse_qs, urlencode, urlparse
+from urllib.parse import parse_qs, urlparse
 
 import pytest
 from playwright.sync_api import expect
 
 from openprescribing.data.models import BNFCode
 from tests.utils.ingest_utils import ingest_dmd_bnf_map_data, ingest_dmd_data
+from tests.utils.url_utils import analysis_querystring
 
 
 pytestmark = pytest.mark.functional
@@ -261,7 +262,7 @@ def test_build_analyse_loads_dynamic_filters_from_url(
     page.goto(
         live_server.url
         + "/analysis/build/?"
-        + analysis_query_string(
+        + analysis_querystring(
             numerator={
                 "vtm_ids": [108502004, 90356005],
                 "form_routes": ["solutioninjection.intravenous"],
@@ -492,15 +493,3 @@ def current_analysis(page):
     """Return the analysis dict from the page's current URL, or None if absent."""
     values = parse_qs(urlparse(page.url).query).get("analysis")
     return json.loads(values[0]) if values else None
-
-
-def analysis_query_string(numerator, denominator=None):
-    """Serialize numerator/denominator BNF query dicts as a single `analysis` param."""
-    query = {"numerator": numerator}
-    if denominator is None:
-        options = {"output_value": "items", "type": "prescribing_vs_list_size"}
-    else:
-        query["denominator"] = denominator
-        options = {"output_value": "items", "type": "prescribing_vs_prescribing"}
-    analysis_dict = {"options": options, "queries": [query]}
-    return urlencode({"analysis": json.dumps(analysis_dict)})

@@ -8,13 +8,14 @@ from django.urls import reverse
 from openprescribing.data.measures.measures import load_measure
 from openprescribing.web.analysis_presentation import ChartType
 from openprescribing.web.models import Feedback
+from tests.utils.url_utils import analysis_querystring
 
 
 def test_analysis(client, sample_data):
     rsp = client.get("")
     assert rsp.status_code == 200
 
-    rsp = client.get("?" + _analysis_query({"bnf_codes": ["1001030U0"]}))
+    rsp = client.get("?" + analysis_querystring({"bnf_codes": ["1001030U0"]}))
     assert rsp.status_code == 200
     assert (
         "numerator%22%3A+%7B%22bnf_codes%22%3A+%5B%221001030U0"
@@ -25,7 +26,7 @@ def test_analysis(client, sample_data):
 
     rsp = client.get(
         "?"
-        + _analysis_query(
+        + analysis_querystring(
             {"bnf_codes": ["1001030U0"]}, denominator={"bnf_codes": ["1001"]}
         )
     )
@@ -36,7 +37,8 @@ def test_analysis(client, sample_data):
     )
 
     rsp = client.get(
-        "?" + _analysis_query({"bnf_codes": ["1001030U0AAABAB", "1001030U0AAABAB"]})
+        "?"
+        + analysis_querystring({"bnf_codes": ["1001030U0AAABAB", "1001030U0AAABAB"]})
     )
     assert rsp.status_code == 200
     assert (
@@ -46,7 +48,7 @@ def test_analysis(client, sample_data):
 
     rsp = client.get(
         "?"
-        + _analysis_query(
+        + analysis_querystring(
             {
                 "bnf_codes": ["1001030U0AA"],
                 "bnf_codes_excluded": ["1001030U0AAABAB"],
@@ -61,7 +63,7 @@ def test_analysis(client, sample_data):
 
     rsp = client.get(
         "?"
-        + _analysis_query(
+        + analysis_querystring(
             {
                 "bnf_codes": ["1001030U0AA"],
                 "bnf_codes_excluded": ["1001030U0AAABAB"],
@@ -74,20 +76,22 @@ def test_analysis(client, sample_data):
     assert rsp.context["org_type_label"] == "Practice"
 
     rsp = client.get(
-        "?" + _analysis_query({"bnf_codes": ["1001030U0"]}, chart_type="all-orgs-line")
+        "?"
+        + analysis_querystring({"bnf_codes": ["1001030U0"]}, chart_type="all-orgs-line")
     )
     assert rsp.status_code == 200
     assert rsp.context["analysis_presentation"].chart_type == ChartType.ALL_ORGS_LINE
     assert re.search(r'id="all-orgs-line"[^>]*checked', rsp.content.decode())
 
     rsp = client.get(
-        "?" + _analysis_query({"bnf_codes": ["1001030U0"]}, chart_type="invalid")
+        "?" + analysis_querystring({"bnf_codes": ["1001030U0"]}, chart_type="invalid")
     )
     assert rsp.status_code == 200
     assert rsp.context["analysis_presentation"].chart_type == ChartType.DECILES
 
     rsp = client.get(
-        "?" + _analysis_query({"bnf_codes": ["1001030U0"]}, chart_type="medications")
+        "?"
+        + analysis_querystring({"bnf_codes": ["1001030U0"]}, chart_type="medications")
     )
     assert rsp.status_code == 200
     assert rsp.context["analysis_presentation"].chart_type == ChartType.MEDICATIONS
@@ -98,7 +102,7 @@ def test_analysis_build(client, sample_data):
     assert rsp.status_code == 200
 
     rsp = client.get(
-        "/analysis/build/?" + _analysis_query({"bnf_codes": ["1001030U0"]})
+        "/analysis/build/?" + analysis_querystring({"bnf_codes": ["1001030U0"]})
     )
     assert rsp.status_code == 200
 
@@ -246,16 +250,3 @@ def test_analysis_download(client, sample_data, tmp_path, settings):
     }
     received_analysis_dict = load_measure("test-measure")
     assert received_analysis_dict == expected_analysis_dict
-
-
-def _analysis_query(numerator, denominator=None, **extra):
-    # Build an analysis query string with the BNF query (or queries) serialised as a
-    # single JSON `analysis` param, plus any extra flat params (e.g. org_id, chart_type).
-    query = {"numerator": numerator}
-    if denominator is None:
-        options = {"type": "prescribing_vs_list_size", "output_value": "items"}
-    else:
-        query["denominator"] = denominator
-        options = {"type": "prescribing_vs_prescribing", "output_value": "items"}
-    analysis_dict = {"options": options, "queries": [query]}
-    return urlencode({"analysis": json.dumps(analysis_dict), **extra})
