@@ -12,21 +12,10 @@ metadata:
   checked_by: n/a
   date_reviewed: n/a
   date_next_review: n/a
-output:
-  numerator: items
-  denominator: list_size
-queries:
-  - numerator:
-      bnf_codes:
-        included:
-          - ""
 options:
-  output_value: items
   type: prescribing_vs_list_size
+  output_value: items 
 queries:
-  - numerator:
-      form_routes:
-      queries:
   - numerator:
       form_routes:
         - colloidalsuspensioninjection.intraperitoneal
@@ -110,3 +99,4 @@ queries:
          - "05" # Infections
         excluded:
           - "0501070I0" # colistimethate sodium   
+
