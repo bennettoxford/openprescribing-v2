@@ -18,4 +18,5 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        - ""
+        - "091327" # Food - Gluten free
+        - "091346" # Non-ACBS gluten free food"
