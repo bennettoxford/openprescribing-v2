@@ -20,4 +20,4 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        - ""
+        - "0403010J0" # dosulepin
