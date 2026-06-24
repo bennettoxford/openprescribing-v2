@@ -1,0 +1,16 @@
+[Unit]
+Description=OpenTelemetry Collector
+Documentation=https://github.com/bennettoxford/openprescribing-v2
+
+[Service]
+EnvironmentFile=/opt/opentelemetry/collector/secrets.env
+WorkingDirectory=/opt/opentelemetry/collector
+ExecStart=/opt/opentelemetry/collector/otelcol_hny_linux_amd64 --config /opt/opentelemetry/collector/config.yaml
+ExecStop=/bin/kill -INT ${MAINPID}
+User=openprescribing
+Group=openprescribing
+Restart=on-failure
+RestartSec=60s
+
+[Install]
+WantedBy=multi-user.target
