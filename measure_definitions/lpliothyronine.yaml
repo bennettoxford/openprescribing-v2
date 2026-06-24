@@ -17,4 +17,5 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        - ""
+        - "0602010M0" # Liothyronine Sodium
+        - "0602010Z0" # Levothyroxine Sodium & Liothyronine
