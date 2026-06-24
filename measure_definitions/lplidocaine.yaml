@@ -20,4 +20,4 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        - ""
+        - "1502010J0_EL" # Lidocaine 5% medicated plasters (brands and generic)"
