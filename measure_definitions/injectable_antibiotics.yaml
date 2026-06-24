@@ -95,8 +95,7 @@ queries:
         - suspensioninjectionprolonged-release.intramuscular-deep
         - suspensioninjectionprolonged-release.subcutaneous
       bnf_codes:
-        included:
-          - "05" # Infections
-        excluded:
-          - "0501070I0" # colistimethate sodium   
+        - "05" # Infections
+      bnf_codes_excluded:
+        - "0501070I0" # colistimethate sodium   
 
