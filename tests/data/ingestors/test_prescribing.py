@@ -1,4 +1,5 @@
 import csv
+import datetime
 
 import duckdb
 import pytest
@@ -127,6 +128,7 @@ def test_prescribing_ingest_applies_bnf_code_changes(tmp_path, settings, data_db
             "original_bnf_code": "01234ABC",
             "snomed_code": 87654321,
             "original_snomed_code": 87654321,
+            "last_prescribed_date": datetime.date(2025, 1, 1),
         },
         {
             "id": 2,
@@ -134,6 +136,7 @@ def test_prescribing_ingest_applies_bnf_code_changes(tmp_path, settings, data_db
             "original_bnf_code": "NEW12345",
             "snomed_code": 12345678,
             "original_snomed_code": 12345678,
+            "last_prescribed_date": datetime.date(2024, 1, 1),
         },
         {
             "id": 3,
@@ -141,6 +144,7 @@ def test_prescribing_ingest_applies_bnf_code_changes(tmp_path, settings, data_db
             "original_bnf_code": "OLD12345",
             "snomed_code": 12345678,
             "original_snomed_code": 12345678,
+            "last_prescribed_date": datetime.date(2023, 1, 1),
         },
     ]
 
@@ -231,6 +235,7 @@ def test_prescribing_ingest_applies_vmp_code_changes(
             "original_bnf_code": "01234ABC",
             "snomed_code": 3000,
             "original_snomed_code": 1000,
+            "last_prescribed_date": datetime.date(2023, 1, 1),
         },
         {
             "id": 2,
@@ -238,6 +243,7 @@ def test_prescribing_ingest_applies_vmp_code_changes(
             "original_bnf_code": "01234ABC",
             "snomed_code": 3000,
             "original_snomed_code": 2000,
+            "last_prescribed_date": datetime.date(2024, 1, 1),
         },
         {
             "id": 3,
@@ -245,6 +251,7 @@ def test_prescribing_ingest_applies_vmp_code_changes(
             "original_bnf_code": "01234ABC",
             "snomed_code": 3000,
             "original_snomed_code": 3000,
+            "last_prescribed_date": datetime.date(2025, 1, 1),
         },
     ]
 

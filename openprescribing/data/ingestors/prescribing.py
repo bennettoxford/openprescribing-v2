@@ -308,7 +308,8 @@ def ingest_sources(conn):
         COALESCE(bnf_code_changes_source.new_code, presentation.bnf_code) AS bnf_code,
         presentation.bnf_code AS original_bnf_code,
         COALESCE(vmp_code_changes_source.new_vpid, presentation.snomed_code) AS snomed_code,
-        presentation.snomed_code AS original_snomed_code
+        presentation.snomed_code AS original_snomed_code,
+        presentation.last_prescribed_date
     FROM presentation
     LEFT JOIN bnf_code_changes_source
         ON presentation.bnf_code = bnf_code_changes_source.old_code
@@ -401,9 +402,10 @@ def sql_for_presentation_table():
             AS INT4)
         AS id,
         bnf_code,
-        snomed_code
+        snomed_code,
+        last_prescribed_date
     FROM (
-        SELECT DISTINCT bnf_code, snomed_code FROM prescribing_source
+        SELECT bnf_code, snomed_code, MAX(date) AS last_prescribed_date FROM prescribing_source GROUP BY bnf_code, snomed_code
     )
     """
 
