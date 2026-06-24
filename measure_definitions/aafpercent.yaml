@@ -17,7 +17,7 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        -	"0913107A0" # Powder amino acid formula (0913107)
+        - "0913107A0" # Powder amino acid formula (0913107)
 		    - "0913131A0" # Powder amino acid formula (0913131)
 		    - "0913131B0" # Powder amino acid semi solid  (0913131)
 		    - "0913355A0" # Powder discontinued amino acid formula (0913355)
