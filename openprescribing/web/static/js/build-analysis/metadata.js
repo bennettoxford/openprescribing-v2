@@ -20,6 +20,7 @@ export async function fetchMetadata(containerEl) {
   const indexedMedications = medications.medications.map(
     (medication, index) => ({
       ...medication,
+      is_vmp: !medication.is_amp,
       medicationIndex: index,
     }),
   );
@@ -36,6 +37,9 @@ export async function fetchMetadata(containerEl) {
     medicationIndexesByFilterValue,
     vtmById: new Map(dmd.vtm.map((vtm) => [vtm.id, vtm])),
     vmpById: new Map(dmd.vmp.map((vmp) => [vmp.id, vmp])),
+    medicationById: new Map(
+      indexedMedications.map((medication) => [medication.id, medication]),
+    ),
   };
 }
 

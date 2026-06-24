@@ -12,27 +12,34 @@ import {
 } from "./filters.js";
 
 export const STATUS = {
-  // Medication matches all inclusion filters.
+  // Medication matches all inclusion filters and no exclusion filter.
   INCLUDED: "included",
   // Medication matches at least one exclusion filter.
   EXCLUDED: "excluded",
   // Medication does not match all inclusion filters.
   NOT_INCLUDED: "not_included",
+  // VMP is NOT_INCLUDED, but has an included AMP child.
+  VMP_NOT_INCLUDED_BUT_CHILD_AMP_IS: "vmp_not_included_but_child_amp_is",
 };
 
 export function queryMedications(metadata, filters) {
   // Return visible medications with status, as well as counts of included medications.
-  const medications = metadata.medications
-    .filter((medication) => matchesBaselineFilters(medication, filters))
-    .map((medication) => ({
-      ...medication,
-      status: getMedicationStatus(medication, filters),
-    }));
+  const baselineMedications = metadata.medications.filter((medication) =>
+    matchesBaselineFilters(medication, filters),
+  );
+  const medications = withVmpChildStatuses(
+    baselineMedications
+      .concat(getExcludedParentVmps(baselineMedications, metadata))
+      .map((medication) => ({
+        ...medication,
+        status: getMedicationStatus(medication, filters),
+      })),
+  );
   const includedMedications = medications.filter(
     (medication) => medication.status === STATUS.INCLUDED,
   );
   const includedVmpCount = includedMedications.filter(
-    (medication) => !medication.is_amp,
+    (medication) => medication.is_vmp,
   ).length;
   const includedAmpCount = includedMedications.filter(
     (medication) => medication.is_amp,
@@ -44,6 +51,55 @@ export function queryMedications(metadata, filters) {
     includedVmpCount,
     includedAmpCount,
   };
+}
+
+function getExcludedParentVmps(visibleMedications, metadata) {
+  // Return the parent VMPs of any visible AMP whose own VMP record was excluded by the
+  // baseline filters.
+  const visibleVmpIds = new Set(
+    visibleMedications
+      .filter((medication) => medication.is_vmp)
+      .map((medication) => medication.id),
+  );
+
+  const excludedVmpIds = new Set();
+  visibleMedications.forEach((medication) => {
+    if (medication.is_amp && !visibleVmpIds.has(medication.vmp_id)) {
+      excludedVmpIds.add(medication.vmp_id);
+    }
+  });
+
+  return Array.from(excludedVmpIds, (vmpId) =>
+    metadata.medicationById.get(vmpId),
+  );
+}
+
+function withVmpChildStatuses(medications) {
+  // Update the status of each not-included VMP with an included AMP child to
+  // VMP_NOT_INCLUDED_BUT_CHILD_AMP_IS.
+  const vmpIdsWithIncludedAmp = new Set(
+    medications
+      .filter(
+        (medication) =>
+          medication.is_amp && medication.status === STATUS.INCLUDED,
+      )
+      .map((medication) => medication.vmp_id),
+  );
+
+  return medications.map((medication) => {
+    if (
+      medication.is_vmp &&
+      medication.status === STATUS.NOT_INCLUDED &&
+      vmpIdsWithIncludedAmp.has(medication.id)
+    ) {
+      return {
+        ...medication,
+        status: STATUS.VMP_NOT_INCLUDED_BUT_CHILD_AMP_IS,
+      };
+    }
+
+    return medication;
+  });
 }
 
 export function getCachedValidOptionIds(panel, filterKey) {
@@ -83,7 +139,8 @@ function matchesVisibleFilters(medication, filters) {
 }
 
 function matchesBaselineFilters(medication, filters) {
-  // Return whether a medication is in the visible baseline set.
+  // Return whether a medication is in the visible baseline set.  If no baseline filters
+  // returns whether it matches any of the other filters.
   const activeBaselineDefinitions = FILTER_DEFINITIONS.filter(
     (definition) =>
       definition.isBaseline &&
@@ -113,29 +170,34 @@ function matchesBaselineFilters(medication, filters) {
 
 function getMedicationStatus(medication, filters) {
   // Return the display status for a medication.
-  for (const definition of FILTER_DEFINITIONS) {
-    const excludedValues = filters[getFilterControlKey(definition, true)];
 
-    if (
-      excludedValues.length > 0 &&
-      matchesAnyFilterValue(definition, medication, excludedValues)
-    ) {
-      return STATUS.EXCLUDED;
-    }
-  }
-
-  for (const definition of FILTER_DEFINITIONS) {
+  const matchesAllInclusionFilters = FILTER_DEFINITIONS.every((definition) => {
     const includedValues = filters[getFilterControlKey(definition, false)];
 
-    if (
-      includedValues.length > 0 &&
-      !matchesAnyFilterValue(definition, medication, includedValues)
-    ) {
-      return STATUS.NOT_INCLUDED;
-    }
+    return (
+      includedValues.length === 0 ||
+      matchesAnyFilterValue(definition, medication, includedValues)
+    );
+  });
+
+  const matchesAnyExclusionFilter = FILTER_DEFINITIONS.some((definition) => {
+    const excludedValues = filters[getFilterControlKey(definition, true)];
+
+    return (
+      excludedValues.length > 0 &&
+      matchesAnyFilterValue(definition, medication, excludedValues)
+    );
+  });
+
+  if (matchesAllInclusionFilters && !matchesAnyExclusionFilter) {
+    return STATUS.INCLUDED;
   }
 
-  return STATUS.INCLUDED;
+  if (matchesAnyExclusionFilter) {
+    return STATUS.EXCLUDED;
+  }
+
+  return STATUS.NOT_INCLUDED;
 }
 
 function getValidOptionIds(filterKey, metadata, filters) {
