@@ -14,8 +14,88 @@ metadata:
   date_next_review: n/a
 options:
   type: prescribing_vs_list_size
-  output_value: items
+  output_value: items 
 queries:
   - numerator:
+      form_routes:
+        - colloidalsuspensioninjection.intraperitoneal
+        - colloidalsuspensioninjection.intrapleural
+        - dispersioninfusion.intravenous
+        - dispersioninjection.infiltration
+        - dispersioninjection.intramuscular
+        - dispersioninjection.intravenous
+        - dispersioninjection.perilesional
+        - dispersioninjection.perineural
+        - dispersioninjectionprolonged-release.infiltration
+        - dispersioninjectionprolonged-release.perineural
+        - emulsioninfusion.intravenous
+        - emulsioninjection.intramuscular
+        - emulsioninjection.intravenous
+        - emulsioninjection.subcutaneous
+        - gelinjection.intramuscular
+        - gelinjection.subcutaneous
+        - implant.subcutaneous
+        - Obsolete-solutioninjection.intraventricular
+        - solutioninfusion.intravenous
+        - solutioninfusion.subcutaneous
+        - solutioninjection.bodycavity
+        - solutioninjection.endocervical
+        - solutioninjection.endotracheopulmonary
+        - solutioninjection.epidural
+        - solutioninjection.infiltration
+        - solutioninjection.intraarterial
+        - solutioninjection.intraarticular
+        - solutioninjection.intrabursal
+        - solutioninjection.intracameral
+        - solutioninjection.intracardiac
+        - solutioninjection.intracavernous
+        - solutioninjection.intracerebroventricular
+        - solutioninjection.intracholangiopancreatic
+        - solutioninjection.intracoronary
+        - solutioninjection.intradermal
+        - solutioninjection.intraglandular
+        - solutioninjection.intralesional
+        - solutioninjection.intramuscular
+        - solutioninjection.intramuscular-deep
+        - solutioninjection.intraocular
+        - solutioninjection.intraosseous
+        - solutioninjection.intraperitoneal
+        - solutioninjection.intrapleural
+        - solutioninjection.intrathecal
+        - solutioninjection.intratumoral
+        - solutioninjection.intrauterine
+        - solutioninjection.intravenous
+        - solutioninjection.intraventricular cardiac
+        - solutioninjection.intravesical
+        - solutioninjection.intravitreal
+        - solutioninjection.peribulbar ocular
+        - solutioninjection.perineural
+        - solutioninjection.peritumoral
+        - solutioninjection.rectal
+        - solutioninjection.subconjunctival
+        - solutioninjection.subcutaneous
+        - solutioninjection.submucosal
+        - solutioninjection.submucosalrectal
+        - solutioninjection.subretinal
+        - solutioninjectionprolonged-release.subcutaneous
+        - solventinjection.intradermal
+        - suspensioninfusion.intravenous
+        - suspensioninjection.epidural
+        - suspensioninjection.intraarticular
+        - suspensioninjection.intrabursal
+        - suspensioninjection.intradermal
+        - suspensioninjection.intralesional
+        - suspensioninjection.intramuscular
+        - suspensioninjection.intramuscular-deep
+        - suspensioninjection.intrathecal
+        - suspensioninjection.intravenous
+        - suspensioninjection.periarticular
+        - suspensioninjection.subcutaneous
+        - suspensioninjectionprolonged-release.intramuscular
+        - suspensioninjectionprolonged-release.intramuscular-deep
+        - suspensioninjectionprolonged-release.subcutaneous
       bnf_codes:
-        - ""
+        - "05" # Infections
+      bnf_codes_excluded:
+        - "0501070I0" # colistimethate sodium   
+
