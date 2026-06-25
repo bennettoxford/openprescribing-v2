@@ -17,6 +17,7 @@ receivers:
       filesystem: {}
       network: {}
       paging: {}
+      process: {}
       processes: {}
 processors:
   resourcedetection:
