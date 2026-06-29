@@ -20,4 +20,5 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        - ""
+        - "0212000AB" # Omega-3-Acid Ethyl Esters
+        - "0212000V0" # Omega-3 Marine Triglycerides
