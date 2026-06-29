@@ -20,4 +20,4 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        - ""
+        - "0501030P0" # Minocycline Hydrochloride
