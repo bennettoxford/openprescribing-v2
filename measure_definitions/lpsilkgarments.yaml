@@ -18,4 +18,4 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        - ""
+        - "2020" # Silk Garments
