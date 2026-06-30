@@ -19,4 +19,4 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        - ""
+        - "0403010Y0" # Trimipramine Maleate
