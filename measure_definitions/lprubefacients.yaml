@@ -19,4 +19,15 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        - ""
+        - "1003020" # Rubefacients, topical NSAIDS, capsaicin and poultice
+      bnf_codes_excluded:
+        - "1003020AD" # Arnica montana" 
+        - "1003020AA" # Capsaicin"
+        - "1003020AF" # Diclofenac diethyl
+        - "1003020U0" # Diclofenac sodium"
+        - "1003020M0" # Felbinac
+        - "1003020W0" # Heparinoid
+        - "1003020P0" # Ibuprofen
+        - "1003020L0" # Kaolin Heavy
+        - "100302010" # Ketoprofen
+        - "1003020R0" # Piroxicam
