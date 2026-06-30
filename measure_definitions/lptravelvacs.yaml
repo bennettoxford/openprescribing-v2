@@ -17,4 +17,11 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        - ""
+        - "1404000G0" # Hepatitis B
+        - "1404000AS" # Japanese encephalitis vaccine (Imported)
+        - "1404000AR" # Japanese encephalitis vaccine (Inactivated,adsorbed)
+        - "1404000X0" # Meningococcal A + C + W135 + Y Vaccine
+        - "1404000U0" # Yellow Fever
+        - "1404000AA" # Tick-Borne Encephalitis Vaccine
+        - "1404000N0" # Rabies
+        - "0802040X0" # Bacillus Calmette-Guerin (B.C.G.)
