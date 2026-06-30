@@ -17,4 +17,4 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        - ""
+        - "0206020M0" # Nimodipine
