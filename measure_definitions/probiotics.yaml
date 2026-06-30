@@ -19,4 +19,7 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        - ""
+        - "0913531A0" # Liquid OTC probiotic (0913531)
+        - "0913531B0" # Capsules delisted probiotic (0913531)
+        - "0913531C0" # Powder delisted probiotic (0913531)
+        - "0913531D0" # Tablet OTC probiotic (0913531)
