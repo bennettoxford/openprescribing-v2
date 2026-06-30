@@ -26,4 +26,4 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        - 0501080J0AAABAB #sulfadiazine
+        - 0501080J0  #sulfadiazine
