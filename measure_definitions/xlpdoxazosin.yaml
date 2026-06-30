@@ -18,4 +18,5 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        - ""
+        - "0205040D0_AQ" # Doxazosin Mesil_Tab 4mg M/R (brands and generic)
+        - "0205040D0_AR" # Doxazosin Mesil_Tab 8mg M/R (brands and generic)
