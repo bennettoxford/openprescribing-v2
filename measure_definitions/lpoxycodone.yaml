@@ -19,4 +19,4 @@ options:
 queries:
   - numerator:
       bnf_codes:
-        - ""
+        - "0407020AF" # Oxycodone hydrochloride/naloxone hydrochloride
