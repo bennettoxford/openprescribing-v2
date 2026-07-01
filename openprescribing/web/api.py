@@ -18,20 +18,27 @@ from openprescribing.web.decorators import add_cache_headers, cache
 # allow this to be configured by the user, or calculated directly from the data.
 DATE_COUNT = 96
 
+# This is the first month that we have monthly list size updates for.
+INDEX_DATE = "2017-04-01"
+
 # The number of individual medications shown as their own band in the "by medication"
 # stacked area chart.  Any further medications are summed into a single "Other" band.
 MEDICATIONS_TOP_N = 10
 
+PRESENTATIONS_PRESCRIBED_AFTER_INDEX_DATE_SQL = f"""
+    SELECT bnf_code FROM presentation WHERE last_prescribed_date > '{INDEX_DATE}'
+"""
+
 # Selects medications that have been prescribed: VMPs/AMPs whose BNF code appears in the
 # prescribing data, plus the parent VMPs of any prescribed AMPs.
-PRESCRIBED_MEDICATIONS_SQL = """
+PRESCRIBED_MEDICATIONS_SQL = f"""
     SELECT * FROM medications
-    WHERE bnf_code IN (SELECT bnf_code FROM presentation)
+    WHERE bnf_code IN ({PRESENTATIONS_PRESCRIBED_AFTER_INDEX_DATE_SQL})
     OR (
         NOT is_amp
         AND id IN (
             SELECT DISTINCT vmp_id FROM medications
-            WHERE is_amp AND bnf_code IN (SELECT bnf_code FROM presentation)
+            WHERE is_amp AND bnf_code IN ({PRESENTATIONS_PRESCRIBED_AFTER_INDEX_DATE_SQL})
         )
     )
 """

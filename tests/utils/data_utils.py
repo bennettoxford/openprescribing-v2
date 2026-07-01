@@ -1,6 +1,8 @@
 import datetime
+from enum import Enum
 
 from openprescribing.data.models import BNFCode, Org, OrgRelation
+from openprescribing.web.api import INDEX_DATE
 
 
 def generate_test_data(rxdb, bnf_codes):
@@ -60,3 +62,17 @@ def generate_test_data(rxdb, bnf_codes):
     )
 
     return {"list_size_data": list_size_data, "prescribing_data": prescribing_data}
+
+
+class DateRelativeToIndexDate(Enum):
+    BEFORE = 1
+    AFTER = 2
+
+
+def default_date_relative_to_index_date(relation_to_index_date):
+    if relation_to_index_date == DateRelativeToIndexDate.BEFORE:
+        prescribing_datetime_delta = datetime.timedelta(weeks=-2)
+    else:
+        prescribing_datetime_delta = datetime.timedelta(weeks=2)
+
+    return str(datetime.date.fromisoformat(INDEX_DATE) + prescribing_datetime_delta)

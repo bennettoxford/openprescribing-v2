@@ -4,6 +4,10 @@ from urllib.parse import urlencode
 import pytest
 
 from openprescribing.web import api
+from tests.utils.data_utils import (
+    DateRelativeToIndexDate,
+    default_date_relative_to_index_date,
+)
 from tests.utils.ingest_utils import ingest_dmd_bnf_map_data, ingest_dmd_data
 
 
@@ -216,12 +220,26 @@ def test_prescribing_medications_groups_other(client, sample_data, monkeypatch):
     assert "Other" in medications
 
 
-def test_metadata_medications(client, rxdb, settings, tmp_path):
-    rxdb.ingest([{"bnf_code": "1106000X0AAA4A4"}])
+@pytest.mark.parametrize(
+    "prescribing_date_relative_to_index_date",
+    [DateRelativeToIndexDate.BEFORE, DateRelativeToIndexDate.AFTER],
+)
+def test_metadata_medications(
+    client, rxdb, settings, tmp_path, prescribing_date_relative_to_index_date
+):
+    prescribing_date = default_date_relative_to_index_date(
+        prescribing_date_relative_to_index_date
+    )
+
+    rxdb.ingest([{"bnf_code": "1106000X0AAA4A4", "date": str(prescribing_date)}])
     ingest_dmd_data(settings, tmp_path)
     ingest_dmd_bnf_map_data(settings, tmp_path)
     rsp = client.get("/api/metadata/medications/")
     payload = rsp.json()
+
+    if prescribing_date_relative_to_index_date == DateRelativeToIndexDate.BEFORE:
+        assert [] == payload["medications"]
+        return
 
     assert {
         "id": 9393711000001102,
@@ -247,7 +265,16 @@ def test_metadata_medications(client, rxdb, settings, tmp_path):
     } in payload["medications"]
 
 
-def test_metadata_dmd(client, rxdb, medications):
+@pytest.mark.parametrize(
+    "prescribing_date_relative_to_index_date",
+    [DateRelativeToIndexDate.BEFORE, DateRelativeToIndexDate.AFTER],
+)
+def test_metadata_dmd(
+    client, rxdb, medications, prescribing_date_relative_to_index_date
+):
+    prescribing_date = default_date_relative_to_index_date(
+        prescribing_date_relative_to_index_date
+    )
     # Two VMPs with distinct VTMs, ingredients and form/routes, plus an AMP belonging to
     # the first VMP; only the first VMP (and hence its AMP) is then prescribed.
     medications.add_rows(
@@ -273,9 +300,14 @@ def test_metadata_dmd(client, rxdb, medications):
             },
         ]
     )
-    rxdb.ingest([{"bnf_code": "1001030U0AAABAB"}])
+    rxdb.ingest([{"bnf_code": "1001030U0AAABAB", "date": prescribing_date}])
 
     payload = client.get("/api/metadata/dmd/").json()
+
+    if prescribing_date_relative_to_index_date == DateRelativeToIndexDate.BEFORE:
+        assert payload["vmp"] == []
+        assert payload["amp"] == []
+        return
 
     # Only the prescribed VMP, its AMP, and the VTM, ingredient and form/route they
     # relate to are returned; the unprescribed VMP's objects are excluded.
@@ -286,15 +318,30 @@ def test_metadata_dmd(client, rxdb, medications):
     assert [record["descr"] for record in payload["ont_form_route"]] == ["tablet.oral"]
 
 
-def test_metadata_bnf(client, rxdb, bnf_codes, medications):
+@pytest.mark.parametrize(
+    "prescribing_date_relative_to_index_date",
+    [DateRelativeToIndexDate.BEFORE, DateRelativeToIndexDate.AFTER],
+)
+def test_metadata_bnf(
+    client, rxdb, bnf_codes, medications, prescribing_date_relative_to_index_date
+):
+    prescribing_date = default_date_relative_to_index_date(
+        prescribing_date_relative_to_index_date
+    )
+
     # The bnf_codes fixture provides the BNF hierarchy; we also need to link a VMP to a
     # generic methotrexate presentation and prescribe it so that appears in the
     # medications view.
     medications.add_rows([{"bnf_code": "1001030U0BDAAAB"}])
-    rxdb.ingest([{"bnf_code": "1001030U0BDAAAB"}])
+    rxdb.ingest([{"bnf_code": "1001030U0BDAAAB", "date": prescribing_date}])
 
     rsp = client.get("/api/metadata/bnf/")
     payload = rsp.json()
+
+    if prescribing_date_relative_to_index_date == DateRelativeToIndexDate.BEFORE:
+        assert payload["bnf"] == []
+        return
+
     assert {
         "code": "10",
         "level": 1,
