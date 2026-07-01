@@ -14,6 +14,10 @@ from openprescribing.data.rxdb.connection import (
     CursorCacheKeyWrapper,
 )
 from openprescribing.data.utils.duckdb_utils import escape
+from tests.utils.data_utils import (
+    DateRelativeToIndexDate,
+    default_date_relative_to_index_date,
+)
 
 
 PRESCRIBING_SOURCE_SCHEMA = pyarrow.schema(
@@ -33,7 +37,6 @@ PRESCRIBING_SOURCE_SCHEMA = pyarrow.schema(
 PRESCRIBING_SOURCE_DEFAULTS = {
     "bnf_code": "",
     "snomed_code": 0,
-    "date": datetime.date(2000, 1, 1),
     "practice_code": "",
     "quantity_value": 0.0,
     "items": 0,
@@ -125,6 +128,12 @@ def rxdb_ingest(conn, prescribing_data=(), list_size_data=()):
     If tests need to supply their own BNF code changes, we should add a bnf_code_changes
     parameter to this function.
     """
+
+    # Set our default date to be after api's INDEX_DATE
+    PRESCRIBING_SOURCE_DEFAULTS["date"] = default_date_relative_to_index_date(
+        DateRelativeToIndexDate.AFTER
+    )
+
     prescribing_data = prepare_data(prescribing_data, PRESCRIBING_SOURCE_DEFAULTS)
     list_size_data = prepare_data(list_size_data, LIST_SIZE_SOURCE_DEFAULTS)
     prescribing_source = pyarrow.Table.from_pylist(
