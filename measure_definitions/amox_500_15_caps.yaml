@@ -19,5 +19,7 @@ options:
   output_value: custom
 queries:
   - numerator:
+      quantity_per_item:
+        - ">15"
       bnf_codes:
         - ""
