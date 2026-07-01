@@ -3,13 +3,11 @@ export class DropdownCollection {
     el, // container element for all dropdowns
     {
       template, // template for a dropdown control
-      optionTemplate, // template for an option in the open list
       onChange = null, // called whenever selections change or a dropdown is added/removed
     },
   ) {
     this._el = el;
     this._template = template;
-    this._optionTemplate = optionTemplate;
     this._onChange = onChange;
     this._dropdowns = new Map(); // key -> { dropdown, wrapperEl }
   }
@@ -25,7 +23,6 @@ export class DropdownCollection {
     const dropdown = new Dropdown(wrapperEl, {
       ...opts,
       template: this._template,
-      optionTemplate: this._optionTemplate,
       onChange: (selectedIds) => {
         if (userOnChange) userOnChange(selectedIds);
         if (this._onChange) this._onChange(this.getAllSelected());
@@ -89,7 +86,6 @@ class Dropdown {
       options, // all possible options for this dropdown
       getValidOptionIds, // returns the latest precomputed valid IDs when the dropdown opens
       template, // template for the dropdown control
-      optionTemplate, // template for an option in the open list
       selected = [], // initially selected option IDs
       onChange = null, // called whenever the selection changes
       onRemove = null, // called when the remove button is clicked
@@ -102,7 +98,6 @@ class Dropdown {
     this._optionsById = new Map(options.map((o) => [o.id, o]));
     this._getValidOptionIds = getValidOptionIds;
     this._template = template;
-    this._optionTemplate = optionTemplate;
     this._validIds = null;
     this._selected = new Set(selected);
     this._onChange = onChange;
@@ -292,7 +287,7 @@ class Dropdown {
     });
 
     for (const opt of filtered) {
-      const option = cloneTemplateElement(this._optionTemplate);
+      const option = document.createElement("option");
       option.textContent = opt.name;
       option.value = opt.id;
       option.selected = this._selected.has(opt.id);
