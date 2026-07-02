@@ -19,11 +19,45 @@ def build_org_chart_spec(analysis):
     stroke_width = (
         alt.when(alt.datum.centile == 50).then(alt.value(3)).otherwise(alt.value(1))
     )
-    chart_spec = (
+
+    nearest = alt.selection_point(
+        nearest=True, on="pointerover", fields=["month"], empty=False
+    )
+
+    # If we use columns on its own, it seems that Javascript automagically orders the
+    # list numerically. So do a bit of a dance creating tooltip_columns so that we
+    # can retain the ordering with p90 at the top of the list (to match the p90 line
+    # at the top of the chart).
+    columns = [str(n) for n in range(10, 100, 10)]
+    tooltip_columns = [f"p{c}" for c in columns]
+
+    # Draw a rule at the location of the selection
+    deciles_rules = (
+        alt.Chart(alt.NamedData("deciles"))
+        .transform_pivot("centile", value="value", groupby=["month"])
+        # rename the centiles keys so that we can reverse the order later
+        .transform_calculate(**{f"p{c}": f"datum['{c}']" for c in columns})
+        .mark_rule(color="gray")
+        .encode(
+            x="month:T",
+            opacity=alt.when(nearest).then(alt.value(0.3)).otherwise(alt.value(0)),
+            tooltip=[
+                alt.Tooltip("month:T", title="Month", format="%Y %b"),
+                *[
+                    alt.Tooltip(c, type="quantitative")
+                    for c in reversed(tooltip_columns)
+                ],
+            ],
+        )
+        .add_params(nearest)
+    )
+    deciles_chart = (
         alt.Chart(alt.NamedData("deciles"))
         .mark_line(color="#3182BD")
         .encode(x=x, y=y, detail="centile:O", strokeWidth=stroke_width)
     )
+    chart_spec = alt.layer(deciles_chart, deciles_rules)
+
     all_orgs_line_chart = (
         alt.Chart(alt.NamedData("all_orgs_line"))
         .mark_line(color="grey", opacity=0.2)
