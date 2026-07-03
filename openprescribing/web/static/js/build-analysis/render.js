@@ -79,12 +79,12 @@ function renderSummarySection(sectionEl, panel, templates) {
     }),
   );
 
-  const listEl = cloneTemplateElement(templates.summaryListTemplate);
+  const listEl = document.createElement("ul");
 
   if (activeFilters.length === 0) {
-    listEl.appendChild(
-      cloneTemplateElement(templates.summaryEmptyListItemTemplate),
-    );
+    const emptyEl = document.createElement("li");
+    emptyEl.textContent = "No filters selected.";
+    listEl.appendChild(emptyEl);
     sectionEl.replaceChildren(listEl);
     return;
   }

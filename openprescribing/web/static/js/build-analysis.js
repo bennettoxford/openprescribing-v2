@@ -130,17 +130,8 @@ const summarySectionElsByPrefix = new Map(
 // Templates that we'll use to generate elements in the document.
 const templates = {
   dropdownTemplate: containerEl.querySelector("[data-dropdown-template]"),
-  dropdownOptionTemplate: containerEl.querySelector(
-    "[data-dropdown-option-template]",
-  ),
-  summaryListTemplate: containerEl.querySelector(
-    "[data-summary-list-template]",
-  ),
   summaryListItemTemplate: containerEl.querySelector(
     "[data-summary-list-item-template]",
-  ),
-  summaryEmptyListItemTemplate: containerEl.querySelector(
-    "[data-summary-empty-list-item-template]",
   ),
   vtmRowTemplate: containerEl.querySelector("[data-vtm-row-template]"),
   vmpRowTemplate: containerEl.querySelector("[data-vmp-row-template]"),
@@ -201,7 +192,6 @@ function initialiseQueryPanel(panel) {
   // Wire up the panel.
   panel.dropdowns = new DropdownCollection(panel.refs.filterListEl, {
     template: templates.dropdownTemplate,
-    optionTemplate: templates.dropdownOptionTemplate,
     onChange: () => {
       const filters = getFilters(panel);
       renderAddFilterOptions(panel);
