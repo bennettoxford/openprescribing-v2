@@ -142,11 +142,14 @@ const templates = {
 // We'll store metadata from the API here.
 let metadata;
 
+// We'll store the query panels here.
+let panels;
+
 const initialisePage = async () => {
   // Load metadata, initialise the query panels, and show the page.
   try {
     metadata = await fetchMetadata(containerEl);
-    const panels = createQueryPanels();
+    panels = createQueryPanels();
 
     panels.forEach((panel) => {
       initialiseQueryPanel(panel);
@@ -154,6 +157,15 @@ const initialisePage = async () => {
 
     initialiseQueriesFromUrl(panels);
     initialiseAnalysisTypeFromUrl();
+    summarySubmitEl.addEventListener("click", (event) => {
+      if (summarySubmitEl.classList.contains("disabled")) {
+        // For a button with Bootstrap's disabled class, the pointer-events property is
+        // set to none, which makes it unclickable.  But it is still possible to select
+        // the element by tabbing to it, and a user could then "press" the button by
+        // hitting enter.
+        event.preventDefault();
+      }
+    });
     refreshSummary(panels);
     loadingEl.hidden = true;
     appEl.hidden = false;
@@ -258,11 +270,34 @@ function refreshSummary(panels) {
 }
 
 function updateSummarySubmitUrl() {
-  // Point the summary submit button at the analysis page for the current filters.
+  // Point the summary submit button at the analysis page for the current filters, and
+  // disable it when the current filters don't describe a valid analysis.
   const url = new URL(containerEl.dataset.analysisUrl, window.location.href);
   url.search = new URL(window.location.href).search;
 
   summarySubmitEl.href = url.toString();
+  summarySubmitEl.classList.toggle("disabled", !isSubmittable());
+}
+
+function isSubmittable() {
+  // An analysis is not submittable if the numerator does not have any filters or
+  // if the analysis type is prescribing_vs_prescribing and the denominator does not
+  // have any selected filters.
+  const ntrPanel = panels.find((panel) => panel.prefix === "ntr");
+  const dtrPanel = panels.find((panel) => panel.prefix === "dtr");
+
+  if (!hasAnyFilters(getFilters(ntrPanel))) {
+    return false;
+  }
+
+  if (
+    getSelectedAnalysisType() === "prescribing_vs_prescribing" &&
+    !hasAnyFilters(getFilters(dtrPanel))
+  ) {
+    return false;
+  }
+
+  return true;
 }
 
 function handleAddFilterChange(panel) {
