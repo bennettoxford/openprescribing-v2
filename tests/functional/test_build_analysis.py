@@ -206,6 +206,16 @@ def test_build_analyse_has_dynamic_filters_and_independent_queries(
     denominator_tab.click()
     expect(denominator_tab).to_have_attribute("aria-selected", "true")
 
+    # The denominator defaults to per-1,000-patients, with its filters hidden until the
+    # prescribing type is explicitly chosen.
+    expect(
+        analysis_type_option(denominator_panel, "prescribing_vs_list_size")
+    ).to_be_checked()
+    expect(denominator_filters(denominator_panel)).to_be_hidden()
+
+    select_analysis_type(denominator_panel, "prescribing_vs_prescribing")
+    expect(denominator_filters(denominator_panel)).to_be_visible()
+
     add_filter(denominator_panel, "Ingredient")
     select_suggestion(denominator_panel, "Ingredient", "Aden", "Adenosine")
     add_filter(denominator_panel, "Ingredient (excluded)")
@@ -299,6 +309,11 @@ def test_build_analyse_loads_dynamic_filters_from_url(
     expect(results_empty(numerator_panel)).to_be_hidden()
     expect(results_table(numerator_panel)).to_be_visible()
 
+    # Analysis type is restored on the denominator panel from the URL.
+    expect(
+        analysis_type_option(denominator_panel, "prescribing_vs_prescribing")
+    ).to_be_checked()
+
     # Denominator filters are restored independently from the same URL.
     expect(dropdown_rows(denominator_panel)).to_have_count(2)
     assert selected_dropdown_option_labels(denominator_panel, "Ingredient") == [
@@ -314,6 +329,7 @@ def test_build_analyse_loads_dynamic_filters_from_url(
 
     # Switching tabs preserves the restored denominator empty state.
     denominator_tab.click()
+    expect(denominator_filters(denominator_panel)).to_be_visible()
     expect(results_empty(denominator_panel)).to_be_visible()
     expect(results_table(denominator_panel)).to_be_hidden()
 
@@ -338,6 +354,21 @@ def ingest_build_analysis_bnf_data():
         [7, "1106000X0AAA4A4", "Pilocarpine 6% eye drops"],
     ]:
         BNFCode.objects.create(code=code, name=name, level=level)
+
+
+def analysis_type_option(panel, value):
+    """Return the analysis type radio input with the given value."""
+    return panel.locator(f'[data-analysis-type-option="{value}"]')
+
+
+def select_analysis_type(panel, value):
+    """Select the analysis type radio with the given value."""
+    analysis_type_option(panel, value).check()
+
+
+def denominator_filters(panel):
+    """Return the denominator filters/results container."""
+    return panel.locator("[data-dtr-filters]")
 
 
 def add_filter(panel, label):

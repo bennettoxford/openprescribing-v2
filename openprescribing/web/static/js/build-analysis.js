@@ -126,6 +126,7 @@ const summarySectionElsByPrefix = new Map(
     (element) => [element.dataset.summarySection, element],
   ),
 );
+const dtrFiltersEl = containerEl.querySelector("[data-dtr-filters]");
 
 // Templates that we'll use to generate elements in the document.
 const templates = {
@@ -152,6 +153,7 @@ const initialisePage = async () => {
     });
 
     initialiseQueriesFromUrl(panels);
+    initialiseAnalysisTypeFromUrl();
     refreshSummary(panels);
     loadingEl.hidden = true;
     appEl.hidden = false;
@@ -213,6 +215,13 @@ function initialiseQueryPanel(panel) {
   panel.refs.showOnlyMatchingCheckbox.addEventListener("change", () => {
     handleShowOnlyMatchingChange(panel);
   });
+  panel.root
+    .querySelectorAll("[data-analysis-type-option]")
+    .forEach((input) => {
+      input.addEventListener("change", () => {
+        handleAnalysisTypeChange(panel);
+      });
+    });
 }
 
 function initialiseQueriesFromUrl(panels) {
@@ -226,6 +235,20 @@ function initialiseQueriesFromUrl(panels) {
       runQuery(panel, filters);
     }
   });
+}
+
+function initialiseAnalysisTypeFromUrl() {
+  // Set the analysis type radio button (and denominator filter visibilty) from the URL.
+  const params = new URL(window.location.href).searchParams;
+  const analysisDict = readAnalysisDict(params);
+  if (analysisDict) {
+    const type = analysisDict.options.type;
+    const input = containerEl.querySelector(
+      `[data-analysis-type-option="${type}"]`,
+    );
+    input.checked = true;
+    updateDtrFiltersVisibility();
+  }
 }
 
 function refreshSummary(panels) {
@@ -285,6 +308,13 @@ function handleShowOnlyMatchingChange(panel) {
   if (panel.currentResults) {
     renderResults(panel, panel.currentResults, metadata, templates);
   }
+}
+
+function handleAnalysisTypeChange(panel) {
+  // React to user changing analysis type.
+  updateDtrFiltersVisibility();
+  updateUrlFromFilters(panel, getFilters(panel));
+  refreshSummary([panel]);
 }
 
 function runQuery(panel, filters, updateUrl = false) {
@@ -425,6 +455,7 @@ function updateUrlFromFilters(panel, filters) {
       queryDicts.numerator,
       queryDicts.denominator,
       currentAnalysisDict?.org_id,
+      getSelectedAnalysisType(),
     );
     url.searchParams.set("analysis", JSON.stringify(analysisDict));
   } else {
@@ -434,23 +465,25 @@ function updateUrlFromFilters(panel, filters) {
   window.history.replaceState({}, "", url);
 }
 
+function updateDtrFiltersVisibility() {
+  dtrFiltersEl.hidden =
+    getSelectedAnalysisType() !== "prescribing_vs_prescribing";
+}
+
 function readAnalysisDict(params) {
   // Parse the `analysis` query parameter, returning null when it is absent.
   return JSON.parse(params.get("analysis"));
 }
 
-function buildAnalysisDict(numerator, denominator, orgId) {
+function buildAnalysisDict(numerator, denominator, orgId, type) {
   // Build an analysis dict matching the backend's Analysis.to_dict shape.
   const analysisDict = {
-    options: { output_value: "items" },
+    options: { output_value: "items", type },
     queries: [{ numerator: numerator ?? {} }],
   };
 
-  if (denominator) {
-    analysisDict.queries[0].denominator = denominator;
-    analysisDict.options.type = "prescribing_vs_prescribing";
-  } else {
-    analysisDict.options.type = "prescribing_vs_list_size";
+  if (type === "prescribing_vs_prescribing") {
+    analysisDict.queries[0].denominator = denominator ?? {};
   }
 
   if (orgId) {
@@ -458,6 +491,11 @@ function buildAnalysisDict(numerator, denominator, orgId) {
   }
 
   return analysisDict;
+}
+
+function getSelectedAnalysisType() {
+  // Return the analysis type chosen by the radio button.
+  return containerEl.querySelector("[data-analysis-type-option]:checked").value;
 }
 
 function getQueryDict(analysisDict, prefix) {
