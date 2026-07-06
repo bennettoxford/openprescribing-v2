@@ -60,6 +60,20 @@ function getActiveFilterControlCount(panel) {
 
 function renderSummarySection(sectionEl, panel, templates) {
   // Render given panel's active filters into its summary section.
+  if (panel.prefix === "dtr") {
+    const analysisType = panel.root.querySelector(
+      "[data-analysis-type-option]:checked",
+    ).value;
+    if (analysisType === "prescribing_vs_list_size") {
+      const listEl = document.createElement("ul");
+      const itemEl = document.createElement("li");
+      itemEl.textContent = "1000 patients";
+      listEl.appendChild(itemEl);
+      sectionEl.replaceChildren(listEl);
+      return;
+    }
+  }
+
   const selectedNamesByKey = panel.dropdowns.getAllSelectedNames();
   const activeFilters = FILTER_DEFINITIONS.flatMap((definition) =>
     [false, true].flatMap((isExcluded) => {
