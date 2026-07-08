@@ -24,39 +24,29 @@ def build_org_chart_spec(analysis):
         nearest=True, on="pointerover", fields=["month"], empty=False
     )
 
-    # If we use columns on its own, it seems that Javascript automagically orders the
-    # list numerically. So do a bit of a dance creating tooltip_columns so that we
-    # can retain the ordering with p90 at the top of the list (to match the p90 line
-    # at the top of the chart).
-    columns = [str(n) for n in range(10, 100, 10)]
-    tooltip_columns = [f"p{c}" for c in columns]
+    deciles_chart = (
+        alt.Chart(alt.NamedData("deciles"))
+        .mark_line(color="#3182BD")
+        .encode(x=x, y=y, detail="centile:O", strokeWidth=stroke_width)
+    )
+    chart_spec = deciles_chart
 
     # Draw a rule at the location of the selection
     deciles_rules = (
         alt.Chart(alt.NamedData("deciles"))
-        .transform_pivot("centile", value="value", groupby=["month"])
-        # rename the centiles keys so that we can reverse the order later
-        .transform_calculate(**{f"p{c}": f"datum['{c}']" for c in columns})
+        .transform_filter(alt.datum.centile == 50)
         .mark_rule(color="gray")
         .encode(
             x="month:T",
             opacity=alt.when(nearest).then(alt.value(0.3)).otherwise(alt.value(0)),
             tooltip=[
                 alt.Tooltip("month:T", title="Month", format="%Y %b"),
-                *[
-                    alt.Tooltip(c, type="quantitative")
-                    for c in reversed(tooltip_columns)
-                ],
+                alt.Tooltip("value:Q", title="Mean value"),
             ],
         )
         .add_params(nearest)
     )
-    deciles_chart = (
-        alt.Chart(alt.NamedData("deciles"))
-        .mark_line(color="#3182BD")
-        .encode(x=x, y=y, detail="centile:O", strokeWidth=stroke_width)
-    )
-    chart_spec = alt.layer(deciles_chart, deciles_rules)
+    chart_spec += deciles_rules
 
     all_orgs_line_chart = (
         alt.Chart(alt.NamedData("all_orgs_line"))
@@ -77,6 +67,20 @@ def build_org_chart_spec(analysis):
         .transform_calculate(x_jitter="time(datum.month)+(random()*1209600000)")
     )
     chart_spec += all_orgs_dots_chart
+
+    org_chart_tooltip = (
+        alt.Chart(alt.NamedData("org"))
+        .mark_line(color="#DE2D26", strokeWidth=10, opacity=0.0)
+        .encode(
+            x=x,
+            y=y,
+            tooltip=[
+                alt.Tooltip("month:T", title="Month", format="%Y %b"),
+                alt.Tooltip("value:Q", title="Org value"),
+            ],
+        )
+    )
+    chart_spec += org_chart_tooltip
 
     # Org line should go on top of any other charts
     org_chart = (
