@@ -5,7 +5,43 @@
     data-query-panel
     data-panel-prefix="{{ prefix }}"
 >
-    <div class="row g-4">
+    {% if prefix == "dtr" %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <fieldset data-dtr-type>
+                <legend class="h4 card-title">Denominator type</legend>
+                <div class="form-check">
+                    <input
+                        id="dtr-type-list-size"
+                        class="form-check-input"
+                        type="radio"
+                        name="dtr-type"
+                        value="prescribing_vs_list_size"
+                        data-analysis-type-option="prescribing_vs_list_size"
+                        checked
+                    />
+                    <label class="form-check-label" for="dtr-type-list-size">
+                        Per 1,000 patients
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input
+                        id="dtr-type-prescribing"
+                        class="form-check-input"
+                        type="radio"
+                        name="dtr-type"
+                        value="prescribing_vs_prescribing"
+                        data-analysis-type-option="prescribing_vs_prescribing"
+                    />
+                    <label class="form-check-label" for="dtr-type-prescribing">
+                        Prescribing of medications
+                    </label>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+    {% endif %}
+    <div class="row g-4"{% if prefix == "dtr" %} data-dtr-filters hidden{% endif %}>
         <div class="col-md-4">
             <div class="card h-100">
                 <div class="card-body">
