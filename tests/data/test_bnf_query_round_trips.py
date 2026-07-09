@@ -26,7 +26,7 @@ def bnf_queries(draw):
     return BNFQuery(
         bnf_codes=draw(token_tuples),
         bnf_codes_excluded=draw(token_tuples),
-        product_type=draw(st.sampled_from(list(ProductType))),
+        product_type=draw(st.sampled_from([None, *ProductType])),
         form_routes=draw(token_tuples),
         form_routes_excluded=draw(token_tuples),
         forms=draw(token_tuples),

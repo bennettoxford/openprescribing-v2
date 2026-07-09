@@ -3,7 +3,7 @@ from itertools import product
 
 import numpy as np
 
-from openprescribing.data.bnf_query import BNFQuery, ProductType
+from openprescribing.data.bnf_query import BNFQuery
 from openprescribing.data.list_size_query import ListSizeQuery
 from openprescribing.data.models import Org, OrgRelation
 from openprescribing.data.rxdb.labelled_matrix import LabelledMatrix
@@ -96,7 +96,7 @@ def query_prescribing_data(query, sample_data, field):
     assert len(query.bnf_codes_excluded) == 0
     code = query.bnf_codes[0]
     assert "_" not in code
-    assert query.product_type == ProductType.ALL
+    assert query.product_type is None
 
     values = defaultdict(int)
     for record in sample_data["prescribing_data"]:

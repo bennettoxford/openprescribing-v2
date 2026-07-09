@@ -81,7 +81,7 @@ class BNFQuery:
 
     bnf_codes: tuple[str] = ()
     bnf_codes_excluded: tuple[str] = ()
-    product_type: ProductType = ProductType.ALL
+    product_type: ProductType | None = None
     form_routes: tuple[str] = ()
     form_routes_excluded: tuple[str] = ()
     forms: tuple[str] = ()
@@ -92,8 +92,6 @@ class BNFQuery:
     ingredient_ids_excluded: tuple[int] = ()
     vtm_ids: tuple[int] = ()
     vtm_ids_excluded: tuple[int] = ()
-
-    PRODUCT_TYPE_DEFAULT = "all"
 
     def __post_init__(self):
         """Ensure that all sequence attributes are tuples.
@@ -128,7 +126,8 @@ class BNFQuery:
     def from_dict(cls, query_dict):
         bnf_codes = tuple(query_dict.get("bnf_codes", []))
         bnf_codes_excluded = tuple(query_dict.get("bnf_codes_excluded", []))
-        product_type = query_dict.get("product_type", cls.PRODUCT_TYPE_DEFAULT)
+        product_type = query_dict.get("product_type")
+        product_type = ProductType(product_type) if product_type else None
 
         form_routes = tuple(query_dict.get("form_routes", []))
         form_routes_excluded = tuple(query_dict.get("form_routes_excluded", []))
@@ -146,7 +145,7 @@ class BNFQuery:
         return cls(
             bnf_codes=bnf_codes,
             bnf_codes_excluded=bnf_codes_excluded,
-            product_type=ProductType(product_type),
+            product_type=product_type,
             form_routes=form_routes,
             form_routes_excluded=form_routes_excluded,
             forms=forms,
@@ -165,7 +164,7 @@ class BNFQuery:
             bnf_query_dict["bnf_codes"] = list(self.bnf_codes)
         if self.bnf_codes_excluded:
             bnf_query_dict["bnf_codes_excluded"] = list(self.bnf_codes_excluded)
-        if not self.product_type == ProductType.ALL:
+        if self.product_type is not None:
             bnf_query_dict["product_type"] = self.product_type.value
         if self.form_routes:
             bnf_query_dict["form_routes"] = list(self.form_routes)
@@ -237,10 +236,11 @@ class BNFQuery:
                 if value not in valid_values:
                     errors.append(f"{field}: {value!r}")
 
-        try:
-            ProductType(self.product_type)
-        except ValueError:
-            errors.append(f"product_type: {self.product_type!r}")
+        if self.product_type is not None:
+            try:
+                ProductType(self.product_type)
+            except ValueError:
+                errors.append(f"product_type: {self.product_type!r}")
 
         if errors:
             raise ValueError("Invalid BNFQuery values:\n" + "\n".join(errors))
@@ -311,7 +311,7 @@ class BNFQuery:
 
         codes = list(codes.order_by("code").values_list("code", flat=True))
 
-        if self.product_type == ProductType.ALL:
+        if self.product_type in (None, ProductType.ALL):
             return codes
         elif self.product_type == ProductType.GENERIC:
             return [c for c in codes if c[9:11] == "AA"]

@@ -468,7 +468,11 @@ def test_get_matching_presentation_codes_with_combined_exclusions(medications):
 
 
 def test_describe_search_for_all_product_types(bnf_codes):
-    query = BNFQuery(bnf_codes=["1001030U0"], bnf_codes_excluded=["1001030U0_AB"])
+    query = BNFQuery(
+        bnf_codes=["1001030U0"],
+        bnf_codes_excluded=["1001030U0_AB"],
+        product_type=ProductType.ALL,
+    )
     assert query.describe() == {
         "product_type": ProductType.ALL,
         "bnf_codes": ["Methotrexate"],
@@ -512,7 +516,7 @@ def test_describe_search_for_generic_products(bnf_codes):
 def test_describe_search_for_ingredients(dmd_data):
     query = BNFQuery(bnf_codes=[], ingredient_ids=["53034005"])
     assert query.describe() == {
-        "product_type": ProductType.ALL,
+        "product_type": None,
         "bnf_codes": [],
         "bnf_codes_excluded": [],
         "form_routes": [],
@@ -540,9 +544,9 @@ def test_describe_search_for_all_filter_types(dmd_data, bnf_codes):
         vtm_ids_excluded=["108502004"],
     )
     assert query.describe() == {
-        "product_type": ProductType.ALL,
+        "product_type": None,
         "bnf_codes": ["Methotrexate"],
-        "bnf_codes_excluded": ["Methotrexate 2.5mg tablets (branded and generic)"],
+        "bnf_codes_excluded": ["Methotrexate 2.5mg tablets"],
         "form_routes": ["suspension.oral"],
         "form_routes_excluded": ["solution.oral"],
         "forms": [],
@@ -564,7 +568,7 @@ def test_describe_search_for_forms_and_routes():
         routes_excluded=["intravenous"],
     )
     assert query.describe() == {
-        "product_type": ProductType.ALL,
+        "product_type": None,
         "bnf_codes": [],
         "bnf_codes_excluded": [],
         "form_routes": [],
@@ -601,9 +605,11 @@ def test_to_dict_product_type():
     }
 
 
-def test_to_dict_product_type_all_omitted():
-    query = BNFQuery(bnf_codes=["1001030U0"], product_type=ProductType.ALL)
-    assert query.to_dict() == {"bnf_codes": ["1001030U0"]}
+def test_to_dict_unset_product_type_is_omitted():
+    query = BNFQuery(bnf_codes=["1001030U0"])
+    assert query.to_dict() == {
+        "bnf_codes": ["1001030U0"],
+    }
 
 
 def test_to_dict_form_routes():
