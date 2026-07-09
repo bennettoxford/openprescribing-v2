@@ -19,7 +19,7 @@ export function renderAddFilterOptions(panel) {
       options.push(makeAddFilterOption(includeKey, definition.label));
     }
 
-    if (hasAnyFilterControls) {
+    if (hasAnyFilterControls && definition.excludable !== false) {
       const excludeKey = getFilterControlKey(definition, true);
 
       if (!panel.dropdowns.has(excludeKey)) {

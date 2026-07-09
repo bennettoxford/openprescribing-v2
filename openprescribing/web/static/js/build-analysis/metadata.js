@@ -71,14 +71,25 @@ function buildLookupRecordsByFilterKey(dmd, bnf) {
 
   return new Map(
     FILTER_DEFINITIONS.map((definition) => {
-      const records = metadataByLookupKey[definition.lookupKey];
-      const lookupRecords =
-        definition.lookupKey === "bnf"
-          ? buildBnfLookupRecords(records)
-          : buildDmdLookupRecords(records, definition);
+      const lookupRecords = definition.options
+        ? definition.options.map((option) => ({
+            label: option.label,
+            value: option.value,
+          }))
+        : buildLookupRecordsForDefinition(
+            metadataByLookupKey[definition.lookupKey],
+            definition,
+          );
       return [definition.key, lookupRecords];
     }),
   );
+}
+
+function buildLookupRecordsForDefinition(records, definition) {
+  // Return API-sourced lookup records for the given filter definition.
+  return definition.lookupKey === "bnf"
+    ? buildBnfLookupRecords(records)
+    : buildDmdLookupRecords(records, definition);
 }
 
 function buildDmdLookupRecords(records, definition) {
@@ -128,6 +139,7 @@ function buildMedicationIndexesByFilterValue(medications, bnfLookupRecords) {
     bnfCodePrefix: new Map(),
     formRouteId: new Map(),
     ingredientId: new Map(),
+    productType: new Map(),
     vtmId: new Map(),
   };
   const bnfLookupValues = new Set(
@@ -164,9 +176,19 @@ function buildMedicationIndexesByFilterValue(medications, bnfLookupRecords) {
       );
     });
 
+    // Every medication matches the "all" product type.
+    addMedicationIndex(indexesByFilterValue.productType, "all", medication);
+
     if (medication.bnf_code === null) {
+      // VMPs that have never been prescribed don't have a BNF code.
       return;
     }
+
+    addMedicationIndex(
+      indexesByFilterValue.productType,
+      medication.bnf_code.slice(9, 11) === "AA" ? "generic" : "branded",
+      medication,
+    );
 
     bnfPrefixLengths.forEach((prefixLength) => {
       const prefix = medication.bnf_code.slice(0, prefixLength);

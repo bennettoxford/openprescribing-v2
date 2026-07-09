@@ -196,6 +196,68 @@ describe("queryMedications with excluded parent VMPs", () => {
   });
 });
 
+describe("queryMedications with a product type filter", () => {
+  const GENERIC = {
+    id: 1,
+    name: "GENERIC",
+    is_amp: false,
+    vmp_id: 1,
+    vtm_id: 10,
+    bnf_code: "0401000A0AAAAAA",
+    form_routes: [],
+    ingredient_ids: [],
+  };
+  const BRANDED = {
+    id: 2,
+    name: "BRANDED",
+    is_amp: false,
+    vmp_id: 2,
+    vtm_id: 20,
+    bnf_code: "0401000A0BBBBBB",
+    form_routes: [],
+    ingredient_ids: [],
+  };
+  const NO_CODE = {
+    id: 3,
+    name: "NO_CODE",
+    is_amp: false,
+    vmp_id: 3,
+    vtm_id: 30,
+    bnf_code: null,
+    form_routes: [],
+    ingredient_ids: [],
+  };
+  const metadata = makeMetadata([GENERIC, BRANDED, NO_CODE]);
+
+  it('can match generic medications', () => {
+    const result = queryMedications(
+      metadata,
+      makeFilters({ [include("productType")]: ["generic"] }),
+    );
+    expectMedications(result, [[GENERIC, STATUS.INCLUDED]]);
+  });
+
+  it('can match branded medications', () => {
+    const result = queryMedications(
+      metadata,
+      makeFilters({ [include("productType")]: ["branded"] }),
+    );
+    expectMedications(result, [[BRANDED, STATUS.INCLUDED]]);
+  });
+
+  it('can match all medications', () => {
+    const result = queryMedications(
+      metadata,
+      makeFilters({ [include("productType")]: ["all"] }),
+    );
+    expectMedications(result, [
+      [GENERIC, STATUS.INCLUDED],
+      [BRANDED, STATUS.INCLUDED],
+      [NO_CODE, STATUS.INCLUDED],
+    ]);
+  });
+});
+
 function makeMetadata(rawMedications) {
   // Build the subset of the metadata object that queryMedications relies on.
   // Derive is_vmp the same way metadata.js does for medications from the API.

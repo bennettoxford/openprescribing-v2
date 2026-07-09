@@ -47,6 +47,22 @@ export const FILTER_DEFINITIONS = [
     parse: parseOptionalString,
     matches: (medication, value) => medication.form_routes.includes(value),
   },
+  {
+    key: "productType",
+    label: "Product type (BNF)",
+    urlParamSuffix: "product_type",
+    isBaseline: false,
+    excludable: false, // Excluding generic medications is the same as selecting branded medications.
+    options: [
+      { value: "all", label: "All" },
+      { value: "generic", label: "Generic" },
+      { value: "branded", label: "Branded" },
+    ],
+    parse: parseOptionalString,
+    matches: (medication, value) => matchesProductType(medication, value),
+    toQueryValue: (values) => productTypeToQueryValue(values),
+    fromQueryValue: (rawValue) => (rawValue ? [rawValue] : []),
+  },
 ];
 
 const FILTER_DEFINITION_BY_KEY = new Map(
@@ -124,8 +140,7 @@ export function hasAnyInclusionFilters(filters) {
 export function filtersFromQueryDict(queryDict) {
   // Return a filters object built from a BNFQuery dict (as produced by the
   // backend's BNFQuery.to_dict).  Keys are the filter URL param suffixes, e.g.
-  // `bnf_codes` and `bnf_codes_excluded`.  Unknown keys (such as `product_type`,
-  // which the builder has no control for) are ignored.
+  // `bnf_codes` and `bnf_codes_excluded`.
   const filters = getEmptyFilters();
 
   if (!queryDict) {
@@ -136,7 +151,9 @@ export function filtersFromQueryDict(queryDict) {
     [false, true].forEach((isExcluded) => {
       const filterKey = getFilterControlKey(definition, isExcluded);
       const dictKey = getFilterControlUrlParamSuffix(definition, isExcluded);
-      filters[filterKey] = parseFilterValues(definition, queryDict[dictKey]);
+      filters[filterKey] = definition.fromQueryValue
+        ? definition.fromQueryValue(queryDict[dictKey])
+        : parseFilterValues(definition, queryDict[dictKey]);
     });
   });
 
@@ -155,7 +172,13 @@ export function queryDictFromFilters(filters) {
 
       if (values.length > 0) {
         const dictKey = getFilterControlUrlParamSuffix(definition, isExcluded);
-        queryDict[dictKey] = values;
+        const queryValue = definition.toQueryValue
+          ? definition.toQueryValue(values)
+          : values;
+
+        if (queryValue !== undefined) {
+          queryDict[dictKey] = queryValue;
+        }
       }
     });
   });
@@ -171,4 +194,30 @@ function parseOptionalInteger(value) {
 function parseOptionalString(value) {
   // Parse a string filter value.
   return value === "" ? null : value;
+}
+
+function matchesProductType(medication, value) {
+  // Return whether a medication matches the given product type.
+  if (value === "all") {
+    return true;
+  }
+
+  if (medication.bnf_code == null) {
+    // VMPs that have never been prescribed don't have a BNF code.
+    return false;
+  }
+
+  const isGeneric = medication.bnf_code.slice(9, 11) === "AA";
+  return value === "generic" ? isGeneric : !isGeneric;
+}
+
+function productTypeToQueryValue(values) {
+  // Convert the multi-select product type values into the scalar `product_type`
+  // the backend expects, or undefined for "no restriction".  Selecting "all",
+  // nothing, or both generic and branded all mean no restriction, matching
+  // BNFQuery.to_dict which omits product_type when it is ALL.
+  const selected = new Set(values);
+  return selected.size === 1 && !selected.has("all")
+    ? [...selected][0]
+    : undefined;
 }

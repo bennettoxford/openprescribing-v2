@@ -49,6 +49,7 @@ def test_build_analyse_has_dynamic_filters_and_independent_queries(
         "VTM",
         "BNF hierarchy",
         "Form/route",
+        "Product type (BNF)",
     ]
     expect(results_counts(numerator_panel)).to_be_hidden()
     expect(results_table(numerator_panel)).to_be_hidden()

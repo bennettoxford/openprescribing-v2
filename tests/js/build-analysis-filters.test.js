@@ -32,6 +32,23 @@ describe("queryDictFromFilters", () => {
   it("returns an empty dict when no filters are set", () => {
     expect(queryDictFromFilters(getEmptyFilters())).toEqual({});
   });
+
+  it("serializes product type as a scalar", () => {
+    expect(
+      queryDictFromFilters(filtersWith({ productType: ["generic"] })),
+    ).toEqual({ product_type: "generic" });
+  });
+
+  it("omits product type when it does not restrict the query", () => {
+    expect(queryDictFromFilters(filtersWith({ productType: ["all"] }))).toEqual(
+      {},
+    );
+    expect(
+      queryDictFromFilters(
+        filtersWith({ productType: ["generic", "branded"] }),
+      ),
+    ).toEqual({});
+  });
 });
 
 describe("filtersFromQueryDict", () => {
@@ -51,6 +68,12 @@ describe("filtersFromQueryDict", () => {
     expect(filters.formRouteId).toEqual(["tablet.oral"]);
   });
 
+  it("parses a scalar product type into a filter value", () => {
+    const filters = filtersFromQueryDict({ product_type: "branded" });
+
+    expect(filters.productType).toEqual(["branded"]);
+  });
+
   it("returns empty filters for a null/missing query dict", () => {
     expect(filtersFromQueryDict(null)).toEqual(getEmptyFilters());
   });
@@ -64,6 +87,14 @@ describe("round trip", () => {
       vtmId: [5],
       formRouteIdExclude: ["solution.oral"],
     });
+
+    expect(filtersFromQueryDict(queryDictFromFilters(filters))).toEqual(
+      filters,
+    );
+  });
+
+  it("survives a product type filter round trip", () => {
+    const filters = filtersWith({ productType: ["branded"] });
 
     expect(filtersFromQueryDict(queryDictFromFilters(filters))).toEqual(
       filters,
