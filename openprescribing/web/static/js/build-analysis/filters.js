@@ -65,7 +65,9 @@ export const FILTER_DEFINITIONS = [
     ],
     parse: parseOptionalString,
     matches: (medication, value) => matchesProductType(medication, value),
-    toQueryValue: (values) => productTypeToQueryValue(values),
+    // Product type is a scalar on the backend, not a list. The radio control
+    // always yields a single value.
+    toQueryValue: (values) => values[0],
     fromQueryValue: (rawValue) => (rawValue ? [rawValue] : []),
   },
 ];
@@ -177,13 +179,9 @@ export function queryDictFromFilters(filters) {
 
       if (values.length > 0) {
         const dictKey = getFilterControlUrlParamSuffix(definition, isExcluded);
-        const queryValue = definition.toQueryValue
+        queryDict[dictKey] = definition.toQueryValue
           ? definition.toQueryValue(values)
           : values;
-
-        if (queryValue !== undefined) {
-          queryDict[dictKey] = queryValue;
-        }
       }
     });
   });
@@ -214,15 +212,4 @@ function matchesProductType(medication, value) {
 
   const isGeneric = medication.bnf_code.slice(9, 11) === "AA";
   return value === "generic" ? isGeneric : !isGeneric;
-}
-
-function productTypeToQueryValue(values) {
-  // Convert the multi-select product type values into the scalar `product_type`
-  // the backend expects, or undefined for "no restriction".  Selecting "all",
-  // nothing, or both generic and branded all mean no restriction, matching
-  // BNFQuery.to_dict which omits product_type when it is ALL.
-  const selected = new Set(values);
-  return selected.size === 1 && !selected.has("all")
-    ? [...selected][0]
-    : undefined;
 }

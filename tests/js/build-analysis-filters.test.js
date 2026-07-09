@@ -39,15 +39,12 @@ describe("queryDictFromFilters", () => {
     ).toEqual({ product_type: "generic" });
   });
 
-  it("omits product type when it does not restrict the query", () => {
+  it("serializes the 'all' product type", () => {
     expect(queryDictFromFilters(filtersWith({ productType: ["all"] }))).toEqual(
-      {},
+      {
+        product_type: "all",
+      },
     );
-    expect(
-      queryDictFromFilters(
-        filtersWith({ productType: ["generic", "branded"] }),
-      ),
-    ).toEqual({});
   });
 });
 
@@ -95,6 +92,14 @@ describe("round trip", () => {
 
   it("survives a product type filter round trip", () => {
     const filters = filtersWith({ productType: ["branded"] });
+
+    expect(filtersFromQueryDict(queryDictFromFilters(filters))).toEqual(
+      filters,
+    );
+  });
+
+  it("survives an 'all' product type round trip", () => {
+    const filters = filtersWith({ productType: ["all"] });
 
     expect(filtersFromQueryDict(queryDictFromFilters(filters))).toEqual(
       filters,

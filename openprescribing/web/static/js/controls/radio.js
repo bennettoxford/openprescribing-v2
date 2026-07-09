@@ -37,17 +37,14 @@ export class RadioGroup {
     this._bindEvents();
   }
 
-  // Return the selected option ID, or [] when "all" (no restriction) is selected.
+  // Return the selected option ID.
   getSelected() {
-    return this._selectedId === "all" ? [] : [this._selectedId];
+    return [this._selectedId];
   }
 
-  // Return the selected option name, or [] when "all" is selected, so the results
-  // summary omits an unrestricted product type.
+  // Return the selected option name.
   getSelectedNames() {
-    return this._selectedId === "all"
-      ? []
-      : [this._optionsById.get(this._selectedId).name];
+    return [this._optionsById.get(this._selectedId).name];
   }
 
   // Remove the component's DOM contents from its container element.
