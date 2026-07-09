@@ -295,14 +295,12 @@ function makeVmpRow(vmp, template) {
   row.querySelector("[data-name]").textContent = vmp.name;
   row.querySelector("[data-form-route]").textContent = vmp.formRouteText;
 
-  if (vmp.amps.length > 0) {
-    toggleButton.style.visibility = "visible";
-    toggleButton.dataset.vmpId = String(vmp.id);
+  toggleButton.style.visibility = "visible";
+  toggleButton.dataset.vmpId = String(vmp.id);
 
-    if (vmp.expanded) {
-      toggleButton.dataset.expanded = "true";
-      toggleButton.querySelector("i").className = "bi bi-caret-down-fill";
-    }
+  if (vmp.expanded) {
+    toggleButton.dataset.expanded = "true";
+    toggleButton.querySelector("i").className = "bi bi-caret-down-fill";
   }
 
   return row;
