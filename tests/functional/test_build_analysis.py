@@ -393,12 +393,12 @@ def add_filter_option_labels(panel):
 
 def dropdown_rows(panel):
     """Return every dropdown currently mounted in the panel."""
-    return panel.locator("[data-dropdown]")
+    return panel.locator("[data-control]")
 
 
 def dropdown_row(panel, label):
     """Return the dropdown whose header matches the given label."""
-    return panel.locator("[data-dropdown]").filter(has_text=label).first
+    return panel.locator("[data-control]").filter(has_text=label).first
 
 
 def dropdown_input(panel, label):
@@ -425,12 +425,12 @@ def dropdown_option_texts(panel, label):
 
 def dropdown_body(panel, label):
     """Return the expanded body of the labelled dropdown."""
-    return dropdown_row(panel, label).locator("[data-dropdown-body]")
+    return dropdown_row(panel, label).locator("[data-control-body]")
 
 
 def dropdown_summary(panel, label):
     """Return the collapsed summary of the labelled dropdown."""
-    return dropdown_row(panel, label).locator("[data-dropdown-summary]")
+    return dropdown_row(panel, label).locator("[data-control-summary]")
 
 
 def clear_dropdown_search(panel, label):
@@ -449,12 +449,12 @@ def selected_dropdown_option_labels(panel, label):
 
 def remove_dropdown_button(panel, label):
     """Return the close button that removes the labelled dropdown."""
-    return dropdown_row(panel, label).locator("[data-dropdown-remove]")
+    return dropdown_row(panel, label).locator("[data-control-remove]")
 
 
 def toggle_dropdown_button(panel, label):
     """Return the caret button that opens/closes the labelled dropdown."""
-    return dropdown_row(panel, label).locator("[data-dropdown-toggle]")
+    return dropdown_row(panel, label).locator("[data-control-toggle]")
 
 
 def show_only_matching_checkbox(panel):

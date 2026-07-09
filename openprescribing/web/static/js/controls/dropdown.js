@@ -1,84 +1,6 @@
-export class DropdownCollection {
-  constructor(
-    el, // container element for all dropdowns
-    {
-      template, // template for a dropdown control
-      onChange = null, // called whenever selections change or a dropdown is added/removed
-    },
-  ) {
-    this._el = el;
-    this._template = template;
-    this._onChange = onChange;
-    this._dropdowns = new Map(); // key -> { dropdown, wrapperEl }
-  }
+import { cloneTemplateElement } from "../template_utils.js";
 
-  // Add a new dropdown with the given key and options.
-  add(key, opts) {
-    if (this._dropdowns.has(key)) {
-      throw new Error(`Dropdown with key "${key}" already exists`);
-    }
-    const wrapperEl = document.createElement("div");
-    this._el.appendChild(wrapperEl);
-    const userOnChange = opts.onChange;
-    const dropdown = new Dropdown(wrapperEl, {
-      ...opts,
-      template: this._template,
-      onChange: (selectedIds) => {
-        if (userOnChange) userOnChange(selectedIds);
-        if (this._onChange) this._onChange(this.getAllSelected());
-      },
-      onRemove: () => this.remove(key),
-      onOpen: () => this._closeAllExcept(key),
-    });
-    this._dropdowns.set(key, { dropdown, wrapperEl });
-    dropdown.open();
-    return dropdown;
-  }
-
-  // Remove the dropdown with the given key and its DOM element.
-  remove(key) {
-    const entry = this._dropdowns.get(key);
-    if (!entry) {
-      throw new Error(`Dropdown with key "${key}" not found`);
-    }
-    entry.dropdown.destroy();
-    entry.wrapperEl.remove();
-    this._dropdowns.delete(key);
-    if (this._onChange) this._onChange(this.getAllSelected());
-  }
-
-  // Close all dropdowns except the one with the given key.
-  _closeAllExcept(key) {
-    for (const [k, { dropdown }] of this._dropdowns) {
-      if (k !== key) dropdown.close();
-    }
-  }
-
-  // Check whether a dropdown with the given key exists.
-  has(key) {
-    return this._dropdowns.has(key);
-  }
-
-  // Return an object mapping each key to its array of selected IDs.
-  getAllSelected() {
-    const result = {};
-    for (const [key, { dropdown }] of this._dropdowns) {
-      result[key] = dropdown.getSelected();
-    }
-    return result;
-  }
-
-  // Return an object mapping each key to its array of selected names.
-  getAllSelectedNames() {
-    const result = {};
-    for (const [key, { dropdown }] of this._dropdowns) {
-      result[key] = dropdown.getSelectedNames();
-    }
-    return result;
-  }
-}
-
-class Dropdown {
+export class Dropdown {
   constructor(
     el, // container element for this dropdown
     {
@@ -132,12 +54,12 @@ class Dropdown {
     const filterControl = cloneTemplateElement(this._template);
 
     this._el.appendChild(filterControl);
-    this._headerEl = this._el.querySelector("[data-dropdown-header]");
-    this._labelEl = this._el.querySelector("[data-dropdown-label]");
-    this._caretEl = this._el.querySelector("[data-dropdown-caret]");
-    this._removeEl = this._el.querySelector("[data-dropdown-remove]");
-    this._summaryEl = this._el.querySelector("[data-dropdown-summary]");
-    this._panelEl = this._el.querySelector("[data-dropdown-body]");
+    this._headerEl = this._el.querySelector("[data-control-header]");
+    this._labelEl = this._el.querySelector("[data-control-label]");
+    this._caretEl = this._el.querySelector("[data-control-caret]");
+    this._removeEl = this._el.querySelector("[data-control-remove]");
+    this._summaryEl = this._el.querySelector("[data-control-summary]");
+    this._panelEl = this._el.querySelector("[data-control-body]");
     this._searchEl = this._el.querySelector("[data-dropdown-input]");
     this._clearSearchEl = this._el.querySelector("[data-clear-search]");
     this._listEl = this._el.querySelector("[data-dropdown-options]");
@@ -149,7 +71,7 @@ class Dropdown {
   // Attach event listeners for toggling, searching, and selecting.
   _bindEvents() {
     this._headerEl.addEventListener("click", (e) => {
-      if (e.target.closest("[data-dropdown-remove]")) {
+      if (e.target.closest("[data-control-remove]")) {
         return;
       }
 
@@ -309,8 +231,4 @@ class Dropdown {
       this._selected.add(option.value);
     });
   }
-}
-
-function cloneTemplateElement(template) {
-  return template.content.firstElementChild.cloneNode(true);
 }

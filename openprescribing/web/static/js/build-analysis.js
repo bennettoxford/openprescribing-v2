@@ -67,9 +67,10 @@
 // filter keeps an AMP but drops its parent VMP, the VMP is still shown for context,
 // greyed out and expanded so the matching AMP is visible.
 //
-// Dropdowns
-// ---------
-// As filters change, each dropdown only offers values that could still match something
+// Controls
+// --------
+// Each filter control is a multi-select dropdown or (coming soon) a radio group.  As
+// filters change, each dropdown only offers values that could still match something
 // given the other active filters, so the user can't accidentally build an empty query.
 //
 // URL state
@@ -84,7 +85,7 @@
 //   - metadata.js  fetches medication/dm+d/BNF metadata and builds lookup maps
 //   - query.js     applies filters to produce statuses, counts and dropdown options
 //   - render.js    renders the results tree, filter summary and dropdown options
-//   - dropdown.js  the reusable multi-select dropdown control
+//   - controls/    the reusable filter controls (dropdown multi-select, radio group)
 
 import {
   FILTER_DEFINITIONS,
@@ -110,7 +111,7 @@ import {
   renderResults,
   renderSummary,
 } from "./build-analysis/render.js";
-import { DropdownCollection } from "./dropdown.js";
+import { ControlCollection } from "./controls/collection.js";
 
 // Maps a panel prefix to its role in the analysis dict's query.
 const QUERY_ROLE_BY_PREFIX = { ntr: "numerator", dtr: "denominator" };
@@ -130,7 +131,7 @@ const dtrFiltersEl = containerEl.querySelector("[data-dtr-filters]");
 
 // Templates that we'll use to generate elements in the document.
 const templates = {
-  dropdownTemplate: containerEl.querySelector("[data-dropdown-template]"),
+  controlTemplate: containerEl.querySelector("[data-control-template]"),
   summaryListItemTemplate: containerEl.querySelector(
     "[data-summary-list-item-template]",
   ),
@@ -195,7 +196,7 @@ function createQueryPanels() {
           "[data-show-only-matching]",
         ),
       },
-      dropdowns: null,
+      controls: null,
       currentResults: null,
       availableOptionIdsByFilterKey: new Map(),
     }),
@@ -204,8 +205,8 @@ function createQueryPanels() {
 
 function initialiseQueryPanel(panel) {
   // Wire up the panel.
-  panel.dropdowns = new DropdownCollection(panel.refs.filterListEl, {
-    template: templates.dropdownTemplate,
+  panel.controls = new ControlCollection(panel.refs.filterListEl, {
+    template: templates.controlTemplate,
     onChange: () => {
       const filters = getFilters(panel);
       renderAddFilterOptions(panel);
@@ -375,14 +376,15 @@ function addFilterControl(
   expanded = true,
 ) {
   // Add a filter control to the panel.
-  if (panel.dropdowns.has(filterKey)) {
+  if (panel.controls.has(filterKey)) {
     return null;
   }
 
   const definition = getFilterDefinitionForControlKey(filterKey);
   const isExcluded = isExcludedFilterControlKey(filterKey);
-  const dropdown = panel.dropdowns.add(filterKey, {
+  const control = panel.controls.add(filterKey, {
     title: getFilterControlLabel(definition, isExcluded),
+    control: definition.control,
     options: metadata.lookupRecordsByFilterKey
       .get(definition.key)
       .map((record) => ({
@@ -396,10 +398,10 @@ function addFilterControl(
   });
 
   if (!expanded) {
-    dropdown.close();
+    control.close();
   }
 
-  return dropdown;
+  return control;
 }
 
 function getFilters(panel) {
@@ -409,7 +411,7 @@ function getFilters(panel) {
   // `formRouteIdExclude`) with array values of the parsed filter values for that
   // control.
   const filters = getEmptyFilters();
-  const selectedByKey = panel.dropdowns.getAllSelected();
+  const selectedByKey = panel.controls.getAllSelected();
 
   Object.entries(selectedByKey).forEach(([filterKey, values]) => {
     const definition = getFilterDefinitionForControlKey(filterKey);
@@ -425,8 +427,8 @@ function setFilters(panel, filters) {
     [false, true].forEach((isExcluded) => {
       const filterKey = getFilterControlKey(definition, isExcluded);
 
-      if (panel.dropdowns.has(filterKey)) {
-        panel.dropdowns.remove(filterKey);
+      if (panel.controls.has(filterKey)) {
+        panel.controls.remove(filterKey);
       }
     });
   });

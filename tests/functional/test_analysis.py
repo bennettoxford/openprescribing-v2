@@ -26,7 +26,7 @@ def test_analysis(live_server, page, rxdb, settings, tmp_path):
 
     panel = page.locator('[data-query-panel][data-panel-prefix="ntr"]')
     panel.locator("[data-add-filter]").select_option(label="VTM")
-    dropdown = panel.locator("[data-dropdown]").filter(has_text="VTM").first
+    dropdown = panel.locator("[data-control]").filter(has_text="VTM").first
     dropdown.locator("[data-dropdown-input]").fill("Aden")
     dropdown.locator("[data-dropdown-options]").select_option(label="Adenosine")
 

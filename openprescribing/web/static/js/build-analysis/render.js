@@ -15,14 +15,14 @@ export function renderAddFilterOptions(panel) {
   FILTER_DEFINITIONS.forEach((definition) => {
     const includeKey = getFilterControlKey(definition, false);
 
-    if (!panel.dropdowns.has(includeKey)) {
+    if (!panel.controls.has(includeKey)) {
       options.push(makeAddFilterOption(includeKey, definition.label));
     }
 
     if (hasAnyFilterControls && definition.excludable !== false) {
       const excludeKey = getFilterControlKey(definition, true);
 
-      if (!panel.dropdowns.has(excludeKey)) {
+      if (!panel.controls.has(excludeKey)) {
         options.push(
           makeAddFilterOption(
             excludeKey,
@@ -55,7 +55,7 @@ function makeAddFilterOption(value, label) {
 function getActiveFilterControlCount(panel) {
   // Return the number of active filter controls in the panel.
   // TODO move this inline.
-  return Object.keys(panel.dropdowns.getAllSelected()).length;
+  return Object.keys(panel.controls.getAllSelected()).length;
 }
 
 function renderSummarySection(sectionEl, panel, templates) {
@@ -74,7 +74,7 @@ function renderSummarySection(sectionEl, panel, templates) {
     }
   }
 
-  const selectedNamesByKey = panel.dropdowns.getAllSelectedNames();
+  const selectedNamesByKey = panel.controls.getAllSelectedNames();
   const activeFilters = FILTER_DEFINITIONS.flatMap((definition) =>
     [false, true].flatMap((isExcluded) => {
       const filterKey = getFilterControlKey(definition, isExcluded);
