@@ -57,7 +57,7 @@ export const FILTER_DEFINITIONS = [
     urlParamSuffix: "product_type",
     isBaseline: false,
     excludable: false, // Excluding generic medications is the same as selecting branded medications.
-    control: "dropdown",
+    control: "radio", // Rendered as a radio group rather than a multi-select dropdown.
     options: [
       { value: "all", label: "All" },
       { value: "generic", label: "Generic" },

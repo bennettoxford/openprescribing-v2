@@ -1,8 +1,10 @@
 import { Dropdown } from "./dropdown.js";
+import { RadioGroup } from "./radio.js";
 
 // Control classes that the collection can instantiate.
 const CONTROL_CLASSES = {
   dropdown: Dropdown,
+  radio: RadioGroup,
 };
 
 // A collection of filter controls sharing a container element. Each control is

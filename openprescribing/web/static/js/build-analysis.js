@@ -69,9 +69,9 @@
 //
 // Controls
 // --------
-// Each filter control is a multi-select dropdown or (coming soon) a radio group.  As
-// filters change, each dropdown only offers values that could still match something
-// given the other active filters, so the user can't accidentally build an empty query.
+// Each filter control is a multi-select dropdown or a radio group.  As filters change,
+// each dropdown only offers values that could still match something given the other
+// active filters, so the user can't accidentally build an empty query.
 //
 // URL state
 // ---------
