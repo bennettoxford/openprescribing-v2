@@ -78,16 +78,16 @@ function renderSummarySection(sectionEl, panel, templates) {
   const activeFilters = FILTER_DEFINITIONS.flatMap((definition) =>
     [false, true].flatMap((isExcluded) => {
       const filterKey = getFilterControlKey(definition, isExcluded);
-      const values = selectedNamesByKey[filterKey] ?? [];
+      const names = selectedNameList(definition, selectedNamesByKey[filterKey]);
 
-      if (values.length === 0) {
+      if (names.length === 0) {
         return [];
       }
 
       return [
         {
           label: getFilterControlLabel(definition, isExcluded),
-          values: selectedNamesByKey[filterKey],
+          values: names,
         },
       ];
     }),
@@ -112,6 +112,16 @@ function renderSummarySection(sectionEl, panel, templates) {
   });
 
   sectionEl.replaceChildren(listEl);
+}
+
+function selectedNameList(definition, selectedNames) {
+  // Normalise a control's selected names to a list: a single-select control returns a
+  // scalar name (or undefined when absent), a multi-select returns a list.
+  if (selectedNames == null) {
+    return [];
+  }
+
+  return definition.single ? [selectedNames] : selectedNames;
 }
 
 function cloneTemplateElement(template) {

@@ -37,14 +37,14 @@ export class RadioGroup {
     this._bindEvents();
   }
 
-  // Return the selected option ID.
+  // Return the selected option ID (a scalar: this is a single-select control).
   getSelected() {
-    return [this._selectedId];
+    return this._selectedId;
   }
 
-  // Return the selected option name.
+  // Return the selected option name (a scalar: this is a single-select control).
   getSelectedNames() {
-    return [this._optionsById.get(this._selectedId).name];
+    return this._optionsById.get(this._selectedId).name;
   }
 
   // Remove the component's DOM contents from its container element.

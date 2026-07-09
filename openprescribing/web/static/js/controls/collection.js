@@ -8,8 +8,10 @@ const CONTROL_CLASSES = {
 };
 
 // A collection of filter controls sharing a container element. Each control is
-// instantiated from CONTROL_CLASSES.  All control classes must have the same interface:
-// getSelected, getSelectedNames, open, close, destroy.
+// instantiated from CONTROL_CLASSES and exposes the same interface: open, close,
+// destroy, getSelected, getSelectedNames.  getSelected/getSelectedNames return the
+// selection in the control's natural shape: a list for a multi-select dropdown, a
+// scalar for a single-select radio.
 
 export class ControlCollection {
   constructor(

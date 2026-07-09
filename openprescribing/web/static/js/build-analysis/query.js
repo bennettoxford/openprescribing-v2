@@ -4,10 +4,12 @@
 // This module has no DOM access.
 
 import {
+  emptyFilterValue,
   FILTER_DEFINITIONS,
   getFilterControlKey,
   getFilterDefinitionForControlKey,
   hasAnyFilters,
+  isFilterValueEmpty,
   matchesAnyFilterValue,
 } from "./filters.js";
 
@@ -132,7 +134,7 @@ function matchesVisibleFilters(medication, filters) {
     const excludedValues = filters[getFilterControlKey(definition, true)];
 
     return (
-      excludedValues.length === 0 ||
+      isFilterValueEmpty(definition, excludedValues) ||
       !matchesAnyFilterValue(definition, medication, excludedValues)
     );
   });
@@ -144,7 +146,10 @@ function matchesBaselineFilters(medication, filters) {
   const activeBaselineDefinitions = FILTER_DEFINITIONS.filter(
     (definition) =>
       definition.isBaseline &&
-      filters[getFilterControlKey(definition, false)].length > 0,
+      !isFilterValueEmpty(
+        definition,
+        filters[getFilterControlKey(definition, false)],
+      ),
   );
 
   if (activeBaselineDefinitions.length > 0) {
@@ -160,7 +165,7 @@ function matchesBaselineFilters(medication, filters) {
   return FILTER_DEFINITIONS.every((definition) => {
     const filterValues = filters[getFilterControlKey(definition, false)];
 
-    if (filterValues.length === 0) {
+    if (isFilterValueEmpty(definition, filterValues)) {
       return true;
     }
 
@@ -175,7 +180,7 @@ function getMedicationStatus(medication, filters) {
     const includedValues = filters[getFilterControlKey(definition, false)];
 
     return (
-      includedValues.length === 0 ||
+      isFilterValueEmpty(definition, includedValues) ||
       matchesAnyFilterValue(definition, medication, includedValues)
     );
   });
@@ -184,7 +189,7 @@ function getMedicationStatus(medication, filters) {
     const excludedValues = filters[getFilterControlKey(definition, true)];
 
     return (
-      excludedValues.length > 0 &&
+      !isFilterValueEmpty(definition, excludedValues) &&
       matchesAnyFilterValue(definition, medication, excludedValues)
     );
   });
@@ -221,7 +226,9 @@ function getFiltersExcept(filters, ignoredFilterKey) {
   // Return the panel filters with the given control cleared.
   return {
     ...filters,
-    [ignoredFilterKey]: [],
+    [ignoredFilterKey]: emptyFilterValue(
+      getFilterDefinitionForControlKey(ignoredFilterKey),
+    ),
   };
 }
 
@@ -250,7 +257,7 @@ function matchesMedicationFilters(medication, filters) {
   return FILTER_DEFINITIONS.every((definition) => {
     const includedValues = filters[getFilterControlKey(definition, false)];
 
-    if (includedValues.length === 0) {
+    if (isFilterValueEmpty(definition, includedValues)) {
       return true;
     }
 

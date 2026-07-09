@@ -58,6 +58,7 @@ export const FILTER_DEFINITIONS = [
     isBaseline: false,
     excludable: false, // Excluding generic medications is the same as selecting branded medications.
     control: "radio", // Rendered as a radio group rather than a multi-select dropdown.
+    single: true, // Holds a single scalar value (or null), not a list.
     options: [
       { value: "all", label: "All" },
       { value: "generic", label: "Generic" },
@@ -65,10 +66,6 @@ export const FILTER_DEFINITIONS = [
     ],
     parse: parseOptionalString,
     matches: (medication, value) => matchesProductType(medication, value),
-    // Product type is a scalar on the backend, not a list. The radio control
-    // always yields a single value.
-    toQueryValue: (values) => values[0],
-    fromQueryValue: (rawValue) => (rawValue ? [rawValue] : []),
   },
 ];
 
@@ -106,12 +103,23 @@ export function getFilterDefinitionForControlKey(filterKey) {
   return FILTER_DEFINITION_BY_KEY.get(baseKey);
 }
 
+export function emptyFilterValue(definition) {
+  // Return the empty (no-selection) value for a definition: null for a
+  // single-valued filter, [] for a list-valued one.
+  return definition.single ? null : [];
+}
+
+export function isFilterValueEmpty(definition, value) {
+  // Return whether a filter value represents no selection.
+  return definition.single ? value === null : value.length === 0;
+}
+
 export function getEmptyFilters() {
   // Return an empty filters object.
   return Object.fromEntries(
     FILTER_DEFINITIONS.flatMap((definition) => [
-      [getFilterControlKey(definition, false), []],
-      [getFilterControlKey(definition, true), []],
+      [getFilterControlKey(definition, false), emptyFilterValue(definition)],
+      [getFilterControlKey(definition, true), emptyFilterValue(definition)],
     ]),
   );
 }
@@ -127,20 +135,36 @@ export function parseFilterValues(definition, rawValues) {
     .filter((value) => value !== null);
 }
 
-export function matchesAnyFilterValue(definition, medication, values) {
-  // Return whether a medication matches any selected value for the given filter.
-  return values.some((value) => definition.matches(medication, value));
+export function matchesAnyFilterValue(definition, medication, value) {
+  // Return whether a medication matches the selected value(s) for the given filter.
+  if (definition.single) {
+    return value !== null && definition.matches(medication, value);
+  }
+
+  return value.some((v) => definition.matches(medication, v));
 }
 
 export function hasAnyFilters(filters) {
-  // Return whether any filter has a value.
-  return Object.values(filters).some((values) => values.length > 0);
+  // Return whether any filter (inclusion or exclusion) has a value.
+  return FILTER_DEFINITIONS.some((definition) =>
+    [false, true].some(
+      (isExcluded) =>
+        !isFilterValueEmpty(
+          definition,
+          filters[getFilterControlKey(definition, isExcluded)],
+        ),
+    ),
+  );
 }
 
 export function hasAnyInclusionFilters(filters) {
   // Return whether any inclusion filter has a value.
   return FILTER_DEFINITIONS.some(
-    (definition) => filters[getFilterControlKey(definition, false)].length > 0,
+    (definition) =>
+      !isFilterValueEmpty(
+        definition,
+        filters[getFilterControlKey(definition, false)],
+      ),
   );
 }
 
@@ -158,13 +182,24 @@ export function filtersFromQueryDict(queryDict) {
     [false, true].forEach((isExcluded) => {
       const filterKey = getFilterControlKey(definition, isExcluded);
       const dictKey = getFilterControlUrlParamSuffix(definition, isExcluded);
-      filters[filterKey] = definition.fromQueryValue
-        ? definition.fromQueryValue(queryDict[dictKey])
-        : parseFilterValues(definition, queryDict[dictKey]);
+      filters[filterKey] = filterValueFromQueryDict(
+        definition,
+        queryDict[dictKey],
+      );
     });
   });
 
   return filters;
+}
+
+function filterValueFromQueryDict(definition, rawValue) {
+  // Parse a query dict entry into a filter value: a scalar (or null) for a
+  // single-valued filter, a list for a list-valued one.
+  if (definition.single) {
+    return rawValue == null ? null : definition.parse(rawValue);
+  }
+
+  return parseFilterValues(definition, rawValue);
 }
 
 export function queryDictFromFilters(filters) {
@@ -175,13 +210,11 @@ export function queryDictFromFilters(filters) {
   FILTER_DEFINITIONS.forEach((definition) => {
     [false, true].forEach((isExcluded) => {
       const filterKey = getFilterControlKey(definition, isExcluded);
-      const values = filters[filterKey];
+      const value = filters[filterKey];
 
-      if (values.length > 0) {
+      if (!isFilterValueEmpty(definition, value)) {
         const dictKey = getFilterControlUrlParamSuffix(definition, isExcluded);
-        queryDict[dictKey] = definition.toQueryValue
-          ? definition.toQueryValue(values)
-          : values;
+        queryDict[dictKey] = value;
       }
     });
   });

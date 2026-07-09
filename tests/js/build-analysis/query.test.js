@@ -232,7 +232,7 @@ describe("queryMedications with a product type filter", () => {
   it('can match generic medications', () => {
     const result = queryMedications(
       metadata,
-      makeFilters({ [include("productType")]: ["generic"] }),
+      makeFilters({ [include("productType")]: "generic" }),
     );
     expectMedications(result, [[GENERIC, STATUS.INCLUDED]]);
   });
@@ -240,7 +240,7 @@ describe("queryMedications with a product type filter", () => {
   it('can match branded medications', () => {
     const result = queryMedications(
       metadata,
-      makeFilters({ [include("productType")]: ["branded"] }),
+      makeFilters({ [include("productType")]: "branded" }),
     );
     expectMedications(result, [[BRANDED, STATUS.INCLUDED]]);
   });
@@ -248,7 +248,7 @@ describe("queryMedications with a product type filter", () => {
   it('can match all medications', () => {
     const result = queryMedications(
       metadata,
-      makeFilters({ [include("productType")]: ["all"] }),
+      makeFilters({ [include("productType")]: "all" }),
     );
     expectMedications(result, [
       [GENERIC, STATUS.INCLUDED],

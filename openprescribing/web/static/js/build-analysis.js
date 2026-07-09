@@ -97,6 +97,7 @@ import {
   hasAnyFilters,
   hasAnyInclusionFilters,
   isExcludedFilterControlKey,
+  isFilterValueEmpty,
   queryDictFromFilters,
 } from "./build-analysis/filters.js";
 import { fetchMetadata } from "./build-analysis/metadata.js";
@@ -394,7 +395,7 @@ function addFilterControl(
         searchName: record.searchName,
       })),
     getValidOptionIds: () => getCachedValidOptionIds(panel, filterKey),
-    selected: (selectedValues ?? []).map(String),
+    selected: normalizeSelectedInput(definition, selectedValues),
   });
 
   if (!expanded) {
@@ -404,18 +405,36 @@ function addFilterControl(
   return control;
 }
 
+function normalizeSelectedInput(definition, selectedValues) {
+  // Return the control's `selected` input (always a list of option-id strings) from a
+  // filter value, which is a scalar for single-valued filters and a list otherwise.
+  if (selectedValues == null) {
+    return [];
+  }
+
+  return definition.single
+    ? [String(selectedValues)]
+    : selectedValues.map(String);
+}
+
 function getFilters(panel) {
   // Return the active query filters for the panel.
   //
   // The result is an object keyed by filter control key (for example `vtmId` or
-  // `formRouteIdExclude`) with array values of the parsed filter values for that
-  // control.
+  // `formRouteIdExclude`).  Values are the parsed filter values for that control: a
+  // scalar (or null) for a single-valued filter, a list otherwise.
   const filters = getEmptyFilters();
   const selectedByKey = panel.controls.getAllSelected();
 
-  Object.entries(selectedByKey).forEach(([filterKey, values]) => {
+  Object.entries(selectedByKey).forEach(([filterKey, selected]) => {
     const definition = getFilterDefinitionForControlKey(filterKey);
-    filters[filterKey] = values.map((value) => definition.parse(value));
+
+    if (definition.single) {
+      filters[filterKey] =
+        selected === null ? null : definition.parse(selected);
+    } else {
+      filters[filterKey] = selected.map((value) => definition.parse(value));
+    }
   });
 
   return filters;
@@ -436,7 +455,7 @@ function setFilters(panel, filters) {
   FILTER_DEFINITIONS.forEach((definition) => {
     const value = filters[getFilterControlKey(definition, false)];
 
-    if (value.length > 0) {
+    if (!isFilterValueEmpty(definition, value)) {
       addFilterControl(
         panel,
         getFilterControlKey(definition, false),
@@ -447,7 +466,7 @@ function setFilters(panel, filters) {
 
     const excludedValue = filters[getFilterControlKey(definition, true)];
 
-    if (excludedValue.length > 0) {
+    if (!isFilterValueEmpty(definition, excludedValue)) {
       addFilterControl(
         panel,
         getFilterControlKey(definition, true),

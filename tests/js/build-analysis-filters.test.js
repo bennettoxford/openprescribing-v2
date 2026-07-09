@@ -35,16 +35,14 @@ describe("queryDictFromFilters", () => {
 
   it("serializes product type as a scalar", () => {
     expect(
-      queryDictFromFilters(filtersWith({ productType: ["generic"] })),
+      queryDictFromFilters(filtersWith({ productType: "generic" })),
     ).toEqual({ product_type: "generic" });
   });
 
   it("serializes the 'all' product type", () => {
-    expect(queryDictFromFilters(filtersWith({ productType: ["all"] }))).toEqual(
-      {
-        product_type: "all",
-      },
-    );
+    expect(queryDictFromFilters(filtersWith({ productType: "all" }))).toEqual({
+      product_type: "all",
+    });
   });
 });
 
@@ -68,7 +66,7 @@ describe("filtersFromQueryDict", () => {
   it("parses a scalar product type into a filter value", () => {
     const filters = filtersFromQueryDict({ product_type: "branded" });
 
-    expect(filters.productType).toEqual(["branded"]);
+    expect(filters.productType).toBe("branded");
   });
 
   it("returns empty filters for a null/missing query dict", () => {
@@ -91,7 +89,7 @@ describe("round trip", () => {
   });
 
   it("survives a product type filter round trip", () => {
-    const filters = filtersWith({ productType: ["branded"] });
+    const filters = filtersWith({ productType: "branded" });
 
     expect(filtersFromQueryDict(queryDictFromFilters(filters))).toEqual(
       filters,
@@ -99,7 +97,7 @@ describe("round trip", () => {
   });
 
   it("survives an 'all' product type round trip", () => {
-    const filters = filtersWith({ productType: ["all"] });
+    const filters = filtersWith({ productType: "all" });
 
     expect(filtersFromQueryDict(queryDictFromFilters(filters))).toEqual(
       filters,
