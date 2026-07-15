@@ -41,7 +41,7 @@ def build_org_chart_spec(analysis):
             opacity=alt.when(nearest).then(alt.value(0.3)).otherwise(alt.value(0)),
             tooltip=[
                 alt.Tooltip("month:T", title="Month", format="%Y %b"),
-                alt.Tooltip("value:Q", title="Mean value"),
+                alt.Tooltip("value:Q", title="Median value"),
             ],
         )
         .add_params(nearest)
