@@ -58,3 +58,8 @@ def test_analysis(live_server, page, rxdb, settings, tmp_path):
         expect(page.locator(f"#{chart_type}")).to_be_checked()
         expect(page.locator("#chart-container")).to_be_visible()
         expect(page.locator("#chart-container svg.marks")).to_be_visible()
+
+        with page.expect_download() as download:
+            page.get_by_role("link", name="Save as PNG").click()
+        assert download.value.suggested_filename == "chart.png"
+        assert "data:image/png;base64" in download.value.url

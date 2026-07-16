@@ -148,6 +148,12 @@ const embedSpec = async (specName) => {
   chartResult = await vegaEmbed(chartContainer, chartSpecs[specName], {
     renderer: "svg",
   });
+  document.getElementById("png-btn").addEventListener("click", function () {
+    chartResult.view.toImageURL("png", 2).then((url) => {
+      // This "url" is a binary blob containing the image data - ensure it is up to date
+      this.href = url;
+    });
+  });
 };
 
 const updateChart = async (chartConfig) => {
