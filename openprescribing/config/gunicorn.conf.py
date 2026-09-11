@@ -41,7 +41,7 @@ def post_fork(server, worker):
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "openprescribing.config.settings")
     os.environ.setdefault("PYTHONPATH", "")
     server.log.info("Worker spawned (pid: %s)", worker.pid)
-    resource = Resource.create(attributes={"service.name": "openprescribing"})
+    resource = Resource.create(attributes={"service.name": "openprescribing-v2"})
     trace.set_tracer_provider(TracerProvider(resource=resource))
     span_processor = BatchSpanProcessor(OTLPSpanExporter())
     trace.get_tracer_provider().add_span_processor(span_processor)
