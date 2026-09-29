@@ -7,6 +7,6 @@
   "devDependencies": {
     "@biomejs/biome": "2.3.13",
     "jsdom": "^27.0.1",
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.11"
   }
 }
