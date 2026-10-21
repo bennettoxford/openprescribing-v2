@@ -104,7 +104,7 @@ numpy = "np"
 [tool.uv]
 required-version = ">=0.9"
 exclude-newer = "2026-10-14T00:00:00Z"
-exclude-newer-package = {}
+exclude-newer-package = { certifi = false }
 
 [dependency-groups]
 dev = [
