@@ -23,7 +23,7 @@ def install_sqlite_extension():
     result = conn.sql(
         "SELECT installed FROM duckdb_extensions() WHERE extension_name='sqlite_scanner'"
     )
-    if not result.fetchone()[0]:
+    if not result.limit(1).fetchall()[0]:
         print(f"Installing DuckDB SQLite extension to {extension_dir}")
         conn.sql("INSTALL sqlite_scanner")
 
